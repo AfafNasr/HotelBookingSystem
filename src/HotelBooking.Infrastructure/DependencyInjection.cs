@@ -1,9 +1,12 @@
-﻿using HotelBooking.Infrastructure.Persistence;
+﻿using FluentValidation;
+using HotelBooking.Application.Authentication.Register;
+using HotelBooking.Application.Common.Interfaces;
+using HotelBooking.Infrastructure.Identity;
+using HotelBooking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using HotelBooking.Infrastructure.Identity;
 
 namespace HotelBooking.Infrastructure;
 
@@ -28,7 +31,23 @@ public static class DependencyInjection
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
+        services
+            .AddOptions<InitialAdminOptions>()
+           .Bind(configuration.GetSection(InitialAdminOptions.SectionName))
+           .Validate(
+               options => !string.IsNullOrWhiteSpace(options.Username),
+               "Initial admin username is required.")
+           .Validate(
+               options => !string.IsNullOrWhiteSpace(options.Email),
+               "Initial admin email is required.")
+           .Validate(
+               options => !string.IsNullOrWhiteSpace(options.Password),
+              "Initial admin password is required.")
+           .ValidateOnStart();
+
         services.AddScoped<IdentityInitializer>();
+
+        services.AddScoped<IIdentityService, IdentityService>();
 
         return services;
     }
