@@ -14,12 +14,15 @@ builder.Services.AddControllers();
 var app = builder.Build();
 
 // Initialize the default Identity roles at application startup.
-await using (var scope = app.Services.CreateAsyncScope())
+if (!app.Environment.IsEnvironment("Testing"))
 {
-    var identityInitializer =
-        scope.ServiceProvider.GetRequiredService<IdentityInitializer>();
+    await using (var scope = app.Services.CreateAsyncScope())
+    {
+        var identityInitializer =
+            scope.ServiceProvider.GetRequiredService<IdentityInitializer>();
 
-    await identityInitializer.InitializeAsync();
+        await identityInitializer.InitializeAsync();
+    }
 }
 
 // Configure the HTTP request pipeline.
