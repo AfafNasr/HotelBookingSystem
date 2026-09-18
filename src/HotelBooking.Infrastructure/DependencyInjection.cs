@@ -1,13 +1,17 @@
 ﻿using FluentValidation;
 using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Common.Interfaces;
+using HotelBooking.Infrastructure.Authentication;
 using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using HotelBooking.Infrastructure.Authentication;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using System.Text;
 
 namespace HotelBooking.Infrastructure;
 
@@ -68,6 +72,37 @@ public static class DependencyInjection
     .ValidateOnStart();
 
         services.AddSingleton<ITokenService, JwtTokenService>();
+
+        services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var jwtOptions = configuration
+            .GetRequiredSection(JwtOptions.SectionName)
+            .Get<JwtOptions>()
+            ?? throw new InvalidOperationException(
+                "JWT configuration is missing.");
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtOptions.Issuer,
+
+            ValidateAudience = true,
+            ValidAudience = jwtOptions.Audience,
+
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtOptions.Key)),
+
+            ValidateLifetime = true,
+
+            NameClaimType = ClaimTypes.Name,
+            RoleClaimType = ClaimTypes.Role
+        };
+    });
+
+        services.AddAuthorization();
 
         return services;
     }
