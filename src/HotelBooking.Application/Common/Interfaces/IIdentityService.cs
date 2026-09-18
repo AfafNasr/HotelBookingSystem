@@ -8,4 +8,8 @@ public interface IIdentityService
         string username,
         string email,
         string password );
+
+    Task<AuthenticatedUser?> AuthenticateAsync(
+        string username,
+        string password);
 }

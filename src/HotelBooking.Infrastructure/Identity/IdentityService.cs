@@ -3,6 +3,7 @@ using HotelBooking.Application.Common.Models;
 using HotelBooking.Application.Common.Security;
 using HotelBooking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
+using HotelBooking.Application.Common.Models;
 
 namespace HotelBooking.Infrastructure.Identity;
 
@@ -71,7 +72,6 @@ public sealed class IdentityService : IIdentityService
             null,
             errors);
     }
-
     private static ErrorType GetErrorType(string errorCode)
     {
         return errorCode switch
@@ -81,4 +81,31 @@ public sealed class IdentityService : IIdentityService
             _ => ErrorType.Validation
         };
     }
+    public async Task<AuthenticatedUser?> AuthenticateAsync(
+    string username,
+    string password)
+    {
+        var user = await _userManager.FindByNameAsync(username);
+
+        if (user is null)
+        {
+            return null;
+        }
+
+        var isPasswordValid =
+            await _userManager.CheckPasswordAsync(user, password);
+
+        if (!isPasswordValid)
+        {
+            return null;
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+
+        return new AuthenticatedUser(
+            user.Id,
+            user.UserName!,
+            roles.ToArray());
+    }
+
 }

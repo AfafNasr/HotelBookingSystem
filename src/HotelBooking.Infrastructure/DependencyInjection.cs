@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using HotelBooking.Infrastructure.Authentication;
 
 namespace HotelBooking.Infrastructure;
 
@@ -48,6 +49,25 @@ public static class DependencyInjection
         services.AddScoped<IdentityInitializer>();
 
         services.AddScoped<IIdentityService, IdentityService>();
+
+        services
+    .AddOptions<JwtOptions>()
+    .Bind(configuration.GetSection(JwtOptions.SectionName))
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.Issuer),
+        "JWT issuer is required.")
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.Audience),
+        "JWT audience is required.")
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.Key),
+        "JWT signing key is required.")
+    .Validate(
+        options => options.ExpirationMinutes > 0,
+        "JWT expiration must be greater than zero.")
+    .ValidateOnStart();
+
+        services.AddSingleton<ITokenService, JwtTokenService>();
 
         return services;
     }
