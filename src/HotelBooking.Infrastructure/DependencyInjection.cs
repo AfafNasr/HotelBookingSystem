@@ -64,8 +64,9 @@ public static class DependencyInjection
         options => !string.IsNullOrWhiteSpace(options.Audience),
         "JWT audience is required.")
     .Validate(
-        options => !string.IsNullOrWhiteSpace(options.Key),
-        "JWT signing key is required.")
+    options => !string.IsNullOrWhiteSpace(options.Key)
+        && Encoding.UTF8.GetByteCount(options.Key) >= 32,
+    "JWT signing key must be at least 32 bytes.")
     .Validate(
         options => options.ExpirationMinutes > 0,
         "JWT expiration must be greater than zero.")

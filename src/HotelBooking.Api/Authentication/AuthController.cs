@@ -55,13 +55,7 @@ public sealed class AuthController : ControllerBase
 
         if (!result.Succeeded)
         {
-            if (result.Errors.Any(error =>
-                    error.Type == ErrorType.Authentication))
-            {
-                return Unauthorized(result.Errors);
-            }
-
-            return BadRequest(result.Errors);
+            return CreateErrorResponse(result.Errors);
         }
 
         var response = new LoginResponse(
@@ -72,7 +66,7 @@ public sealed class AuthController : ControllerBase
     }
 
     private IActionResult CreateErrorResponse(
-        IReadOnlyCollection<ApplicationError> errors)
+    IReadOnlyCollection<ApplicationError> errors)
     {
         var response = new
         {
@@ -82,6 +76,11 @@ public sealed class AuthController : ControllerBase
                 error.Description
             })
         };
+
+        if (errors.Any(error => error.Type == ErrorType.Authentication))
+        {
+            return Unauthorized(response);
+        }
 
         if (errors.Any(error => error.Type == ErrorType.Conflict))
         {
