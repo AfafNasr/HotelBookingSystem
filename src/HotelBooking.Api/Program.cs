@@ -1,6 +1,8 @@
 using HotelBooking.Infrastructure;
 using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Application;
+using HotelBooking.Api.Authorization;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,8 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
+
+builder.Services.AddPermissionAuthorization();
 
 var app = builder.Build();
 
