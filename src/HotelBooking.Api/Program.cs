@@ -3,6 +3,7 @@ using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Application;
 using HotelBooking.Api.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using HotelBooking.Api.ErrorHandling;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
 builder.Services.AddPermissionAuthorization();
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
@@ -35,6 +39,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseExceptionHandler();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
