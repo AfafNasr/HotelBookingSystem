@@ -2,6 +2,7 @@
 using HotelBooking.Application.Authentication.Login;
 using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Cities.CreateCity;
+using HotelBooking.Application.Countries.GetCountries;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HotelBooking.Application;
@@ -16,6 +17,7 @@ public static class DependencyInjection
         services.AddScoped<RegisterCommandHandler>();
         services.AddScoped<LoginCommandHandler>();
         services.AddScoped<CreateCityCommandHandler>();
+        services.AddScoped<GetCountriesQueryHandler>();
 
         return services;
     }

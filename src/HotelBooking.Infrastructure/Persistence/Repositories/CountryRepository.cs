@@ -1,4 +1,5 @@
 ﻿using HotelBooking.Application.Common.Interfaces;
+using HotelBooking.Domain.Cities;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelBooking.Infrastructure.Persistence.Repositories;
@@ -21,5 +22,14 @@ public sealed class CountryRepository : ICountryRepository
             .AnyAsync(
                 country => country.Code == countryCode,
                 cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Country>> GetAllAsync(
+    CancellationToken cancellationToken)
+    {
+        return await _dbContext.Countries
+            .AsNoTracking()
+            .OrderBy(country => country.Name)
+            .ToListAsync(cancellationToken);
     }
 }
