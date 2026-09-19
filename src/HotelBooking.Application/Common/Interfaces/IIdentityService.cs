@@ -1,10 +1,11 @@
-﻿using HotelBooking.Application.Common.Models;
+﻿using HotelBooking.Application.Authentication.Register;
+using HotelBooking.Application.Common.Models;
 
 namespace HotelBooking.Application.Common.Interfaces;
 
 public interface IIdentityService
 {
-    Task<CreateCustomerResult> CreateCustomerAsync(
+    Task<RegisterResult> CreateCustomerAsync(
         string username,
         string email,
         string password );

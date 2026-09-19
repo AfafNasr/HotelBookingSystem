@@ -4,6 +4,7 @@ using HotelBooking.Application.Authentication.Login;
 using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Common.Models;
 using Microsoft.AspNetCore.Mvc;
+using HotelBooking.Api.Common;
 
 namespace HotelBooking.Api.Authentication;
 
@@ -32,7 +33,7 @@ public sealed class AuthController : ControllerBase
 
         if (!result.Succeeded)
         {
-            return CreateErrorResponse(result.Errors);
+            return ErrorResponseFactory.Create(this, result.Errors);
         }
 
         var response = new RegisterResponse(
@@ -55,7 +56,7 @@ public sealed class AuthController : ControllerBase
 
         if (!result.Succeeded)
         {
-            return CreateErrorResponse(result.Errors);
+            return ErrorResponseFactory.Create(this, result.Errors);
         }
 
         var response = new LoginResponse(
@@ -65,28 +66,4 @@ public sealed class AuthController : ControllerBase
         return Ok(response);
     }
 
-    private IActionResult CreateErrorResponse(
-    IReadOnlyCollection<ApplicationError> errors)
-    {
-        var response = new
-        {
-            errors = errors.Select(error => new
-            {
-                error.Code,
-                error.Description
-            })
-        };
-
-        if (errors.Any(error => error.Type == ErrorType.Authentication))
-        {
-            return Unauthorized(response);
-        }
-
-        if (errors.Any(error => error.Type == ErrorType.Conflict))
-        {
-            return Conflict(response);
-        }
-
-        return BadRequest(response);
-    }
 }

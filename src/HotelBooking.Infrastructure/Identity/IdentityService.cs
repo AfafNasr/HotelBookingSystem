@@ -3,7 +3,7 @@ using HotelBooking.Application.Common.Models;
 using HotelBooking.Application.Common.Security;
 using HotelBooking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
-using HotelBooking.Application.Common.Models;
+using HotelBooking.Application.Authentication.Register;
 
 namespace HotelBooking.Infrastructure.Identity;
 
@@ -20,7 +20,7 @@ public sealed class IdentityService : IIdentityService
         _dbContext = dbContext;
     }
 
-    public async Task<CreateCustomerResult> CreateCustomerAsync(
+    public async Task<RegisterResult> CreateCustomerAsync(
      string username,
      string email,
      string password)
@@ -52,13 +52,13 @@ public sealed class IdentityService : IIdentityService
 
         await transaction.CommitAsync();
 
-        return new CreateCustomerResult(
+        return new RegisterResult(
             true,
             user.Id,
             Array.Empty<ApplicationError>());
     }
 
-    private static CreateCustomerResult Failure(IdentityResult result)
+    private static RegisterResult Failure(IdentityResult result)
     {
         var errors = result.Errors
             .Select(error => new ApplicationError(
@@ -67,7 +67,7 @@ public sealed class IdentityService : IIdentityService
                 GetErrorType(error.Code)))
             .ToArray();
 
-        return new CreateCustomerResult(
+        return new RegisterResult(
             false,
             null,
             errors);
