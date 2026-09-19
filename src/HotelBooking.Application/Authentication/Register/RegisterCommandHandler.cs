@@ -17,7 +17,7 @@ public sealed class RegisterCommandHandler
         _validator = validator;
     }
 
-    public async Task<CreateCustomerResult> HandleAsync(
+    public async Task<RegisterResult> HandleAsync(
         RegisterCommand command)
     {
         var validationResult = await _validator.ValidateAsync(command);
@@ -31,7 +31,7 @@ public sealed class RegisterCommandHandler
         ErrorType.Validation))
     .ToArray();
 
-            return new CreateCustomerResult(
+            return new RegisterResult(
                 false,
                 null,
                 errors);

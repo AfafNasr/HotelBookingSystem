@@ -40,7 +40,7 @@ public sealed class RegisterCommandHandlerTests
     [Fact]
     public async Task HandleAsync_WhenCommandIsValid_ShouldCreateCustomer()
     {
-        var expectedResult = new CreateCustomerResult(
+        var expectedResult = new RegisterResult(
             true,
             "user-123",
             Array.Empty<ApplicationError>());

@@ -21,7 +21,7 @@ public sealed class LoginCommandHandler
     }
 
     public async Task<LoginResult> HandleAsync(
-        LoginCommand command)
+        LoginCommand command )
         
     {
         var validationResult =

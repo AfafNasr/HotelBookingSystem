@@ -4,6 +4,7 @@ using HotelBooking.Application.Common.Interfaces;
 using HotelBooking.Infrastructure.Authentication;
 using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Infrastructure.Persistence;
+using HotelBooking.Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -102,6 +103,8 @@ public static class DependencyInjection
             RoleClaimType = ClaimTypes.Role
         };
     });
+        services.AddScoped<ICityRepository, CityRepository>();
+        services.AddScoped<ICountryRepository, CountryRepository>();
 
         return services;
     }
