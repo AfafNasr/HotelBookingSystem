@@ -177,4 +177,18 @@ public sealed class IdentityService : IIdentityService
             Array.Empty<ApplicationError>());
     }
 
+    public async Task<bool> IsUserInRoleAsync(
+    string userId,
+    string role)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user is null)
+        {
+            return false;
+        }
+
+        return await _userManager.IsInRoleAsync(user, role);
+    }
+
 }
