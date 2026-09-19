@@ -1,4 +1,5 @@
-﻿using HotelBooking.Application.Common.Security.Authorization.Permissions;
+﻿using HotelBooking.Application.Authorization.Permissions;
+using HotelBooking.Application.Common.Security.Authorization.Permissions;
 
 namespace HotelBooking.Application.Common.Security.Authorization;
 
@@ -20,7 +21,9 @@ public static class RolePermissions
 
                     RoomPermissions.Create,
                     RoomPermissions.Update,
-                    RoomPermissions.Delete
+                    RoomPermissions.Delete,
+
+                    UserPermissions.PromoteToHotelOwner
                 },
 
                 [Roles.Customer] = new HashSet<string>()

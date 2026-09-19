@@ -1,4 +1,6 @@
-﻿namespace HotelBooking.Application.Common.Security.Authorization.Permissions;
+﻿using HotelBooking.Application.Authorization.Permissions;
+
+namespace HotelBooking.Application.Common.Security.Authorization.Permissions;
 
 public static class Permissions
 {
@@ -6,6 +8,7 @@ public static class Permissions
     [
         .. HotelPermissions.All,
         .. CityPermissions.All,
-        .. RoomPermissions.All
+        .. RoomPermissions.All,
+        ..UserPermissions.All
     ];
 }
