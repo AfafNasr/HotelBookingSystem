@@ -4,6 +4,7 @@ using HotelBooking.Application.Common.Security;
 using HotelBooking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using HotelBooking.Application.Authentication.Register;
+using HotelBooking.Application.Users.PromoteToHotelOwner;
 
 namespace HotelBooking.Infrastructure.Identity;
 
@@ -106,6 +107,74 @@ public sealed class IdentityService : IIdentityService
             user.Id,
             user.UserName!,
             roles.ToArray());
+    }
+
+    public async Task<PromoteToHotelOwnerResult> PromoteToHotelOwnerAsync(
+    string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user is null)
+        {
+            return new PromoteToHotelOwnerResult(
+                false,
+                [
+                    new ApplicationError(
+                    "User.NotFound",
+                    "The specified user was not found.",
+                    ErrorType.NotFound)
+                ]);
+        }
+
+        var isCustomer = await _userManager.IsInRoleAsync(
+            user,
+            Roles.Customer);
+
+        if (!isCustomer)
+        {
+            return new PromoteToHotelOwnerResult(
+                false,
+                [
+                    new ApplicationError(
+                    "User.NotCustomer",
+                    "Only customer accounts can be promoted to hotel owner.",
+                    ErrorType.Validation)
+                ]);
+        }
+
+        var isAlreadyHotelOwner = await _userManager.IsInRoleAsync(
+            user,
+            Roles.HotelOwner);
+
+        if (isAlreadyHotelOwner)
+        {
+            return new PromoteToHotelOwnerResult(
+                false,
+                [
+                    new ApplicationError(
+                    "User.AlreadyHotelOwner",
+                    "The user is already a hotel owner.",
+                    ErrorType.Conflict)
+                ]);
+        }
+
+        var roleResult = await _userManager.AddToRoleAsync(
+            user,
+            Roles.HotelOwner);
+
+        if (!roleResult.Succeeded)
+        {
+            var errors = string.Join(
+             ", ",
+        roleResult.Errors.Select(error => error.Description));
+
+            throw new InvalidOperationException(
+                $"Failed to assign the HotelOwner role to user '{user.Id}'. {errors}");
+        }
+
+        return new PromoteToHotelOwnerResult(
+            true,
+            Array.Empty<ApplicationError>());
     }
 
 }

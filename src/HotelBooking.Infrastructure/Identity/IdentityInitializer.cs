@@ -24,6 +24,7 @@ public sealed class IdentityInitializer
     {
         await EnsureRoleExistsAsync(Roles.Customer);
         await EnsureRoleExistsAsync(Roles.Admin);
+        await EnsureRoleExistsAsync(Roles.HotelOwner);
         await EnsureInitialAdminExistsAsync();
     }
 
