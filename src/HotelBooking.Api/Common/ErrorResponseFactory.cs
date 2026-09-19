@@ -27,6 +27,10 @@ public static class ErrorResponseFactory
         {
             return controller.Conflict(response);
         }
+        if (errors.Any(error => error.Type == ErrorType.NotFound))
+        {
+            return controller.NotFound(response);
+        }
 
         return controller.BadRequest(response);
     }

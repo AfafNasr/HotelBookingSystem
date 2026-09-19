@@ -36,4 +36,20 @@ public class City
         CreatedAt = createdAt;
         IsDeleted = false;
     }
+
+    public void Update(
+    string name,
+    string countryCode,
+    string? postOffice,
+    DateTime updatedAt)
+    {
+        Name = name.Trim();
+        CountryCode = countryCode.Trim().ToUpperInvariant();
+
+        PostOffice = string.IsNullOrWhiteSpace(postOffice)
+            ? null
+            : postOffice.Trim();
+
+        UpdatedAt = updatedAt;
+    }
 }

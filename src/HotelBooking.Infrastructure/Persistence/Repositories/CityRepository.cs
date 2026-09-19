@@ -37,4 +37,32 @@ public sealed class CityRepository : ICityRepository
     {
         return _dbContext.SaveChangesAsync(cancellationToken);
     }
+
+    public Task<City?> GetByIdAsync(
+    int cityId,
+    CancellationToken cancellationToken)
+    {
+        return _dbContext.Cities
+            .FirstOrDefaultAsync(
+                city => city.Id == cityId &&
+                        !city.IsDeleted,
+                cancellationToken);
+    }
+
+    public Task<bool> ExistsWithNameAndCountryAsync(
+        string name,
+        string countryCode,
+        int excludedCityId,
+        CancellationToken cancellationToken)
+    {
+        return _dbContext.Cities
+            .AsNoTracking()
+            .AnyAsync(
+                city =>
+                    city.Id != excludedCityId &&
+                    city.Name == name &&
+                    city.CountryCode == countryCode,
+                cancellationToken);
+    }
+
 }
