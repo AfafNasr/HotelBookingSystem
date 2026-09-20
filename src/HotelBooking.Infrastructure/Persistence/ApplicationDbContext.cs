@@ -4,6 +4,7 @@ using HotelBooking.Domain.Hotels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using HotelBooking.Domain.Rooms;
 
 namespace HotelBooking.Infrastructure.Persistence;
 
@@ -15,6 +16,7 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<Hotel> Hotels => Set<Hotel>();
     public DbSet<Amenity> Amenities => Set<Amenity>();
     public DbSet<HotelAmenity> HotelAmenities =>Set<HotelAmenity>();
+    public DbSet<Room> Room => Set<Room>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options)
