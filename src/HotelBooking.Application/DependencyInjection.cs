@@ -8,6 +8,7 @@ using HotelBooking.Application.Countries.GetCountries;
 using HotelBooking.Application.HotelAmenities.AddHotelAmenity;
 using HotelBooking.Application.Hotels.CreateHotel;
 using HotelBooking.Application.Hotels.UpdateHotel;
+using HotelBooking.Application.Rooms.CreateRoom;
 using HotelBooking.Application.Users.PromoteToHotelOwner;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,6 +31,8 @@ public static class DependencyInjection
         services.AddScoped<UpdateHotelCommandHandler>();
         services.AddScoped<CreateAmenityCommandHandler>();
         services.AddScoped<AddHotelAmenityCommandHandler>();
+        services.AddScoped<CreateRoomCommandHandler>();
+
 
         return services;
     }

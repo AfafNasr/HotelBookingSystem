@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Common.Interfaces;
+using HotelBooking.Application.Rooms;
 using HotelBooking.Infrastructure.Authentication;
 using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Infrastructure.Persistence;
@@ -108,6 +109,7 @@ public static class DependencyInjection
         services.AddScoped<IHotelRepository, HotelRepository>();
         services.AddScoped<IAmenityRepository, AmenityRepository>();
         services.AddScoped< IHotelAmenityRepository, HotelAmenityRepository>();
+        services.AddScoped<IRoomRepository, RoomRepository>();
 
         return services;
     }

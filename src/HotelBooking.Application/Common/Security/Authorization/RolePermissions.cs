@@ -34,7 +34,9 @@ public static class RolePermissions
 
                 [Roles.HotelOwner] = new HashSet<string>()
                 {
-                    HotelAmenityPermissions.Manage
+                    HotelAmenityPermissions.Manage,
+
+                    RoomPermissions.Create
 
                 }
             };

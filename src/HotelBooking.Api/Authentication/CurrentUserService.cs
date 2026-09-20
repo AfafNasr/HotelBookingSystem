@@ -18,4 +18,11 @@ public sealed class CurrentUserService : ICurrentUserService
         _httpContextAccessor.HttpContext?
             .User
             .FindFirstValue(ClaimTypes.NameIdentifier);
+
+    public bool IsInRole(string role) 
+    {
+        return _httpContextAccessor.HttpContext?
+            .User
+            .IsInRole(role) == true;
+    }
 }
