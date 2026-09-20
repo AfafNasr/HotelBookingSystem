@@ -31,6 +31,10 @@ public static class ErrorResponseFactory
         {
             return controller.NotFound(response);
         }
+        if (errors.Any(error => error.Type == ErrorType.Authorization))
+        {
+            return controller.StatusCode(StatusCodes.Status403Forbidden, response);
+        }
 
         return controller.BadRequest(response);
     }

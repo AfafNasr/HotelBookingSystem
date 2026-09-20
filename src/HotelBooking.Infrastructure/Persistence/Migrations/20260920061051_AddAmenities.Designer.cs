@@ -4,6 +4,7 @@ using HotelBooking.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelBooking.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260920061051_AddAmenities")]
+    partial class AddAmenities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -184,21 +187,6 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("CK_Hotels_StarRating", "[StarRating] BETWEEN 1 AND 5");
                         });
-                });
-
-            modelBuilder.Entity("HotelBooking.Domain.Hotels.HotelAmenity", b =>
-                {
-                    b.Property<int>("HotelId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("AmenityId")
-                        .HasColumnType("int");
-
-                    b.HasKey("HotelId", "AmenityId");
-
-                    b.HasIndex("AmenityId");
-
-                    b.ToTable("HotelAmenities", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -421,21 +409,6 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("City");
-                });
-
-            modelBuilder.Entity("HotelBooking.Domain.Hotels.HotelAmenity", b =>
-                {
-                    b.HasOne("HotelBooking.Domain.Amenities.Amenity", null)
-                        .WithMany()
-                        .HasForeignKey("AmenityId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("HotelBooking.Domain.Hotels.Hotel", null)
-                        .WithMany()
-                        .HasForeignKey("HotelId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

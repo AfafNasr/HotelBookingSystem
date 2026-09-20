@@ -23,10 +23,20 @@ public static class RolePermissions
                     RoomPermissions.Update,
                     RoomPermissions.Delete,
 
-                    UserPermissions.PromoteToHotelOwner
+                    UserPermissions.PromoteToHotelOwner ,
+
+                    AmenityPermissions.Create,
+                    AmenityPermissions.Update,
+                    AmenityPermissions.Delete
                 },
 
-                [Roles.Customer] = new HashSet<string>()
+                [Roles.Customer] = new HashSet<string>() { },
+
+                [Roles.HotelOwner] = new HashSet<string>()
+                {
+                    HotelAmenityPermissions.Manage
+
+                }
             };
 
     public static bool HasPermission(
