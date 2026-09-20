@@ -48,4 +48,24 @@ public sealed class Hotel
         CreatedAt = createdAt;
         IsDeleted = false;
     }
+
+    public void Update(
+    string name,
+    int cityId,
+    string ownerId,
+    int starRating,
+    HotelCategory category,
+    decimal? latitude,
+    decimal? longitude,
+    DateTime updatedAt)
+    {
+        Name = name.Trim();
+        CityId = cityId;
+        OwnerId = ownerId;
+        StarRating = starRating;
+        Category = category;
+        Latitude = latitude;
+        Longitude = longitude;
+        UpdatedAt = updatedAt;
+    }
 }

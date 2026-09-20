@@ -1,5 +1,6 @@
 ﻿using HotelBooking.Application.Common.Interfaces;
 using HotelBooking.Domain.Hotels;
+using Microsoft.EntityFrameworkCore;
 
 namespace HotelBooking.Infrastructure.Persistence.Repositories;
 
@@ -10,6 +11,18 @@ public sealed class HotelRepository : IHotelRepository
     public HotelRepository(ApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
+    }
+
+    public Task<Hotel?> GetByIdAsync(
+    int hotelId,
+    CancellationToken cancellationToken)
+    {
+        return _dbContext.Hotels
+            .SingleOrDefaultAsync(
+                hotel =>
+                    hotel.Id == hotelId &&
+                    !hotel.IsDeleted,
+                cancellationToken);
     }
 
     public void Add(Hotel hotel)
