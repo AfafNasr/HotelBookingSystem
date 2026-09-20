@@ -105,6 +105,7 @@ public static class DependencyInjection
     });
         services.AddScoped<ICityRepository, CityRepository>();
         services.AddScoped<ICountryRepository, CountryRepository>();
+        services.AddScoped<IHotelRepository, HotelRepository>();
 
         return services;
     }

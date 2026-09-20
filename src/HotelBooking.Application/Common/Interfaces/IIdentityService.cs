@@ -17,4 +17,8 @@ public interface IIdentityService
 
     Task<PromoteToHotelOwnerResult> PromoteToHotelOwnerAsync(
     string userId);
+
+    Task<bool> IsUserInRoleAsync(
+    string userId,
+    string role);
 }

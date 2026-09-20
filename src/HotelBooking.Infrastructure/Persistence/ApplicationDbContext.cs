@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using HotelBooking.Domain.Hotels;
 
 namespace HotelBooking.Infrastructure.Persistence;
 
@@ -10,6 +11,7 @@ public class ApplicationDbContext : IdentityDbContext
 
     public DbSet<Country> Countries => Set<Country>();
     public DbSet<City> Cities => Set<City>();
+    public DbSet<Hotel> Hotels => Set<Hotel>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options)
