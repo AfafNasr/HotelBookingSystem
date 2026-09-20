@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using HotelBooking.Application.Amenities.CreateAmenity;
 using HotelBooking.Application.Authentication.Login;
 using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Cities.CreateCity;
@@ -26,6 +27,7 @@ public static class DependencyInjection
         services.AddScoped<PromoteToHotelOwnerHandler>();
         services.AddScoped<CreateHotelCommandHandler>();
         services.AddScoped<UpdateHotelCommandHandler>();
+        services.AddScoped<CreateAmenityCommandHandler>();
 
         return services;
     }
