@@ -13,6 +13,16 @@ public sealed class AmenityRepository : IAmenityRepository
     {
         _dbContext = dbContext;
     }
+    public Task<bool> ExistsByIdAsync(
+     int amenityId,
+     CancellationToken cancellationToken)
+    {
+        return _dbContext.Amenities.AnyAsync(
+            amenity =>
+                amenity.Id == amenityId &&
+                !amenity.IsDeleted,
+            cancellationToken);
+    }
 
     public Task<bool> ExistsByNameAsync(
         string name,

@@ -10,6 +10,7 @@ public static class Permissions
         .. CityPermissions.All,
         .. RoomPermissions.All,
         ..UserPermissions.All,
-        ..AmenityPermissions.All
+        ..AmenityPermissions.All,
+        ..HotelAmenityPermissions.All
     ];
 }

@@ -30,7 +30,13 @@ public static class RolePermissions
                     AmenityPermissions.Delete
                 },
 
-                [Roles.Customer] = new HashSet<string>()
+                [Roles.Customer] = new HashSet<string>() { },
+
+                [Roles.HotelOwner] = new HashSet<string>()
+                {
+                    HotelAmenityPermissions.Manage
+
+                }
             };
 
     public static bool HasPermission(

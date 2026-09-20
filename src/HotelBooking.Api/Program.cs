@@ -1,6 +1,8 @@
+using HotelBooking.Api.Authentication;
 using HotelBooking.Api.Authorization;
 using HotelBooking.Api.ErrorHandling;
 using HotelBooking.Application;
+using HotelBooking.Application.Common.Interfaces;
 using HotelBooking.Infrastructure;
 using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Infrastructure.Persistence;
@@ -15,11 +17,14 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddPermissionAuthorization();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+
+builder.Services.AddScoped< ICurrentUserService, CurrentUserService>();
 
 var app = builder.Build();
 

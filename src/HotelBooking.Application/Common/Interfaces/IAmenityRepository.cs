@@ -4,6 +4,10 @@ namespace HotelBooking.Application.Common.Interfaces;
 
 public interface IAmenityRepository
 {
+    Task<bool> ExistsByIdAsync(
+    int amenityId,
+    CancellationToken cancellationToken);
+
     Task<bool> ExistsByNameAsync(
         string name,
         CancellationToken cancellationToken);
