@@ -104,6 +104,8 @@ public sealed class UpdateHotelCommandHandler
             command.OwnerId,
             command.StarRating,
             command.Category,
+            command.Description,
+            command.Address,
             command.Latitude,
             command.Longitude,
             DateTime.UtcNow);

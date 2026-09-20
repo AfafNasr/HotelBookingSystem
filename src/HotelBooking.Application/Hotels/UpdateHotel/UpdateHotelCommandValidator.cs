@@ -25,6 +25,11 @@ public sealed class UpdateHotelCommandValidator
 
         RuleFor(command => command.Category)
             .IsInEnum();
+        RuleFor(x => x.Description)
+            .MaximumLength(2000);
+
+        RuleFor(x => x.Address)
+            .MaximumLength(500);
 
         RuleFor(command => command.Latitude)
             .InclusiveBetween(-90m, 90m)

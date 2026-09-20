@@ -23,14 +23,16 @@ public sealed class UpdateHotelCommandHandlerTests
     public async Task HandleAsync_WhenCommandIsInvalid_ShouldReturnValidationErrorsWithoutAccessingDependencies()
     {
         var command = new UpdateHotelCommand(
-            0,
-            "",
-            0,
-            "",
-            6,
-            (HotelCategory)999,
-            100m,
-            200m);
+    0,
+    "",
+    0,
+    "",
+    6,
+    (HotelCategory)999,
+    new string('A', 2001),
+    new string('A', 501),
+    100m,
+    200m);
 
         var handler = CreateHandler();
 
@@ -204,6 +206,74 @@ public sealed class UpdateHotelCommandHandlerTests
     }
 
     [Fact]
+    public async Task HandleAsync_WhenOptionalProfileDetailsAreNull_ShouldClearProfileDetails()
+    {
+        var hotel = CreateExistingHotel();
+
+        hotel.CompleteProfile(
+            "Existing description",
+            "Existing address",
+            32.2211m,
+            35.2544m,
+            DateTime.UtcNow.AddDays(-1));
+
+        var command = CreateValidCommand() with
+        {
+            Description = null,
+            Address = null,
+            Latitude = null,
+            Longitude = null
+        };
+
+        var city = new City(
+            "Ramallah",
+            "PS",
+            null,
+            DateTime.UtcNow);
+
+        _hotelRepositoryMock
+            .Setup(repository => repository.GetByIdAsync(
+                command.HotelId,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(hotel);
+
+        _cityRepositoryMock
+            .Setup(repository => repository.GetByIdAsync(
+                command.CityId,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(city);
+
+        _identityServiceMock
+            .Setup(service => service.IsUserInRoleAsync(
+                command.OwnerId,
+                Roles.HotelOwner))
+            .ReturnsAsync(true);
+
+        _hotelRepositoryMock
+            .Setup(repository => repository.SaveChangesAsync(
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        var handler = CreateHandler();
+
+        var result = await handler.HandleAsync(
+            command,
+            CancellationToken.None);
+
+        Assert.True(result.Succeeded);
+        Assert.Empty(result.Errors);
+
+        Assert.Null(hotel.Description);
+        Assert.Null(hotel.Address);
+        Assert.Null(hotel.Latitude);
+        Assert.Null(hotel.Longitude);
+
+        _hotelRepositoryMock.Verify(
+            repository => repository.SaveChangesAsync(
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+    [Fact]
     public async Task HandleAsync_WhenCommandIsValid_ShouldUpdateHotel()
     {
         var command = CreateValidCommand();
@@ -252,6 +322,13 @@ public sealed class UpdateHotelCommandHandlerTests
         Assert.Equal(command.OwnerId, hotel.OwnerId);
         Assert.Equal(4, hotel.StarRating);
         Assert.Equal(HotelCategory.Boutique, hotel.Category);
+        Assert.Equal(
+    command.Description,
+    hotel.Description);
+
+        Assert.Equal(
+            command.Address,
+            hotel.Address);
         Assert.Equal(32.2211m, hotel.Latitude);
         Assert.Equal(35.2544m, hotel.Longitude);
         Assert.NotNull(hotel.UpdatedAt);
@@ -280,6 +357,8 @@ public sealed class UpdateHotelCommandHandlerTests
             "new-hotel-owner-id",
             4,
             HotelCategory.Boutique,
+            "Updated hotel description",
+            "Updated hotel address",
             32.2211m,
             35.2544m);
     }

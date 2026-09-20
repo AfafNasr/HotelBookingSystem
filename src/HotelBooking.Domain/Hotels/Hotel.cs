@@ -55,6 +55,8 @@ public sealed class Hotel
     string ownerId,
     int starRating,
     HotelCategory category,
+    string? description,
+    string? address,
     decimal? latitude,
     decimal? longitude,
     DateTime updatedAt)
@@ -64,6 +66,13 @@ public sealed class Hotel
         OwnerId = ownerId;
         StarRating = starRating;
         Category = category;
+        Description = string.IsNullOrWhiteSpace(description)
+        ? null
+        : description.Trim();
+
+        Address = string.IsNullOrWhiteSpace(address)
+            ? null
+            : address.Trim();
         Latitude = latitude;
         Longitude = longitude;
         UpdatedAt = updatedAt;
