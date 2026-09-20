@@ -68,4 +68,24 @@ public sealed class Hotel
         Longitude = longitude;
         UpdatedAt = updatedAt;
     }
+
+    public void CompleteProfile(
+    string? description,
+    string? address,
+    decimal? latitude,
+    decimal? longitude,
+    DateTime updatedAt)
+    {
+        Description = string.IsNullOrWhiteSpace(description)
+            ? null
+            : description.Trim();
+
+        Address = string.IsNullOrWhiteSpace(address)
+            ? null
+            : address.Trim();
+
+        Latitude = latitude;
+        Longitude = longitude;
+        UpdatedAt = updatedAt;
+    }
 }

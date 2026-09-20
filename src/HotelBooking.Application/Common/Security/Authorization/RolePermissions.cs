@@ -36,7 +36,9 @@ public static class RolePermissions
                 {
                     HotelAmenityPermissions.Manage,
 
-                    RoomPermissions.Create
+                    RoomPermissions.Create,
+                    HotelPermissions.CompleteProfile
+
 
                 }
             };

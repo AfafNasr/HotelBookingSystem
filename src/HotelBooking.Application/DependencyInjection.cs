@@ -6,6 +6,7 @@ using HotelBooking.Application.Cities.CreateCity;
 using HotelBooking.Application.Cities.UpdateCity;
 using HotelBooking.Application.Countries.GetCountries;
 using HotelBooking.Application.HotelAmenities.AddHotelAmenity;
+using HotelBooking.Application.Hotels.CompleteHotelProfile;
 using HotelBooking.Application.Hotels.CreateHotel;
 using HotelBooking.Application.Hotels.UpdateHotel;
 using HotelBooking.Application.Rooms.CreateRoom;
@@ -32,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<CreateAmenityCommandHandler>();
         services.AddScoped<AddHotelAmenityCommandHandler>();
         services.AddScoped<CreateRoomCommandHandler>();
+        services.AddScoped<CompleteHotelProfileCommandHandler>();
 
 
         return services;
