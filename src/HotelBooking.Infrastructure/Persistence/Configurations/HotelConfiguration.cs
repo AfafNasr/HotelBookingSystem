@@ -1,6 +1,7 @@
 ﻿using HotelBooking.Domain.Hotels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.AspNetCore.Identity;
 
 namespace HotelBooking.Infrastructure.Persistence.Configurations;
 
@@ -70,5 +71,10 @@ public sealed class HotelConfiguration : IEntityTypeConfiguration<Hotel>
             .WithMany()
             .HasForeignKey(hotel => hotel.CityId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne<IdentityUser>()
+    .WithMany()
+    .HasForeignKey(hotel => hotel.OwnerId)
+    .OnDelete(DeleteBehavior.Restrict);
     }
 }

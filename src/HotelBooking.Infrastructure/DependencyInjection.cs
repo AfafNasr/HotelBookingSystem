@@ -136,6 +136,10 @@ public static class DependencyInjection
         services.AddScoped< IHotelAmenityRepository, HotelAmenityRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();
         services.AddScoped<IHotelImageRepository, HotelImageRepository>();
+        services.AddScoped<IRoomImageRepository, RoomImageRepository>();
+        services.AddScoped<IDealRepository, DealRepository>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<IBookingConcurrencyManager, BookingConcurrencyManager>();
 
         return services;
     }

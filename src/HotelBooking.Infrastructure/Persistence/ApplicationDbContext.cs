@@ -1,10 +1,12 @@
 ﻿using HotelBooking.Domain.Amenities;
+using HotelBooking.Domain.Bookings;
 using HotelBooking.Domain.Cities;
+using HotelBooking.Domain.Deals;
 using HotelBooking.Domain.Hotels;
+using HotelBooking.Domain.Rooms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using HotelBooking.Domain.Rooms;
 
 namespace HotelBooking.Infrastructure.Persistence;
 
@@ -18,7 +20,10 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<HotelAmenity> HotelAmenities =>Set<HotelAmenity>();
     public DbSet<Room> Room => Set<Room>();
     public DbSet<HotelImage> HotelImages => Set<HotelImage>();
-
+    public DbSet<RoomImage> RoomImages => Set<RoomImage>();
+    public DbSet<Deal> Deals => Set<Deal>();
+    public DbSet<Booking> Bookings => Set<Booking>();
+    public DbSet<BookingRoom> BookingRooms => Set<BookingRoom>();
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options)
         : base(options)

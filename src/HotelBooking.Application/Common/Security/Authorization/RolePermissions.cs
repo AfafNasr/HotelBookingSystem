@@ -30,7 +30,10 @@ public static class RolePermissions
                     AmenityPermissions.Delete
                 },
 
-                [Roles.Customer] = new HashSet<string>() { },
+                [Roles.Customer] = new HashSet<string>()
+                {
+                    BookingPermissions.Create
+                },
 
                 [Roles.HotelOwner] = new HashSet<string>()
                 {
@@ -38,7 +41,9 @@ public static class RolePermissions
 
                     RoomPermissions.Create,
                     HotelPermissions.CompleteProfile,
-                    HotelPermissions.UploadImage
+                    HotelPermissions.UploadImage,
+                    RoomPermissions.UploadImage,
+                    DealPermissions.Create
 
 
                 }

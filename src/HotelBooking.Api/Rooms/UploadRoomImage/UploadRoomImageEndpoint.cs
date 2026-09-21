@@ -46,9 +46,11 @@ public sealed class UploadRoomImageEndpoint : ControllerBase
                 result.Errors);
         }
 
-        return Created(
-            $"/api/rooms/{roomId}/images/{result.ImageId}",
-            new UploadRoomImageResponse(
-                result.ImageId!.Value));
+        var response = new UploadRoomImageResponse(
+    result.ImageId!.Value);
+
+        return StatusCode(
+            StatusCodes.Status201Created,
+            response);
     }
 }
