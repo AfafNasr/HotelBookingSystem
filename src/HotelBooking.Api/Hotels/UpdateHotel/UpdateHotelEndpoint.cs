@@ -32,6 +32,8 @@ public sealed class UpdateHotelEndpoint : ControllerBase
             request.OwnerId,
             request.StarRating,
             request.Category,
+            request.Description,
+            request.Address,
             request.Latitude,
             request.Longitude);
 

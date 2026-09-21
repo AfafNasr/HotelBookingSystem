@@ -8,5 +8,7 @@ public sealed record UpdateHotelRequest(
     string OwnerId,
     int StarRating,
     HotelCategory Category,
+    string? Description,
+    string? Address,
     decimal? Latitude,
     decimal? Longitude);

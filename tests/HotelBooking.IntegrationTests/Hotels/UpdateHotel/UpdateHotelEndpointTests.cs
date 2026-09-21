@@ -132,13 +132,15 @@ public sealed class UpdateHotelEndpointTests
             password);
 
         var request = new UpdateHotelRequest(
-            "Updated Hotel",
-            newCityId,
-            newOwnerId,
-            4,
-            HotelCategory.Boutique,
-            32.2211m,
-            35.2544m);
+     "Updated Hotel",
+     newCityId,
+     newOwnerId,
+     4,
+     HotelCategory.Boutique,
+     "Updated hotel description",
+     "Updated hotel address",
+     32.2211m,
+     35.2544m);
 
         var response = await client.PutAsJsonAsync(
             $"/api/admin/hotels/{hotelId}",
@@ -166,7 +168,13 @@ public sealed class UpdateHotelEndpointTests
         Assert.Equal(
             HotelCategory.Boutique,
             updatedHotel.Category);
+        Assert.Equal(
+    "Updated hotel description",
+    updatedHotel.Description);
 
+        Assert.Equal(
+            "Updated hotel address",
+            updatedHotel.Address);
         Assert.Equal(32.2211m, updatedHotel.Latitude);
         Assert.Equal(35.2544m, updatedHotel.Longitude);
 
@@ -350,13 +358,15 @@ public sealed class UpdateHotelEndpointTests
             password);
 
         var request = new UpdateHotelRequest(
-            "Updated Hotel",
-            999999,
-            ownerId,
-            4,
-            HotelCategory.Boutique,
-            32.2211m,
-            35.2544m);
+    "Updated Hotel",
+    999999,
+    ownerId,
+    4,
+    HotelCategory.Boutique,
+    "Updated hotel description",
+    "Updated hotel address",
+    32.2211m,
+    35.2544m);
 
         var response = await client.PutAsJsonAsync(
             $"/api/admin/hotels/{hotelId}",
@@ -471,13 +481,15 @@ public sealed class UpdateHotelEndpointTests
             password);
 
         var request = new UpdateHotelRequest(
-            "Updated Hotel",
-            cityId,
-            customerId,
-            4,
-            HotelCategory.Boutique,
-            32.2211m,
-            35.2544m);
+     "Updated Hotel",
+     cityId,
+     customerId,
+     4,
+     HotelCategory.Boutique,
+     "Updated hotel description",
+     "Updated hotel address",
+     32.2211m,
+     35.2544m);
 
         var response = await client.PutAsJsonAsync(
             $"/api/admin/hotels/{hotelId}",
@@ -496,6 +508,8 @@ public sealed class UpdateHotelEndpointTests
             "hotel-owner-id",
             4,
             HotelCategory.Boutique,
+            "Updated hotel description",
+            "Updated hotel address",
             32.2211m,
             35.2544m);
     }

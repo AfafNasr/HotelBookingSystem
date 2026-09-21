@@ -177,6 +177,8 @@ public sealed class UpdateHotelCommandValidatorTests
             "hotel-owner-id",
             5,
             HotelCategory.Luxury,
+            "A luxury hotel in Nablus.",
+            "Rafidia, Nablus",
             32.2211m,
             35.2544m);
     }
