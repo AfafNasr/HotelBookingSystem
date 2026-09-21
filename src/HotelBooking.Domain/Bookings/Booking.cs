@@ -78,4 +78,22 @@ public sealed class Booking
             roomId,
             originalPricePerNight));
     }
+
+    public void Expire(DateTime expiredAt)
+    {
+        if (Status != BookingStatus.PendingPayment)
+        {
+            throw new InvalidOperationException(
+                "Only a pending payment booking can expire.");
+        }
+
+        if (ExpiresAt is null || ExpiresAt > expiredAt)
+        {
+            throw new InvalidOperationException(
+                "The booking payment hold has not expired yet.");
+        }
+
+        Status = BookingStatus.Expired;
+        UpdatedAt = expiredAt;
+    }
 }

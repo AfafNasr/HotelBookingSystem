@@ -5,6 +5,7 @@ using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Common.Interfaces;
 using HotelBooking.Application.Rooms;
 using HotelBooking.Infrastructure.Authentication;
+using HotelBooking.Infrastructure.BackgroundJobs;
 using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Infrastructure.Persistence;
 using HotelBooking.Infrastructure.Persistence.Repositories;
@@ -140,6 +141,7 @@ public static class DependencyInjection
         services.AddScoped<IDealRepository, DealRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IBookingConcurrencyManager, BookingConcurrencyManager>();
+        services.AddHostedService<BookingExpirationWorker>();
 
         return services;
     }

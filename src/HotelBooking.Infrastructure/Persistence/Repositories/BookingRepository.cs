@@ -40,6 +40,17 @@ public sealed class BookingRepository : IBookingRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<Booking>> GetExpiredPendingBookingsAsync(
+    DateTime now,
+    CancellationToken cancellationToken)
+    {
+        return await _dbContext.Bookings
+            .Where(booking =>
+                booking.Status == BookingStatus.PendingPayment &&
+                booking.ExpiresAt <= now)
+            .ToListAsync(cancellationToken);
+    }
+
     public void Add(Booking booking)
     {
         _dbContext.Bookings.Add(booking);

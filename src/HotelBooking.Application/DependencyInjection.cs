@@ -2,8 +2,9 @@
 using HotelBooking.Application.Amenities.CreateAmenity;
 using HotelBooking.Application.Authentication.Login;
 using HotelBooking.Application.Authentication.Register;
-using HotelBooking.Application.Bookings.Pricing;
 using HotelBooking.Application.Bookings.CreateBooking;
+using HotelBooking.Application.Bookings.Expiration;
+using HotelBooking.Application.Bookings.Pricing;
 using HotelBooking.Application.Cities.CreateCity;
 using HotelBooking.Application.Cities.UpdateCity;
 using HotelBooking.Application.Countries.GetCountries;
@@ -28,6 +29,7 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<RegisterCommand>();
 
         services.AddScoped<BookingPricingCalculator>();
+        services.AddScoped<ExpirePendingBookingsService>();
 
         services.AddScoped<RegisterCommandHandler>();
         services.AddScoped<LoginCommandHandler>();

@@ -11,6 +11,10 @@ public interface IBookingRepository
         DateTime now,
         CancellationToken cancellationToken);
 
+    Task<IReadOnlyCollection<Booking>> GetExpiredPendingBookingsAsync(
+    DateTime now,
+    CancellationToken cancellationToken);
+
     void Add(Booking booking);
 
     Task<int> SaveChangesAsync(
