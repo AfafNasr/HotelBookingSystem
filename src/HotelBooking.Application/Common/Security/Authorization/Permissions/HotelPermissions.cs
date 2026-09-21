@@ -6,12 +6,14 @@ public static class HotelPermissions
     public const string Update = "Hotels.Update";
     public const string Delete = "Hotels.Delete";
     public const string CompleteProfile = "Hotels.CompleteProfile";
+    public const string UploadImage = "Hotels.UploadImage";
 
     public static readonly IReadOnlyCollection<string> All =
     [
         Create,
         Update,
         Delete,
-        CompleteProfile
+        CompleteProfile,
+        UploadImage
     ];
 }

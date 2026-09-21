@@ -1,4 +1,6 @@
-﻿using FluentValidation;
+﻿using Azure.Identity;
+using Azure.Storage.Blobs;
+using FluentValidation;
 using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Common.Interfaces;
 using HotelBooking.Application.Rooms;
@@ -6,11 +8,13 @@ using HotelBooking.Infrastructure.Authentication;
 using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Infrastructure.Persistence;
 using HotelBooking.Infrastructure.Persistence.Repositories;
+using HotelBooking.Infrastructure.Storage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
@@ -104,12 +108,34 @@ public static class DependencyInjection
             RoleClaimType = ClaimTypes.Role
         };
     });
+
+        services.Configure<AzureStorageOptions>(
+    configuration.GetSection(AzureStorageOptions.SectionName));
+
+        services.AddSingleton(sp =>
+        {
+            var options = sp
+                .GetRequiredService<IOptions<AzureStorageOptions>>()
+                .Value;
+
+            var serviceUri = new Uri(
+                $"https://{options.AccountName}.blob.core.windows.net");
+
+            return new BlobServiceClient(
+                serviceUri,
+                new DefaultAzureCredential());
+        });
+
+        services.AddScoped<
+            IImageStorageService,
+            AzureBlobImageStorageService>();
         services.AddScoped<ICityRepository, CityRepository>();
         services.AddScoped<ICountryRepository, CountryRepository>();
         services.AddScoped<IHotelRepository, HotelRepository>();
         services.AddScoped<IAmenityRepository, AmenityRepository>();
         services.AddScoped< IHotelAmenityRepository, HotelAmenityRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();
+        services.AddScoped<IHotelImageRepository, HotelImageRepository>();
 
         return services;
     }

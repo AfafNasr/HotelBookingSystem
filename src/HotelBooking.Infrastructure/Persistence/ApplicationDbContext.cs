@@ -17,6 +17,7 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<Amenity> Amenities => Set<Amenity>();
     public DbSet<HotelAmenity> HotelAmenities =>Set<HotelAmenity>();
     public DbSet<Room> Room => Set<Room>();
+    public DbSet<HotelImage> HotelImages => Set<HotelImage>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options)
