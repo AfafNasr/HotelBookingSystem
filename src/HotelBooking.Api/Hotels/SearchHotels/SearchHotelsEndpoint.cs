@@ -22,14 +22,20 @@ public sealed class SearchHotelsEndpoint : ControllerBase
         CancellationToken cancellationToken)
     {
         var query = new SearchHotelsQuery(
-            request.Destination,
-            request.CheckInDate,
-            request.CheckOutDate,
-            request.Adults,
-            request.Children,
-            request.Rooms,
-            request.Page,
-            request.PageSize);
+    request.Destination,
+    request.CheckInDate,
+    request.CheckOutDate,
+    request.Adults,
+    request.Children,
+    request.Rooms,
+    request.MinPrice,
+    request.MaxPrice,
+    request.StarRating,
+    request.Category,
+    request.AmenityIds,
+    request.SortBy,
+    request.Page,
+    request.PageSize);
 
         var result = await _handler.HandleAsync(
             query,

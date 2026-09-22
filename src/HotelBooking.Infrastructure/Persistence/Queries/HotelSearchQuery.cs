@@ -59,10 +59,71 @@ public sealed class HotelSearchQuery : IHotelSearchQuery
             .Where(room => room.HotelId == hotel.Id)
             .Sum(room => room.ChildrenCapacity) >= query.Children);
 
+        if (query.StarRating.HasValue)
+        {
+            hotelsQuery = hotelsQuery.Where(
+                hotel => hotel.StarRating == query.StarRating.Value);
+        }
 
-        var items = await hotelsQuery
-    .OrderBy(hotel => hotel.Name)
-    .ThenBy(hotel => hotel.Id)
+        if (query.Category.HasValue)
+        {
+            hotelsQuery = hotelsQuery.Where(
+                hotel => hotel.Category == query.Category.Value);
+        }
+        if (query.MinPrice.HasValue)
+        {
+            hotelsQuery = hotelsQuery.Where(hotel =>
+                availableRoomsQuery
+                    .Where(room => room.HotelId == hotel.Id)
+                    .Min(room => room.PricePerNight) >= query.MinPrice.Value);
+        }
+
+        if (query.MaxPrice.HasValue)
+        {
+            hotelsQuery = hotelsQuery.Where(hotel =>
+                availableRoomsQuery
+                    .Where(room => room.HotelId == hotel.Id)
+                    .Min(room => room.PricePerNight) <= query.MaxPrice.Value);
+        }
+
+        if (query.AmenityIds is { Count: > 0 })
+        {
+            var amenityIds = query.AmenityIds
+                .Distinct()
+                .ToArray();
+
+            hotelsQuery = hotelsQuery.Where(hotel =>
+                _dbContext.HotelAmenities
+                    .Count(hotelAmenity =>
+                        hotelAmenity.HotelId == hotel.Id &&
+                        amenityIds.Contains(hotelAmenity.AmenityId))
+                == amenityIds.Length);
+        }
+
+        var orderedHotelsQuery = query.SortBy switch
+        {
+            HotelSearchSort.PriceLowToHigh => hotelsQuery
+                .OrderBy(hotel => availableRoomsQuery
+                    .Where(room => room.HotelId == hotel.Id)
+                    .Min(room => room.PricePerNight))
+                .ThenBy(hotel => hotel.Id),
+
+            HotelSearchSort.PriceHighToLow => hotelsQuery
+                .OrderByDescending(hotel => availableRoomsQuery
+                    .Where(room => room.HotelId == hotel.Id)
+                    .Min(room => room.PricePerNight))
+                .ThenBy(hotel => hotel.Id),
+
+            HotelSearchSort.StarRatingHighToLow => hotelsQuery
+                .OrderByDescending(hotel => hotel.StarRating)
+                .ThenBy(hotel => hotel.Id),
+
+            _ => hotelsQuery
+                .OrderBy(hotel => hotel.Name)
+                .ThenBy(hotel => hotel.Id)
+        };
+
+        var items = await orderedHotelsQuery
     .Skip((query.Page - 1) * query.PageSize)
     .Take(query.PageSize + 1)
     .Select(hotel => new SearchHotelItem(
