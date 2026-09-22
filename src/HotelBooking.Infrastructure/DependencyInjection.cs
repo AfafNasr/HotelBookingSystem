@@ -3,12 +3,14 @@ using Azure.Storage.Blobs;
 using FluentValidation;
 using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Common.Interfaces;
+using HotelBooking.Application.Hotels.SearchHotels;
 using HotelBooking.Application.Rooms;
 using HotelBooking.Infrastructure.Authentication;
 using HotelBooking.Infrastructure.BackgroundJobs;
 using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Infrastructure.Payments.Stripe;
 using HotelBooking.Infrastructure.Persistence;
+using HotelBooking.Infrastructure.Persistence.Queries;
 using HotelBooking.Infrastructure.Persistence.Repositories;
 using HotelBooking.Infrastructure.Storage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -150,6 +152,7 @@ public static class DependencyInjection
         services.AddScoped<IPaymentRepository, PaymentRepository>();
         services.AddScoped<IStripeWebhookService, StripeWebhookService>();
         services.AddScoped<IRefundRepository, RefundRepository>();
+        services.AddScoped<IHotelSearchQuery, HotelSearchQuery>();
 
         return services;
     }
