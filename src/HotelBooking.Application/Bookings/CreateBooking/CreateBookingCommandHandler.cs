@@ -146,19 +146,6 @@ public sealed class CreateBookingCommandHandler
         // The hold duration will become an explicit booking policy/configuration.
         var expiresAt = now.AddMinutes(15);
 
-        var booking = new Booking(
-            userId,
-            command.HotelId,
-            command.CheckInDate,
-            command.CheckOutDate,
-            expiresAt,
-            command.GuestFullName,
-            command.GuestEmail,
-            command.GuestPhoneNumber,
-            command.SpecialRequests,
-            totalAmount,
-            now);
-
         return await _bookingConcurrencyManager.ExecuteWithRoomLocksAsync(
        command.RoomIds,
        async ct =>

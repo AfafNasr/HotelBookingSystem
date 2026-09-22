@@ -7,6 +7,7 @@ using HotelBooking.Application.Rooms;
 using HotelBooking.Infrastructure.Authentication;
 using HotelBooking.Infrastructure.BackgroundJobs;
 using HotelBooking.Infrastructure.Identity;
+using HotelBooking.Infrastructure.Payments.Stripe;
 using HotelBooking.Infrastructure.Persistence;
 using HotelBooking.Infrastructure.Persistence.Repositories;
 using HotelBooking.Infrastructure.Storage;
@@ -127,6 +128,9 @@ public static class DependencyInjection
                 new DefaultAzureCredential());
         });
 
+        services.Configure<StripeOptions>(
+    configuration.GetSection(StripeOptions.SectionName));
+
         services.AddScoped<
             IImageStorageService,
             AzureBlobImageStorageService>();
@@ -142,6 +146,10 @@ public static class DependencyInjection
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IBookingConcurrencyManager, BookingConcurrencyManager>();
         services.AddHostedService<BookingExpirationWorker>();
+        services.AddScoped<IPaymentGateway, StripePaymentGateway>();
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<IStripeWebhookService, StripeWebhookService>();
+        services.AddScoped<IRefundRepository, RefundRepository>();
 
         return services;
     }

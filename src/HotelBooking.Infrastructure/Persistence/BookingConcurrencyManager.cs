@@ -1,5 +1,4 @@
 ﻿using HotelBooking.Application.Common.Interfaces;
-using HotelBooking.Domain.Rooms;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelBooking.Infrastructure.Persistence;
@@ -53,6 +52,43 @@ public sealed class BookingConcurrencyManager
                 throw new InvalidOperationException(
                     $"Room {roomId} does not exist.");
             }
+        }
+
+        var result = await operation(cancellationToken);
+
+        await transaction.CommitAsync(cancellationToken);
+
+        return result;
+    }
+
+    public async Task<T> ExecuteWithBookingLockAsync<T>(
+    int bookingId,
+    Func<CancellationToken, Task<T>> operation,
+    CancellationToken cancellationToken)
+    {
+        if (bookingId <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(bookingId));
+        }
+
+        await using var transaction =
+            await _dbContext.Database.BeginTransactionAsync(
+                cancellationToken);
+
+        var lockedBooking = await _dbContext.Bookings
+            .FromSqlInterpolated(
+                $"""
+            SELECT *
+            FROM [Bookings] WITH (UPDLOCK, HOLDLOCK)
+            WHERE [Id] = {bookingId}
+            """)
+            .AsNoTracking()
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (lockedBooking is null)
+        {
+            throw new InvalidOperationException(
+                $"Booking {bookingId} does not exist.");
         }
 
         var result = await operation(cancellationToken);

@@ -4,6 +4,7 @@ using HotelBooking.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelBooking.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260921180921_AddPayments")]
+    partial class AddPayments
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -422,54 +425,6 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("HotelBooking.Domain.Payments.Refund", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
-
-                    b.Property<int>("PaymentId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ProviderRefundId")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PaymentId")
-                        .IsUnique();
-
-                    b.HasIndex("ProviderRefundId")
-                        .IsUnique()
-                        .HasFilter("[ProviderRefundId] IS NOT NULL");
-
-                    b.ToTable("Refunds", null, t =>
-                        {
-                            t.HasCheckConstraint("CK_Refunds_Amount", "[Amount] > 0");
-                        });
-                });
-
             modelBuilder.Entity("HotelBooking.Domain.Rooms.Room", b =>
                 {
                     b.Property<int>("Id")
@@ -867,15 +822,6 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
                     b.HasOne("HotelBooking.Domain.Bookings.Booking", null)
                         .WithOne()
                         .HasForeignKey("HotelBooking.Domain.Payments.Payment", "BookingId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("HotelBooking.Domain.Payments.Refund", b =>
-                {
-                    b.HasOne("HotelBooking.Domain.Payments.Payment", null)
-                        .WithOne()
-                        .HasForeignKey("HotelBooking.Domain.Payments.Refund", "PaymentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

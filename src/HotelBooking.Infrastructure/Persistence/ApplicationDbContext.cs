@@ -3,6 +3,7 @@ using HotelBooking.Domain.Bookings;
 using HotelBooking.Domain.Cities;
 using HotelBooking.Domain.Deals;
 using HotelBooking.Domain.Hotels;
+using HotelBooking.Domain.Payments;
 using HotelBooking.Domain.Rooms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -24,6 +25,9 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<Deal> Deals => Set<Deal>();
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<BookingRoom> BookingRooms => Set<BookingRoom>();
+    public DbSet<Payment> Payments => Set<Payment>();
+
+    public DbSet<Refund> Refunds => Set<Refund>();
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options)
         : base(options)

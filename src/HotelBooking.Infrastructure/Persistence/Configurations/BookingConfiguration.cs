@@ -2,7 +2,6 @@
 using HotelBooking.Domain.Hotels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using static System.Net.Mime.MediaTypeNames;
 using Microsoft.AspNetCore.Identity;
 
 namespace HotelBooking.Infrastructure.Persistence.Configurations;

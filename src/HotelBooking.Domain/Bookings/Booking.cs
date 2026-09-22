@@ -96,4 +96,38 @@ public sealed class Booking
         Status = BookingStatus.Expired;
         UpdatedAt = expiredAt;
     }
+
+    public void Confirm(
+    string confirmationNumber,
+    DateTime confirmedAt)
+    {
+        if (Status == BookingStatus.Confirmed)
+        {
+            return;
+        }
+
+        if (Status != BookingStatus.PendingPayment)
+        {
+            throw new InvalidOperationException(
+                "Only a pending payment booking can be confirmed.");
+        }
+
+        if (ExpiresAt is null || ExpiresAt <= confirmedAt)
+        {
+            throw new InvalidOperationException(
+                "An expired booking payment hold cannot be confirmed.");
+        }
+
+        if (string.IsNullOrWhiteSpace(confirmationNumber))
+        {
+            throw new ArgumentException(
+                "Confirmation number is required.",
+                nameof(confirmationNumber));
+        }
+
+        ConfirmationNumber = confirmationNumber.Trim();
+        Status = BookingStatus.Confirmed;
+        ExpiresAt = null;
+        UpdatedAt = confirmedAt;
+    }
 }

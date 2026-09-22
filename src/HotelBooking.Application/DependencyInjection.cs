@@ -14,6 +14,8 @@ using HotelBooking.Application.Hotels.CompleteHotelProfile;
 using HotelBooking.Application.Hotels.CreateHotel;
 using HotelBooking.Application.Hotels.UpdateHotel;
 using HotelBooking.Application.Hotels.UploadHotelImage;
+using HotelBooking.Application.Payments.HandleStripeWebhook;
+using HotelBooking.Application.Payments.StartPayment;
 using HotelBooking.Application.Rooms.CreateRoom;
 using HotelBooking.Application.Rooms.UploadRoomImage;
 using HotelBooking.Application.Users.PromoteToHotelOwner;
@@ -47,6 +49,8 @@ public static class DependencyInjection
         services.AddScoped<UploadRoomImageCommandHandler>();
         services.AddScoped<CreateDealCommandHandler>();
         services.AddScoped<CreateBookingCommandHandler>();
+        services.AddScoped<StartPaymentCommandHandler>();
+        services.AddScoped<HandleStripeWebhookCommandHandler>();
 
 
 
