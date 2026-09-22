@@ -13,11 +13,13 @@ using HotelBooking.Application.Deals.GetFeaturedDeals;
 using HotelBooking.Application.HotelAmenities.AddHotelAmenity;
 using HotelBooking.Application.Hotels.CompleteHotelProfile;
 using HotelBooking.Application.Hotels.CreateHotel;
+using HotelBooking.Application.Hotels.GetHotelDetails;
 using HotelBooking.Application.Hotels.SearchHotels;
 using HotelBooking.Application.Hotels.UpdateHotel;
 using HotelBooking.Application.Hotels.UploadHotelImage;
 using HotelBooking.Application.Payments.HandleStripeWebhook;
 using HotelBooking.Application.Payments.StartPayment;
+using HotelBooking.Application.Reviews.CreateReview;
 using HotelBooking.Application.Rooms.CreateRoom;
 using HotelBooking.Application.Rooms.UploadRoomImage;
 using HotelBooking.Application.Users.PromoteToHotelOwner;
@@ -55,6 +57,8 @@ public static class DependencyInjection
         services.AddScoped<HandleStripeWebhookCommandHandler>();
         services.AddScoped<SearchHotelsQueryHandler>();
         services.AddScoped<GetFeaturedDealsQueryHandler>();
+        services.AddScoped<CreateReviewCommandHandler>();
+        services.AddScoped<GetHotelDetailsQueryHandler>();
 
 
 

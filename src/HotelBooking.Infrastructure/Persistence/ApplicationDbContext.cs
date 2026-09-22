@@ -8,6 +8,7 @@ using HotelBooking.Domain.Rooms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using HotelBooking.Domain.Reviews;
 
 namespace HotelBooking.Infrastructure.Persistence;
 
@@ -28,6 +29,8 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<Payment> Payments => Set<Payment>();
 
     public DbSet<Refund> Refunds => Set<Refund>();
+
+    public DbSet<Review> Reviews => Set<Review>();
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options)
         : base(options)

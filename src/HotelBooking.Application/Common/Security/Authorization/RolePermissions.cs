@@ -33,7 +33,8 @@ public static class RolePermissions
                 [Roles.Customer] = new HashSet<string>()
                 {
                     BookingPermissions.Create,
-                    BookingPermissions.StartPayment
+                    BookingPermissions.StartPayment,
+                    ReviewPermissions.Create
                 },
 
                 [Roles.HotelOwner] = new HashSet<string>()

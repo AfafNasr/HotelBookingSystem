@@ -4,6 +4,7 @@ using FluentValidation;
 using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Common.Interfaces;
 using HotelBooking.Application.Deals.GetFeaturedDeals;
+using HotelBooking.Application.Hotels.GetHotelDetails;
 using HotelBooking.Application.Hotels.SearchHotels;
 using HotelBooking.Application.Rooms;
 using HotelBooking.Infrastructure.Authentication;
@@ -155,6 +156,8 @@ public static class DependencyInjection
         services.AddScoped<IRefundRepository, RefundRepository>();
         services.AddScoped<IHotelSearchQuery, HotelSearchQuery>();
         services.AddScoped<IFeaturedDealsQuery, FeaturedDealsQuery>();
+        services.AddScoped<IReviewRepository, ReviewRepository>();
+        services.AddScoped<IHotelDetailsQuery, HotelDetailsQuery>();
 
         return services;
     }
