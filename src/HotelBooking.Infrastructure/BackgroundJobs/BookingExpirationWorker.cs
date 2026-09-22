@@ -38,9 +38,9 @@ public sealed class BookingExpirationWorker : BackgroundService
             }
             catch (Exception exception)
             {
-                _logger.LogError(
-                    exception,
-                    "An error occurred while expiring pending bookings.");
+                BookingExpirationLog.ExpirationCycleFailed(
+                    _logger,
+                    exception);
             }
 
             if (!await timer.WaitForNextTickAsync(stoppingToken))
@@ -65,8 +65,8 @@ public sealed class BookingExpirationWorker : BackgroundService
 
         if (expiredCount > 0)
         {
-            _logger.LogInformation(
-                "Expired {ExpiredBookingCount} pending bookings.",
+            BookingExpirationLog.BookingsExpired(
+                _logger,
                 expiredCount);
         }
     }

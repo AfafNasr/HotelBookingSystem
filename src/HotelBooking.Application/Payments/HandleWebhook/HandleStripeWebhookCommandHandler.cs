@@ -3,6 +3,7 @@ using HotelBooking.Application.Common.Models;
 using HotelBooking.Application.Common.Payments;
 using HotelBooking.Domain.Bookings;
 using HotelBooking.Domain.Payments;
+using Microsoft.Extensions.Logging;
 
 namespace HotelBooking.Application.Payments.HandleStripeWebhook;
 
@@ -16,19 +17,22 @@ public sealed class HandleStripeWebhookCommandHandler
     private readonly IRefundRepository _refundRepository;
     private readonly IPaymentGateway _paymentGateway;
     private readonly IBookingConcurrencyManager _bookingConcurrencyManager;
+    private readonly ILogger<HandleStripeWebhookCommandHandler> _logger;
 
     public HandleStripeWebhookCommandHandler(
         IPaymentRepository paymentRepository,
         IBookingRepository bookingRepository,
         IRefundRepository refundRepository,
         IPaymentGateway paymentGateway,
-        IBookingConcurrencyManager bookingConcurrencyManager)
+        IBookingConcurrencyManager bookingConcurrencyManager,
+        ILogger<HandleStripeWebhookCommandHandler> logger)
     {
         _paymentRepository = paymentRepository;
         _bookingRepository = bookingRepository;
         _refundRepository = refundRepository;
         _paymentGateway = paymentGateway;
         _bookingConcurrencyManager = bookingConcurrencyManager;
+        _logger = logger;
     }
 
     public async Task<HandleStripeWebhookResult> HandleAsync(
@@ -45,6 +49,11 @@ public sealed class HandleStripeWebhookCommandHandler
         if (string.IsNullOrWhiteSpace(
                 command.ProviderPaymentIntentId))
         {
+            PaymentLog.StripePaymentSucceededEventReceived(
+                        _logger,
+                        command.EventId,
+                        command.ProviderPaymentIntentId);
+
             return new HandleStripeWebhookResult(
                 false,
                 new[]
@@ -135,6 +144,11 @@ public sealed class HandleStripeWebhookCommandHandler
         {
             await _paymentRepository.SaveChangesAsync(
                 cancellationToken);
+            PaymentLog.PaymentSucceeded(
+               _logger,
+               payment.Id,
+               booking.Id);
+
 
             return PaymentProcessingOutcome.Completed;
         }
@@ -155,12 +169,31 @@ public sealed class HandleStripeWebhookCommandHandler
 
             await _paymentRepository.SaveChangesAsync(
                 cancellationToken);
+            PaymentLog.PaymentSucceeded(
+             _logger,
+              payment.Id,
+              booking.Id);
+
+            PaymentLog.BookingConfirmed(
+                _logger,
+                booking.Id,
+                payment.Id);
 
             return PaymentProcessingOutcome.Completed;
         }
 
         await _paymentRepository.SaveChangesAsync(
             cancellationToken);
+
+        PaymentLog.PaymentSucceeded(
+           _logger,
+           payment.Id,
+           booking.Id);
+
+        PaymentLog.LatePaymentDetected(
+            _logger,
+            payment.Id,
+            booking.Id);
 
         return PaymentProcessingOutcome.RefundRequired;
     }
@@ -206,6 +239,11 @@ public sealed class HandleStripeWebhookCommandHandler
 
             await _refundRepository.SaveChangesAsync(
                 cancellationToken);
+
+            PaymentLog.RefundInitiated(
+            _logger,
+             refund.Id,
+             payment.Id);
         }
 
         if (refund.Status == RefundStatus.Succeeded)
@@ -217,6 +255,11 @@ public sealed class HandleStripeWebhookCommandHandler
 
         if (refund.Status == RefundStatus.Failed)
         {
+            PaymentLog.TerminalRefundFailure(
+                 _logger,
+                 refund.Id,
+                 payment.Id);
+
             return new HandleStripeWebhookResult(
                 false,
                 new[]
@@ -255,6 +298,11 @@ public sealed class HandleStripeWebhookCommandHandler
 
         await _refundRepository.SaveChangesAsync(
             cancellationToken);
+
+        PaymentLog.RefundSucceeded(
+          _logger,
+          refund.Id,
+          payment.Id);
 
         return new HandleStripeWebhookResult(
             true,

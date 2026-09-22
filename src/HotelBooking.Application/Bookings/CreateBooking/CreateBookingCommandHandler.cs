@@ -4,6 +4,7 @@ using HotelBooking.Application.Common;
 using HotelBooking.Application.Common.Interfaces;
 using HotelBooking.Application.Common.Models;
 using HotelBooking.Domain.Bookings;
+using Microsoft.Extensions.Logging;
 
 namespace HotelBooking.Application.Bookings.CreateBooking;
 
@@ -17,6 +18,7 @@ public sealed class CreateBookingCommandHandler
     private readonly ICurrentUserService _currentUserService;
     private readonly BookingPricingCalculator _pricingCalculator;
     private readonly IBookingConcurrencyManager _bookingConcurrencyManager;
+    private readonly ILogger<CreateBookingCommandHandler> _logger;
 
     public CreateBookingCommandHandler(
         IValidator<CreateBookingCommand> validator,
@@ -26,7 +28,8 @@ public sealed class CreateBookingCommandHandler
         IDealRepository dealRepository,
         ICurrentUserService currentUserService,
         BookingPricingCalculator pricingCalculator,
-        IBookingConcurrencyManager bookingConcurrencyManager)
+        IBookingConcurrencyManager bookingConcurrencyManager,
+        ILogger<CreateBookingCommandHandler> logger)
     {
         _validator = validator;
         _hotelRepository = hotelRepository;
@@ -36,6 +39,7 @@ public sealed class CreateBookingCommandHandler
         _currentUserService = currentUserService;
         _pricingCalculator = pricingCalculator;
         _bookingConcurrencyManager = bookingConcurrencyManager;
+        _logger = logger;
     }
 
     public async Task<CreateBookingResult> HandleAsync(
@@ -163,6 +167,11 @@ public sealed class CreateBookingCommandHandler
 
            if (unavailableRoomIds.Count > 0)
            {
+               BookingLog.RoomsUnavailable(
+               _logger,
+                userId,
+               command.HotelId,
+               unavailableRoomIds.Count);
                return new CreateBookingResult(
                    false,
                    null,
@@ -198,6 +207,12 @@ public sealed class CreateBookingCommandHandler
            _bookingRepository.Add(booking);
 
            await _bookingRepository.SaveChangesAsync(ct);
+            BookingLog.BookingCreated(
+              _logger,
+               booking.Id,
+               userId,
+               booking.HotelId,
+               rooms.Count);
 
            return new CreateBookingResult(
                true,
