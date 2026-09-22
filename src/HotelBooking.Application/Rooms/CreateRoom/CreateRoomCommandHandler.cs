@@ -3,6 +3,8 @@ using HotelBooking.Application.Common.Interfaces;
 using HotelBooking.Application.Common.Models;
 using HotelBooking.Application.Common.Security;
 using HotelBooking.Domain.Rooms;
+using HotelBooking.Application.Common.Extensions;
+using HotelBooking.Application.Hotels;
 
 namespace HotelBooking.Application.Rooms.CreateRoom;
 
@@ -35,17 +37,10 @@ public sealed class CreateRoomCommandHandler
 
         if (!validationResult.IsValid)
         {
-            var errors = validationResult.Errors
-                .Select(error => new ApplicationError(
-                    error.PropertyName,
-                    error.ErrorMessage,
-                    ErrorType.Validation))
-                .ToArray();
-
             return new CreateRoomResult(
                 false,
                 null,
-                errors);
+                validationResult.ToApplicationErrors());
         }
 
         var hotel = await _hotelRepository.GetByIdAsync(

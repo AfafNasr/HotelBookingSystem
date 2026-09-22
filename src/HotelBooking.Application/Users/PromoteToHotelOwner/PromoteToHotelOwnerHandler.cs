@@ -1,4 +1,4 @@
-﻿using HotelBooking.Application.Common.Interfaces;
+﻿using HotelBooking.Application.Authentication;
 
 namespace HotelBooking.Application.Users.PromoteToHotelOwner;
 

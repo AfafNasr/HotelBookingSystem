@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using HotelBooking.Application.Amenities;
 using HotelBooking.Application.Amenities.CreateAmenity;
-using HotelBooking.Application.Common.Interfaces;
 using HotelBooking.Application.Common.Models;
 using Moq;
 

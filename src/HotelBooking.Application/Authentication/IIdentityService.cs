@@ -2,7 +2,7 @@
 using HotelBooking.Application.Common.Models;
 using HotelBooking.Application.Users.PromoteToHotelOwner;
 
-namespace HotelBooking.Application.Common.Interfaces;
+namespace HotelBooking.Application.Authentication;
 
 public interface IIdentityService
 {

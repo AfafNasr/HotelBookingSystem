@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using HotelBooking.Application.Common.Interfaces;
+using HotelBooking.Application.Common.Extensions;
 using HotelBooking.Application.Common.Models;
 
 namespace HotelBooking.Application.Authentication.Login;
@@ -29,17 +29,10 @@ public sealed class LoginCommandHandler
 
         if (!validationResult.IsValid)
         {
-            var errors = validationResult.Errors
-                .Select(error => new ApplicationError(
-                    error.PropertyName,
-                    error.ErrorMessage,
-                    ErrorType.Validation))
-                .ToArray();
-
             return new LoginResult(
                 false,
                 null,
-                errors);
+               validationResult.ToApplicationErrors());
         }
 
         var user = await _identityService.AuthenticateAsync(

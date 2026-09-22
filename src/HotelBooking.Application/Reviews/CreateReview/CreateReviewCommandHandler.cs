@@ -3,6 +3,8 @@ using HotelBooking.Application.Common.Interfaces;
 using HotelBooking.Application.Common.Models;
 using HotelBooking.Domain.Bookings;
 using HotelBooking.Domain.Reviews;
+using HotelBooking.Application.Common.Extensions;
+using HotelBooking.Application.Bookings;
 
 namespace HotelBooking.Application.Reviews.CreateReview;
 
@@ -35,17 +37,10 @@ public sealed class CreateReviewCommandHandler
 
         if (!validationResult.IsValid)
         {
-            var errors = validationResult.Errors
-                .Select(error => new ApplicationError(
-                    error.PropertyName,
-                    error.ErrorMessage,
-                    ErrorType.Validation))
-                .ToArray();
-
             return new CreateReviewResult(
                 false,
-                null,
-                errors);
+                 null,
+                 validationResult.ToApplicationErrors());
         }
 
         var booking = await _bookingRepository.GetByIdAsync(

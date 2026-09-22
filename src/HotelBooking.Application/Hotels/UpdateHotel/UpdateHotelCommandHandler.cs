@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
-using HotelBooking.Application.Common.Interfaces;
+using HotelBooking.Application.Authentication;
+using HotelBooking.Application.Cities;
+using HotelBooking.Application.Common.Extensions;
 using HotelBooking.Application.Common.Models;
 using HotelBooking.Application.Common.Security;
 using HotelBooking.Domain.Hotels;
@@ -35,16 +37,9 @@ public sealed class UpdateHotelCommandHandler
 
         if (!validationResult.IsValid)
         {
-            var errors = validationResult.Errors
-                .Select(error => new ApplicationError(
-                    error.PropertyName,
-                    error.ErrorMessage,
-                    ErrorType.Validation))
-                .ToArray();
-
             return new UpdateHotelResult(
                 false,
-                errors);
+                validationResult.ToApplicationErrors());
         }
 
         var hotel = await _hotelRepository.GetByIdAsync(

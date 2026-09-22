@@ -1,6 +1,6 @@
 ﻿using HotelBooking.Domain.Payments;
 
-namespace HotelBooking.Application.Common.Interfaces;
+namespace HotelBooking.Application.Payments;
 
 public interface IPaymentRepository
 {

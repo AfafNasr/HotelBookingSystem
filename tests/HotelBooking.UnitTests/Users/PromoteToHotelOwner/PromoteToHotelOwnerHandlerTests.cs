@@ -1,4 +1,4 @@
-﻿using HotelBooking.Application.Common.Interfaces;
+﻿using HotelBooking.Application.Authentication;
 using HotelBooking.Application.Common.Models;
 using HotelBooking.Application.Users.PromoteToHotelOwner;
 using Moq;

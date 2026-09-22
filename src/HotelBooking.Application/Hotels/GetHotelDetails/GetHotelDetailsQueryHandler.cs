@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using HotelBooking.Application.Common.Extensions;
 using HotelBooking.Application.Common.Models;
 
 namespace HotelBooking.Application.Hotels.GetHotelDetails;
@@ -26,17 +27,10 @@ public sealed class GetHotelDetailsQueryHandler
 
         if (!validationResult.IsValid)
         {
-            var errors = validationResult.Errors
-                .Select(error => new ApplicationError(
-                    error.PropertyName,
-                    error.ErrorMessage,
-                    ErrorType.Validation))
-                .ToArray();
-
             return new GetHotelDetailsResult(
                 false,
                 null,
-                errors);
+                validationResult.ToApplicationErrors());
         }
 
         var now = DateTime.UtcNow;

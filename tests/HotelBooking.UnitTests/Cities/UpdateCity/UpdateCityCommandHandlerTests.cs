@@ -1,6 +1,7 @@
-﻿using HotelBooking.Application.Cities.UpdateCity;
-using HotelBooking.Application.Common.Interfaces;
+﻿using HotelBooking.Application.Cities;
+using HotelBooking.Application.Cities.UpdateCity;
 using HotelBooking.Application.Common.Models;
+using HotelBooking.Application.Countries;
 using HotelBooking.Domain.Cities;
 using Moq;
 

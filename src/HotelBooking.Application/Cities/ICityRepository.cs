@@ -1,6 +1,6 @@
 ﻿using HotelBooking.Domain.Cities;
 
-namespace HotelBooking.Application.Common.Interfaces;
+namespace HotelBooking.Application.Cities;
 
 public interface ICityRepository
 {

@@ -1,6 +1,6 @@
 ﻿using HotelBooking.Domain.Reviews;
 
-namespace HotelBooking.Application.Common.Interfaces;
+namespace HotelBooking.Application.Reviews;
 
 public interface IReviewRepository
 {

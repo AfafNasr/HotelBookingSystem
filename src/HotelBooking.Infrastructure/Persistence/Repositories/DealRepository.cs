@@ -1,4 +1,4 @@
-﻿using HotelBooking.Application.Common.Interfaces;
+﻿using HotelBooking.Application.Deals;
 using HotelBooking.Domain.Deals;
 using Microsoft.EntityFrameworkCore;
 

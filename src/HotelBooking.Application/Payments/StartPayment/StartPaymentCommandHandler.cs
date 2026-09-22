@@ -1,4 +1,6 @@
 ﻿using FluentValidation;
+using HotelBooking.Application.Bookings;
+using HotelBooking.Application.Common.Extensions;
 using HotelBooking.Application.Common.Interfaces;
 using HotelBooking.Application.Common.Models;
 using HotelBooking.Application.Common.Payments;
@@ -41,18 +43,11 @@ public sealed class StartPaymentCommandHandler
 
         if (!validationResult.IsValid)
         {
-            var errors = validationResult.Errors
-                .Select(error => new ApplicationError(
-                    error.PropertyName,
-                    error.ErrorMessage,
-                    ErrorType.Validation))
-                .ToArray();
-
             return new StartPaymentResult(
                 false,
                 null,
                 null,
-                errors);
+                validationResult.ToApplicationErrors());
         }
 
         var userId = _currentUserService.UserId;

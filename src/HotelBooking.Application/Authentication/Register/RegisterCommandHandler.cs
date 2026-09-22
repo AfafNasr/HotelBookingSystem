@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using HotelBooking.Application.Common.Interfaces;
+using HotelBooking.Application.Common.Extensions;
 using HotelBooking.Application.Common.Models;
 
 namespace HotelBooking.Application.Authentication.Register;
@@ -24,17 +24,10 @@ public sealed class RegisterCommandHandler
 
         if (!validationResult.IsValid)
         {
-            var errors = validationResult.Errors
-    .Select(error => new ApplicationError(
-        error.ErrorCode,
-        error.ErrorMessage,
-        ErrorType.Validation))
-    .ToArray();
-
             return new RegisterResult(
                 false,
                 null,
-                errors);
+                validationResult.ToApplicationErrors());
         }
 
         return await _identityService.CreateCustomerAsync(

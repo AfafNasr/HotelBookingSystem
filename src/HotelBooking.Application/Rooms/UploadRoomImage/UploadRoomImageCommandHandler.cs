@@ -5,6 +5,8 @@ using HotelBooking.Application.Common.Storage;
 using HotelBooking.Application.Hotels.UploadHotelImage;
 using HotelBooking.Domain.Rooms;
 using Microsoft.Extensions.Logging;
+using HotelBooking.Application.Common.Extensions;
+using HotelBooking.Application.Hotels;
 
 namespace HotelBooking.Application.Rooms.UploadRoomImage;
 
@@ -46,17 +48,10 @@ public sealed class UploadRoomImageCommandHandler
 
         if (!validationResult.IsValid)
         {
-            var errors = validationResult.Errors
-                .Select(error => new ApplicationError(
-                    error.PropertyName,
-                    error.ErrorMessage,
-                    ErrorType.Validation))
-                .ToArray();
-
             return new UploadRoomImageResult(
                 false,
                 null,
-                errors);
+                 validationResult.ToApplicationErrors());
         }
 
         var room = await _roomRepository.GetByIdAsync(

@@ -1,5 +1,5 @@
-﻿using HotelBooking.Application.Common.Interfaces;
-using HotelBooking.Application.Common.Payments;
+﻿using HotelBooking.Application.Common.Payments;
+using HotelBooking.Application.Payments;
 using Microsoft.Extensions.Options;
 using Stripe;
 

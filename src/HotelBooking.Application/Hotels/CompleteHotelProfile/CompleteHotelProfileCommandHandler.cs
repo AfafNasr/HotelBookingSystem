@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using HotelBooking.Application.Common.Extensions;
 using HotelBooking.Application.Common.Interfaces;
 using HotelBooking.Application.Common.Models;
 
@@ -30,14 +31,9 @@ public sealed class CompleteHotelProfileCommandHandler
 
         if (!validationResult.IsValid)
         {
-            var errors = validationResult.Errors
-                .Select(error => new ApplicationError(
-                    error.PropertyName,
-                    error.ErrorMessage,
-                    ErrorType.Validation))
-                .ToArray();
-
-            return new CompleteHotelProfileResult(false, errors);
+            return new CompleteHotelProfileResult
+                (false,
+                validationResult.ToApplicationErrors());
         }
 
         var hotel = await _hotelRepository.GetByIdAsync(

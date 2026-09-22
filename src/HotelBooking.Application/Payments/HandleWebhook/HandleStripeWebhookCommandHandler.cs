@@ -1,4 +1,4 @@
-﻿using HotelBooking.Application.Common.Interfaces;
+﻿using HotelBooking.Application.Bookings;
 using HotelBooking.Application.Common.Models;
 using HotelBooking.Application.Common.Payments;
 using HotelBooking.Domain.Bookings;

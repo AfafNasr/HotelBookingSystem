@@ -1,5 +1,4 @@
-﻿using HotelBooking.Application.Common.Interfaces;
-using HotelBooking.Application.Reviews;
+﻿using HotelBooking.Application.Reviews;
 using HotelBooking.Domain.Reviews;
 using Microsoft.EntityFrameworkCore;
 

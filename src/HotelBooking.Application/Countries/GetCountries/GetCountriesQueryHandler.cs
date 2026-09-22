@@ -1,6 +1,4 @@
-﻿using HotelBooking.Application.Common.Interfaces;
-
-namespace HotelBooking.Application.Countries.GetCountries;
+﻿namespace HotelBooking.Application.Countries.GetCountries;
 
 public sealed class GetCountriesQueryHandler
 {

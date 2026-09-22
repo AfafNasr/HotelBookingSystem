@@ -1,6 +1,6 @@
 ﻿using HotelBooking.Domain.Deals;
 
-namespace HotelBooking.Application.Common.Interfaces;
+namespace HotelBooking.Application.Deals;
 
 public interface IDealRepository
 {

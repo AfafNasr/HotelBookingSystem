@@ -1,5 +1,5 @@
-﻿using HotelBooking.Application.Authentication.Login;
-using HotelBooking.Application.Common.Interfaces;
+﻿using HotelBooking.Application.Authentication;
+using HotelBooking.Application.Authentication.Login;
 using HotelBooking.Application.Common.Models;
 using Moq;
 

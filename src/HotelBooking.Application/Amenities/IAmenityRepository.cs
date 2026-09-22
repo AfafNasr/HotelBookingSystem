@@ -1,6 +1,6 @@
 ﻿using HotelBooking.Domain.Amenities;
 
-namespace HotelBooking.Application.Common.Interfaces;
+namespace HotelBooking.Application.Amenities;
 
 public interface IAmenityRepository
 {
