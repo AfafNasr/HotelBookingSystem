@@ -3,6 +3,7 @@ using Azure.Storage.Blobs;
 using FluentValidation;
 using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Common.Interfaces;
+using HotelBooking.Application.Deals.GetFeaturedDeals;
 using HotelBooking.Application.Hotels.SearchHotels;
 using HotelBooking.Application.Rooms;
 using HotelBooking.Infrastructure.Authentication;
@@ -153,6 +154,7 @@ public static class DependencyInjection
         services.AddScoped<IStripeWebhookService, StripeWebhookService>();
         services.AddScoped<IRefundRepository, RefundRepository>();
         services.AddScoped<IHotelSearchQuery, HotelSearchQuery>();
+        services.AddScoped<IFeaturedDealsQuery, FeaturedDealsQuery>();
 
         return services;
     }

@@ -9,6 +9,7 @@ using HotelBooking.Application.Cities.CreateCity;
 using HotelBooking.Application.Cities.UpdateCity;
 using HotelBooking.Application.Countries.GetCountries;
 using HotelBooking.Application.Deals.CreateDeal;
+using HotelBooking.Application.Deals.GetFeaturedDeals;
 using HotelBooking.Application.HotelAmenities.AddHotelAmenity;
 using HotelBooking.Application.Hotels.CompleteHotelProfile;
 using HotelBooking.Application.Hotels.CreateHotel;
@@ -53,6 +54,7 @@ public static class DependencyInjection
         services.AddScoped<StartPaymentCommandHandler>();
         services.AddScoped<HandleStripeWebhookCommandHandler>();
         services.AddScoped<SearchHotelsQueryHandler>();
+        services.AddScoped<GetFeaturedDealsQueryHandler>();
 
 
 
