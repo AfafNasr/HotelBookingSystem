@@ -11,6 +11,8 @@ public static class Permissions
         .. RoomPermissions.All,
         ..UserPermissions.All,
         ..AmenityPermissions.All,
-        ..HotelAmenityPermissions.All
+        ..HotelAmenityPermissions.All,
+        ..DealPermissions.All,
+        ..BookingPermissions.All
     ];
 }

@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using HotelBooking.Application.Common.Interfaces;
 using HotelBooking.Application.Common.Models;
+using HotelBooking.Application.Common.Storage;
 using HotelBooking.Domain.Hotels;
 using Microsoft.Extensions.Logging;
 
@@ -113,15 +114,16 @@ public sealed class UploadHotelImageCommandHandler
         cancellationToken);
 
         await _imageStorageService.UploadAsync(
-            storageKey,
-            command.Content,
-            command.ContentType,
-            cancellationToken);
+      ImageContainer.HotelImages,
+      storageKey,
+      command.Content,
+      command.ContentType,
+      cancellationToken); 
 
         var hotelImage = new HotelImage(
             hotel.Id,
             storageKey,
-            displayOrder: 0,
+            displayOrder,
             isPrimary: false);
 
         _hotelImageRepository.Add(hotelImage);
@@ -153,8 +155,9 @@ public sealed class UploadHotelImageCommandHandler
         try
         {
             await _imageStorageService.DeleteAsync(
-                storageKey,
-                cancellationToken);
+    ImageContainer.HotelImages,
+    storageKey,
+    CancellationToken.None);
         }
         catch (Exception ex)
         {

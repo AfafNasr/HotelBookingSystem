@@ -7,4 +7,5 @@ public sealed class AzureStorageOptions
     public string AccountName { get; init; } = null!;
 
     public string HotelImagesContainer { get; init; } = null!;
+    public string RoomImagesContainer { get; init; } = null!;
 }

@@ -46,9 +46,11 @@ public sealed class UploadHotelImageEndpoint : ControllerBase
                 result.Errors);
         }
 
-        return Created(
-            $"/api/hotels/{hotelId}/images/{result.ImageId}",
-            new UploadHotelImageResponse(
-                result.ImageId!.Value));
+        var response = new UploadHotelImageResponse(
+     result.ImageId!.Value);
+
+        return StatusCode(
+            StatusCodes.Status201Created,
+            response);
     }
 }

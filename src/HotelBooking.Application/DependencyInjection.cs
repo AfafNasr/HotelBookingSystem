@@ -2,15 +2,22 @@
 using HotelBooking.Application.Amenities.CreateAmenity;
 using HotelBooking.Application.Authentication.Login;
 using HotelBooking.Application.Authentication.Register;
+using HotelBooking.Application.Bookings.CreateBooking;
+using HotelBooking.Application.Bookings.Expiration;
+using HotelBooking.Application.Bookings.Pricing;
 using HotelBooking.Application.Cities.CreateCity;
 using HotelBooking.Application.Cities.UpdateCity;
 using HotelBooking.Application.Countries.GetCountries;
+using HotelBooking.Application.Deals.CreateDeal;
 using HotelBooking.Application.HotelAmenities.AddHotelAmenity;
 using HotelBooking.Application.Hotels.CompleteHotelProfile;
 using HotelBooking.Application.Hotels.CreateHotel;
 using HotelBooking.Application.Hotels.UpdateHotel;
 using HotelBooking.Application.Hotels.UploadHotelImage;
+using HotelBooking.Application.Payments.HandleStripeWebhook;
+using HotelBooking.Application.Payments.StartPayment;
 using HotelBooking.Application.Rooms.CreateRoom;
+using HotelBooking.Application.Rooms.UploadRoomImage;
 using HotelBooking.Application.Users.PromoteToHotelOwner;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,6 +29,9 @@ public static class DependencyInjection
         this IServiceCollection services)
     {
         services.AddValidatorsFromAssemblyContaining<RegisterCommand>();
+
+        services.AddScoped<BookingPricingCalculator>();
+        services.AddScoped<ExpirePendingBookingsService>();
 
         services.AddScoped<RegisterCommandHandler>();
         services.AddScoped<LoginCommandHandler>();
@@ -36,6 +46,12 @@ public static class DependencyInjection
         services.AddScoped<CreateRoomCommandHandler>();
         services.AddScoped<CompleteHotelProfileCommandHandler>();
         services.AddScoped<UploadHotelImageCommandHandler>();
+        services.AddScoped<UploadRoomImageCommandHandler>();
+        services.AddScoped<CreateDealCommandHandler>();
+        services.AddScoped<CreateBookingCommandHandler>();
+        services.AddScoped<StartPaymentCommandHandler>();
+        services.AddScoped<HandleStripeWebhookCommandHandler>();
+
 
 
         return services;

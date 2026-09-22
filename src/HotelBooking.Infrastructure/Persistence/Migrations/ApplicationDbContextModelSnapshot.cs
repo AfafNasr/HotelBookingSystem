@@ -55,6 +55,106 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
                     b.ToTable("Amenities", (string)null);
                 });
 
+            modelBuilder.Entity("HotelBooking.Domain.Bookings.Booking", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("CheckInDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("CheckOutDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("ConfirmationNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("GuestEmail")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("nvarchar(320)");
+
+                    b.Property<string>("GuestFullName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("GuestPhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<int>("HotelId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SpecialRequests")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConfirmationNumber")
+                        .IsUnique()
+                        .HasFilter("[ConfirmationNumber] IS NOT NULL");
+
+                    b.HasIndex("HotelId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Bookings", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Bookings_DateRange", "[CheckOutDate] > [CheckInDate]");
+
+                            t.HasCheckConstraint("CK_Bookings_TotalAmount", "[TotalAmount] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("HotelBooking.Domain.Bookings.BookingRoom", b =>
+                {
+                    b.Property<int>("BookingId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoomId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("OriginalPricePerNight")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("BookingId", "RoomId");
+
+                    b.HasIndex("RoomId");
+
+                    b.ToTable("BookingRooms", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_BookingRooms_OriginalPricePerNight", "[OriginalPricePerNight] > 0");
+                        });
+                });
+
             modelBuilder.Entity("HotelBooking.Domain.Cities.City", b =>
                 {
                     b.Property<int>("Id")
@@ -113,6 +213,45 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
                     b.HasKey("Code");
 
                     b.ToTable("Countries", (string)null);
+                });
+
+            modelBuilder.Entity("HotelBooking.Domain.Deals.Deal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("DiscountPercentage")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<DateOnly>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<int>("HotelId")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HotelId", "StartDate", "EndDate");
+
+                    b.ToTable("Deals", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Deals_DateRange", "[EndDate] >= [StartDate]");
+
+                            t.HasCheckConstraint("CK_Deals_DiscountPercentage", "[DiscountPercentage] > 0 AND [DiscountPercentage] < 100");
+                        });
                 });
 
             modelBuilder.Entity("HotelBooking.Domain.Hotels.Hotel", b =>
@@ -174,6 +313,8 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CityId");
 
+                    b.HasIndex("OwnerId");
+
                     b.ToTable("Hotels", null, t =>
                         {
                             t.HasCheckConstraint("CK_Hotels_Coordinates", "([Latitude] IS NULL AND [Longitude] IS NULL) OR ([Latitude] IS NOT NULL AND [Longitude] IS NOT NULL)");
@@ -230,6 +371,102 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
                     b.ToTable("HotelImages", null, t =>
                         {
                             t.HasCheckConstraint("CK_HotelImages_DisplayOrder_NonNegative", "[DisplayOrder] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("HotelBooking.Domain.Payments.Payment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("BookingId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<string>("ProviderPaymentIntentId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId")
+                        .IsUnique();
+
+                    b.HasIndex("ProviderPaymentIntentId")
+                        .IsUnique()
+                        .HasFilter("[ProviderPaymentIntentId] IS NOT NULL");
+
+                    b.ToTable("Payments", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Payments_Amount", "[Amount] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("HotelBooking.Domain.Payments.Refund", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<int>("PaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProviderRefundId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PaymentId")
+                        .IsUnique();
+
+                    b.HasIndex("ProviderRefundId")
+                        .IsUnique()
+                        .HasFilter("[ProviderRefundId] IS NOT NULL");
+
+                    b.ToTable("Refunds", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Refunds_Amount", "[Amount] > 0");
                         });
                 });
 
@@ -290,6 +527,39 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("CK_HotelRooms_ChildrenCapacity", "[ChildrenCapacity] >= 0");
 
                             t.HasCheckConstraint("CK_HotelRooms_PricePerNight", "[PricePerNight] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("HotelBooking.Domain.Rooms.RoomImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("RoomId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StorageKey")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomId", "StorageKey")
+                        .IsUnique();
+
+                    b.ToTable("RoomImages", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_RoomImages_DisplayOrder", "[DisplayOrder] >= 0");
                         });
                 });
 
@@ -493,6 +763,40 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("HotelBooking.Domain.Bookings.Booking", b =>
+                {
+                    b.HasOne("HotelBooking.Domain.Hotels.Hotel", null)
+                        .WithMany()
+                        .HasForeignKey("HotelId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HotelBooking.Domain.Bookings.BookingRoom", b =>
+                {
+                    b.HasOne("HotelBooking.Domain.Bookings.Booking", "Booking")
+                        .WithMany("Rooms")
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HotelBooking.Domain.Rooms.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("Room");
+                });
+
             modelBuilder.Entity("HotelBooking.Domain.Cities.City", b =>
                 {
                     b.HasOne("HotelBooking.Domain.Cities.Country", "Country")
@@ -504,11 +808,28 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
                     b.Navigation("Country");
                 });
 
+            modelBuilder.Entity("HotelBooking.Domain.Deals.Deal", b =>
+                {
+                    b.HasOne("HotelBooking.Domain.Hotels.Hotel", "Hotel")
+                        .WithMany()
+                        .HasForeignKey("HotelId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Hotel");
+                });
+
             modelBuilder.Entity("HotelBooking.Domain.Hotels.Hotel", b =>
                 {
                     b.HasOne("HotelBooking.Domain.Cities.City", "City")
                         .WithMany()
                         .HasForeignKey("CityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -541,6 +862,24 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
                     b.Navigation("Hotel");
                 });
 
+            modelBuilder.Entity("HotelBooking.Domain.Payments.Payment", b =>
+                {
+                    b.HasOne("HotelBooking.Domain.Bookings.Booking", null)
+                        .WithOne()
+                        .HasForeignKey("HotelBooking.Domain.Payments.Payment", "BookingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HotelBooking.Domain.Payments.Refund", b =>
+                {
+                    b.HasOne("HotelBooking.Domain.Payments.Payment", null)
+                        .WithOne()
+                        .HasForeignKey("HotelBooking.Domain.Payments.Refund", "PaymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("HotelBooking.Domain.Rooms.Room", b =>
                 {
                     b.HasOne("HotelBooking.Domain.Hotels.Hotel", "Hotel")
@@ -550,6 +889,17 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Hotel");
+                });
+
+            modelBuilder.Entity("HotelBooking.Domain.Rooms.RoomImage", b =>
+                {
+                    b.HasOne("HotelBooking.Domain.Rooms.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -601,6 +951,11 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("HotelBooking.Domain.Bookings.Booking", b =>
+                {
+                    b.Navigation("Rooms");
                 });
 #pragma warning restore 612, 618
         }

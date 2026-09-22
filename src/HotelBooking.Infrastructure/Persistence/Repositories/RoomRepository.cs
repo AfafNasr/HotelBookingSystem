@@ -12,6 +12,27 @@ public sealed class RoomRepository : IRoomRepository
     {
         _dbContext = dbContext;
     }
+    public async Task<Room?> GetByIdAsync(
+    int roomId,
+    CancellationToken cancellationToken)
+    {
+        return await _dbContext.Room
+            .FirstOrDefaultAsync(
+                room => room.Id == roomId && !room.IsDeleted,
+                cancellationToken);
+    }
+
+    public async Task<IReadOnlyCollection<Room>> GetByIdsAsync(
+    IReadOnlyCollection<int> roomIds,
+    CancellationToken cancellationToken)
+    {
+        return await _dbContext.Room
+            .AsNoTracking()
+            .Where(room =>
+                roomIds.Contains(room.Id) &&
+                !room.IsDeleted)
+            .ToListAsync(cancellationToken);
+    }
 
     public Task<bool> ExistsByRoomNumberAsync(
         int hotelId,
