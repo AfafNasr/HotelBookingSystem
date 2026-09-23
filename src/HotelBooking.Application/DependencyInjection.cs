@@ -4,6 +4,7 @@ using HotelBooking.Application.Authentication.Login;
 using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Bookings.CreateBooking;
 using HotelBooking.Application.Bookings.Expiration;
+using HotelBooking.Application.Bookings.GetBookingConfirmation;
 using HotelBooking.Application.Bookings.Pricing;
 using HotelBooking.Application.Cities.CreateCity;
 using HotelBooking.Application.Cities.GetTrendingDestinations;
@@ -65,7 +66,7 @@ public static class DependencyInjection
         services.AddScoped<GetAvailableRoomsQueryHandler>();
         services.AddScoped<GetRecentlyVisitedHotelsQueryHandler>();
         services.AddScoped<GetTrendingDestinationsQueryHandler>();
-
+        services.AddScoped<GetBookingConfirmationQueryHandler>();
 
 
         return services;

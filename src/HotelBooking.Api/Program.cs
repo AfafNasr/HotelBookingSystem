@@ -8,6 +8,7 @@ using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,8 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 builder.Services.AddScoped< ICurrentUserService, CurrentUserService>();
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 var app = builder.Build();
 

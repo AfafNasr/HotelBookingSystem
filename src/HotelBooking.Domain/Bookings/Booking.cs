@@ -1,4 +1,5 @@
 ﻿using HotelBooking.Domain.Hotels;
+using HotelBooking.Domain.Payments;
 
 namespace HotelBooking.Domain.Bookings;
 
@@ -30,6 +31,8 @@ public sealed class Booking
     public DateTime? UpdatedAt { get; private set; }
 
     public Hotel Hotel { get; private set; } = null!;
+
+    public Payment? Payment { get; private set; }
 
     private Booking()
     {
