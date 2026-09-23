@@ -13,6 +13,7 @@ using HotelBooking.Application.Deals.GetFeaturedDeals;
 using HotelBooking.Application.HotelAmenities;
 using HotelBooking.Application.Hotels;
 using HotelBooking.Application.Hotels.GetHotelDetails;
+using HotelBooking.Application.Hotels.GetRecentlyVisitedHotels;
 using HotelBooking.Application.Hotels.SearchHotels;
 using HotelBooking.Application.Payments;
 using HotelBooking.Application.Reviews;
@@ -170,6 +171,8 @@ public static class DependencyInjection
         services.AddScoped<IReviewRepository, ReviewRepository>();
         services.AddScoped<IHotelDetailsQuery, HotelDetailsQuery>();
         services.AddScoped<IAvailableRoomsQuery, AvailableRoomsQuery>();
+        services.AddScoped<IRecentlyVisitedHotelRepository,RecentlyVisitedHotelRepository>();
+        services.AddScoped<IRecentlyVisitedHotelsQuery, RecentlyVisitedHotelsQuery>();
 
         return services;
     }

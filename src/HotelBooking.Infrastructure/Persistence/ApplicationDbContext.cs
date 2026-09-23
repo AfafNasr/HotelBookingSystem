@@ -31,6 +31,10 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<Refund> Refunds => Set<Refund>();
 
     public DbSet<Review> Reviews => Set<Review>();
+
+    public DbSet<RecentlyVisitedHotel> RecentlyVisitedHotels
+    => Set<RecentlyVisitedHotel>();
+
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options)
         : base(options)

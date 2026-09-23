@@ -14,4 +14,5 @@ public static class RoomPermissions
         Delete,
         UploadImage
     ];
+
 }

@@ -14,6 +14,7 @@ using HotelBooking.Application.HotelAmenities.AddHotelAmenity;
 using HotelBooking.Application.Hotels.CompleteHotelProfile;
 using HotelBooking.Application.Hotels.CreateHotel;
 using HotelBooking.Application.Hotels.GetHotelDetails;
+using HotelBooking.Application.Hotels.GetRecentlyVisitedHotels;
 using HotelBooking.Application.Hotels.SearchHotels;
 using HotelBooking.Application.Hotels.UpdateHotel;
 using HotelBooking.Application.Hotels.UploadHotelImage;
@@ -61,6 +62,7 @@ public static class DependencyInjection
         services.AddScoped<CreateReviewCommandHandler>();
         services.AddScoped<GetHotelDetailsQueryHandler>();
         services.AddScoped<GetAvailableRoomsQueryHandler>();
+        services.AddScoped<GetRecentlyVisitedHotelsQueryHandler>();
 
 
 
