@@ -21,6 +21,7 @@ using HotelBooking.Application.Payments.HandleStripeWebhook;
 using HotelBooking.Application.Payments.StartPayment;
 using HotelBooking.Application.Reviews.CreateReview;
 using HotelBooking.Application.Rooms.CreateRoom;
+using HotelBooking.Application.Rooms.GetAvailableRooms;
 using HotelBooking.Application.Rooms.UploadRoomImage;
 using HotelBooking.Application.Users.PromoteToHotelOwner;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,6 +60,7 @@ public static class DependencyInjection
         services.AddScoped<GetFeaturedDealsQueryHandler>();
         services.AddScoped<CreateReviewCommandHandler>();
         services.AddScoped<GetHotelDetailsQueryHandler>();
+        services.AddScoped<GetAvailableRoomsQueryHandler>();
 
 
 

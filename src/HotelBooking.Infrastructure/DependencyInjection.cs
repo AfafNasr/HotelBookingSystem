@@ -17,6 +17,7 @@ using HotelBooking.Application.Hotels.SearchHotels;
 using HotelBooking.Application.Payments;
 using HotelBooking.Application.Reviews;
 using HotelBooking.Application.Rooms;
+using HotelBooking.Application.Rooms.GetAvailableRooms;
 using HotelBooking.Infrastructure.Authentication;
 using HotelBooking.Infrastructure.BackgroundJobs;
 using HotelBooking.Infrastructure.Identity;
@@ -168,6 +169,7 @@ public static class DependencyInjection
         services.AddScoped<IFeaturedDealsQuery, FeaturedDealsQuery>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
         services.AddScoped<IHotelDetailsQuery, HotelDetailsQuery>();
+        services.AddScoped<IAvailableRoomsQuery, AvailableRoomsQuery>();
 
         return services;
     }
