@@ -55,10 +55,10 @@ public sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
 
         builder.Property(booking => booking.UpdatedAt);
 
-        builder.HasOne<Hotel> ()
-            .WithMany()
-            .HasForeignKey(booking => booking.HotelId)
-            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(booking => booking.Hotel)
+     .WithMany()
+     .HasForeignKey(booking => booking.HotelId)
+     .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<IdentityUser>()
     .WithMany()

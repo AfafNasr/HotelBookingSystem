@@ -6,6 +6,7 @@ using HotelBooking.Application.Bookings.CreateBooking;
 using HotelBooking.Application.Bookings.Expiration;
 using HotelBooking.Application.Bookings.Pricing;
 using HotelBooking.Application.Cities.CreateCity;
+using HotelBooking.Application.Cities.GetTrendingDestinations;
 using HotelBooking.Application.Cities.UpdateCity;
 using HotelBooking.Application.Countries.GetCountries;
 using HotelBooking.Application.Deals.CreateDeal;
@@ -63,6 +64,7 @@ public static class DependencyInjection
         services.AddScoped<GetHotelDetailsQueryHandler>();
         services.AddScoped<GetAvailableRoomsQueryHandler>();
         services.AddScoped<GetRecentlyVisitedHotelsQueryHandler>();
+        services.AddScoped<GetTrendingDestinationsQueryHandler>();
 
 
 

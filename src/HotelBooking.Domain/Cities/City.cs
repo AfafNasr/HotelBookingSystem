@@ -8,6 +8,8 @@ public class City
     public string CountryCode { get; private set; } = null!;
     public string? PostOffice { get; private set; }
 
+    public string? ThumbnailStorageKey { get; private set; }
+
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
 
@@ -15,6 +17,8 @@ public class City
     public DateTime? DeletedAt { get; private set; }
 
     public Country Country { get; private set; } = null!;
+
+
 
     private City()
     {

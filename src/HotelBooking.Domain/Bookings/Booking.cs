@@ -1,4 +1,6 @@
-﻿namespace HotelBooking.Domain.Bookings;
+﻿using HotelBooking.Domain.Hotels;
+
+namespace HotelBooking.Domain.Bookings;
 
 public sealed class Booking
 {
@@ -26,6 +28,8 @@ public sealed class Booking
 
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
+
+    public Hotel Hotel { get; private set; } = null!;
 
     private Booking()
     {

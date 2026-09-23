@@ -24,6 +24,9 @@ public class CityConfiguration : IEntityTypeConfiguration<City>
         builder.Property(city => city.PostOffice)
             .HasMaxLength(200);
 
+        builder.Property(city => city.ThumbnailStorageKey)
+           .HasMaxLength(500);
+
         builder.Property(city => city.CreatedAt)
             .IsRequired();
 

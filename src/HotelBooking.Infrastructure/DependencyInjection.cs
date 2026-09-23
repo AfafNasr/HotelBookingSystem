@@ -6,6 +6,7 @@ using HotelBooking.Application.Authentication;
 using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Bookings;
 using HotelBooking.Application.Cities;
+using HotelBooking.Application.Cities.GetTrendingDestinations;
 using HotelBooking.Application.Common.Interfaces;
 using HotelBooking.Application.Countries;
 using HotelBooking.Application.Deals;
@@ -173,7 +174,7 @@ public static class DependencyInjection
         services.AddScoped<IAvailableRoomsQuery, AvailableRoomsQuery>();
         services.AddScoped<IRecentlyVisitedHotelRepository,RecentlyVisitedHotelRepository>();
         services.AddScoped<IRecentlyVisitedHotelsQuery, RecentlyVisitedHotelsQuery>();
-
+        services.AddScoped<ITrendingDestinationsQuery, TrendingDestinationsQuery>();
         return services;
     }
 }
