@@ -13,7 +13,7 @@ public sealed class PromoteToHotelOwnerHandler
     }
 
     public Task<PromoteToHotelOwnerResult> HandleAsync(
-        PromoteToHotelOwnerCommand command)
+        PromoteToHotelOwnerCommandHandler command)
     {
         return _identityService.PromoteToHotelOwnerAsync(
             command.UserId);

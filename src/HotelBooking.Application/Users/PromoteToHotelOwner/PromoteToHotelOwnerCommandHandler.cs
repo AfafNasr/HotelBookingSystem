@@ -1,4 +1,4 @@
 ﻿namespace HotelBooking.Application.Users.PromoteToHotelOwner;
 
-public sealed record PromoteToHotelOwnerCommand(
+public sealed record PromoteToHotelOwnerCommandHandler(
     string UserId);

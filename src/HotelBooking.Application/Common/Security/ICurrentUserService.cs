@@ -1,4 +1,4 @@
-﻿namespace HotelBooking.Application.Common.Interfaces;
+﻿namespace HotelBooking.Application.Common.Security;
 
 public interface ICurrentUserService
 {

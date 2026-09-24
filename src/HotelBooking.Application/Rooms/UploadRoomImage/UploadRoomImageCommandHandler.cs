@@ -1,12 +1,12 @@
 ﻿using FluentValidation;
-using HotelBooking.Application.Common.Interfaces;
-using HotelBooking.Application.Common.Models;
 using HotelBooking.Application.Common.Storage;
 using HotelBooking.Application.Hotels.UploadHotelImage;
 using HotelBooking.Domain.Rooms;
 using Microsoft.Extensions.Logging;
 using HotelBooking.Application.Common.Extensions;
 using HotelBooking.Application.Hotels;
+using HotelBooking.Application.Common.Security;
+using HotelBooking.Application.Common.Errors;
 
 namespace HotelBooking.Application.Rooms.UploadRoomImage;
 

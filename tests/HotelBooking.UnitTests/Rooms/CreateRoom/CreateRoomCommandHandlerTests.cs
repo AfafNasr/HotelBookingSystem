@@ -1,5 +1,4 @@
-﻿using HotelBooking.Application.Common.Interfaces;
-using HotelBooking.Application.Common.Security;
+﻿using HotelBooking.Application.Common.Security;
 using HotelBooking.Application.Hotels;
 using HotelBooking.Application.Rooms;
 using HotelBooking.Application.Rooms.CreateRoom;

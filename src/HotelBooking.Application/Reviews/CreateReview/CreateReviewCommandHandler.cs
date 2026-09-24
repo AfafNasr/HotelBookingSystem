@@ -1,10 +1,10 @@
 ﻿using FluentValidation;
-using HotelBooking.Application.Common.Interfaces;
-using HotelBooking.Application.Common.Models;
 using HotelBooking.Domain.Bookings;
 using HotelBooking.Domain.Reviews;
 using HotelBooking.Application.Common.Extensions;
 using HotelBooking.Application.Bookings;
+using HotelBooking.Application.Common.Security;
+using HotelBooking.Application.Common.Errors;
 
 namespace HotelBooking.Application.Reviews.CreateReview;
 

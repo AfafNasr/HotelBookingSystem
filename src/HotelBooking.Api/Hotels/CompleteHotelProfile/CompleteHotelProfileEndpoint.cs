@@ -1,5 +1,4 @@
 ﻿using HotelBooking.Api.Common;
-using HotelBooking.Application.Authorization;
 using HotelBooking.Application.Common.Security.Authorization.Permissions;
 using HotelBooking.Application.Hotels.CompleteHotelProfile;
 using Microsoft.AspNetCore.Authorization;

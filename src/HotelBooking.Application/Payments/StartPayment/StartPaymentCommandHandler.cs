@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
 using HotelBooking.Application.Bookings;
+using HotelBooking.Application.Common.Errors;
 using HotelBooking.Application.Common.Extensions;
-using HotelBooking.Application.Common.Interfaces;
-using HotelBooking.Application.Common.Models;
-using HotelBooking.Application.Common.Payments;
+using HotelBooking.Application.Common.Security;
+using HotelBooking.Application.Payments.Gateway;
 using HotelBooking.Domain.Bookings;
 using HotelBooking.Domain.Payments;
 

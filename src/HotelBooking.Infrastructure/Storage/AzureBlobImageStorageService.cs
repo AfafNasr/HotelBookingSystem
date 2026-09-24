@@ -1,6 +1,5 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using HotelBooking.Application.Common.Interfaces;
 using HotelBooking.Application.Common.Storage;
 using Microsoft.Extensions.Options;
 

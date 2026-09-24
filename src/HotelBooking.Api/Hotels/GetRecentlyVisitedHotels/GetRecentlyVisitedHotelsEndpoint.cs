@@ -20,7 +20,7 @@ public sealed class GetRecentlyVisitedHotelsEndpoint : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Policy = HotelPermissions.ViewRecentlyVisited)]
+    [Authorize(Policy = UserPermissions.ViewRecentlyVisited)]
     public async Task<IActionResult> Get(
         CancellationToken cancellationToken)
     {

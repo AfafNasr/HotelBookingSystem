@@ -1,6 +1,6 @@
 ﻿using HotelBooking.Application.Authentication;
 using HotelBooking.Application.Authentication.Login;
-using HotelBooking.Application.Common.Models;
+using HotelBooking.Application.Common.Errors;
 using Moq;
 
 namespace HotelBooking.UnitTests.Authentication.Login;

@@ -1,4 +1,4 @@
-﻿namespace HotelBooking.Application.Common.Models;
+﻿namespace HotelBooking.Application.Authentication;
 
 public sealed record AuthenticatedUser(
     string UserId,

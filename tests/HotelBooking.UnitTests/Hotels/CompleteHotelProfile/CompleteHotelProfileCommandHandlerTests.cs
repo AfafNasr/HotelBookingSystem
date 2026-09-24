@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
-using HotelBooking.Application.Common.Interfaces;
-using HotelBooking.Application.Common.Models;
+using HotelBooking.Application.Common.Errors;
+using HotelBooking.Application.Common.Security;
 using HotelBooking.Application.Hotels;
 using HotelBooking.Application.Hotels.CompleteHotelProfile;
 using HotelBooking.Domain.Hotels;

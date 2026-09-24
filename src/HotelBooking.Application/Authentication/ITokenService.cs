@@ -1,6 +1,4 @@
-﻿using HotelBooking.Application.Common.Models;
-
-namespace HotelBooking.Application.Authentication;
+﻿namespace HotelBooking.Application.Authentication;
 
 public interface ITokenService
 {

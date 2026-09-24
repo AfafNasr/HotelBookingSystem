@@ -1,6 +1,6 @@
-﻿using HotelBooking.Application.Common.Payments;
+﻿using HotelBooking.Application.Payments.StartPayment;
 
-namespace HotelBooking.Application.Common.Interfaces;
+namespace HotelBooking.Application.Payments;
 
 public interface IStripeWebhookService
 {

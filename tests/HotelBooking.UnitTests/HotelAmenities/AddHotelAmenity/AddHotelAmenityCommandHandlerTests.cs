@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using HotelBooking.Application.Amenities;
-using HotelBooking.Application.Common.Interfaces;
-using HotelBooking.Application.Common.Models;
+using HotelBooking.Application.Common.Errors;
+using HotelBooking.Application.Common.Security;
 using HotelBooking.Application.HotelAmenities;
 using HotelBooking.Application.HotelAmenities.AddHotelAmenity;
 using HotelBooking.Application.Hotels;

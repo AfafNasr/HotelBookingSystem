@@ -1,6 +1,4 @@
-﻿using HotelBooking.Application.Common.Storage;
-
-namespace HotelBooking.Application.Common.Interfaces;
+﻿namespace HotelBooking.Application.Common.Storage;
 
 public interface IImageStorageService
 {

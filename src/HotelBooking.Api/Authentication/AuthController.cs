@@ -2,7 +2,6 @@
 using HotelBooking.Api.Authentication.Register;
 using HotelBooking.Application.Authentication.Login;
 using HotelBooking.Application.Authentication.Register;
-using HotelBooking.Application.Common.Models;
 using Microsoft.AspNetCore.Mvc;
 using HotelBooking.Api.Common;
 

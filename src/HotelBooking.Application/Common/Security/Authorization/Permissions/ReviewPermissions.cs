@@ -2,7 +2,7 @@
 
 public static class ReviewPermissions
 {
-    public const string Create = "reviews.create";
+    public const string Create = "Reviews.Create";
 
     public static readonly IReadOnlyCollection<string> All =
     [

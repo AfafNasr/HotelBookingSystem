@@ -1,4 +1,4 @@
-﻿namespace HotelBooking.Application.Common.Payments;
+﻿namespace HotelBooking.Application.Payments.Gateway;
 
 public sealed record CreateRefundRequest(
     int RefundId,

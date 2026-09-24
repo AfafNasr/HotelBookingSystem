@@ -1,6 +1,4 @@
-﻿using HotelBooking.Application.Common.Payments;
-
-namespace HotelBooking.Application.Payments;
+﻿namespace HotelBooking.Application.Payments.Gateway;
 
 public interface IPaymentGateway
 {

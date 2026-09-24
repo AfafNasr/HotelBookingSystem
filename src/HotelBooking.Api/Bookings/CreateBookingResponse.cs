@@ -1,4 +1,4 @@
-﻿using HotelBooking.Application.Common.Models;
+﻿using HotelBooking.Application.Common.Errors;
 using HotelBooking.Domain.Bookings;
 
 namespace HotelBooking.Api.Bookings;

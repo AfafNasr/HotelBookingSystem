@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
+using HotelBooking.Application.Common.Errors;
 using HotelBooking.Application.Common.Extensions;
-using HotelBooking.Application.Common.Models;
 using HotelBooking.Application.Countries;
 using HotelBooking.Domain.Cities;
 

@@ -7,7 +7,7 @@ public static class HotelPermissions
     public const string Delete = "Hotels.Delete";
     public const string CompleteProfile = "Hotels.CompleteProfile";
     public const string UploadImage = "Hotels.UploadImage";
-    public const string ViewRecentlyVisited = "Hotels.ViewRecentlyVisited";
+    public const string ManageAmenities = "Hotels.ManageAmenities";
 
     public static readonly IReadOnlyCollection<string> All =
     [
@@ -16,6 +16,6 @@ public static class HotelPermissions
         Delete,
         CompleteProfile,
         UploadImage,
-        ViewRecentlyVisited
+        ManageAmenities
     ];
 }

@@ -1,4 +1,4 @@
-﻿using HotelBooking.Application.Common.Models;
+﻿using HotelBooking.Application.Common.Errors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelBooking.Api.Common;

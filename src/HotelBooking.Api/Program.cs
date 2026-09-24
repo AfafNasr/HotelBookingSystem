@@ -2,7 +2,7 @@ using HotelBooking.Api.Authentication;
 using HotelBooking.Api.Authorization;
 using HotelBooking.Api.ErrorHandling;
 using HotelBooking.Application;
-using HotelBooking.Application.Common.Interfaces;
+using HotelBooking.Application.Common.Security;
 using HotelBooking.Infrastructure;
 using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Infrastructure.Persistence;

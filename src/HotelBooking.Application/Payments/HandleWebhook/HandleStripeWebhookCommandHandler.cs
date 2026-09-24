@@ -1,9 +1,11 @@
 ﻿using HotelBooking.Application.Bookings;
-using HotelBooking.Application.Common.Models;
-using HotelBooking.Application.Common.Payments;
+using HotelBooking.Application.Common.Errors;
+using HotelBooking.Application.Payments.Gateway;
 using HotelBooking.Domain.Bookings;
 using HotelBooking.Domain.Payments;
 using Microsoft.Extensions.Logging;
+using HotelBooking.Application.Bookings.GetBookingConfirmation;
+using HotelBooking.Application.Emails;
 
 namespace HotelBooking.Application.Payments.HandleStripeWebhook;
 
@@ -18,20 +20,26 @@ public sealed class HandleStripeWebhookCommandHandler
     private readonly IPaymentGateway _paymentGateway;
     private readonly IBookingConcurrencyManager _bookingConcurrencyManager;
     private readonly ILogger<HandleStripeWebhookCommandHandler> _logger;
+    private readonly IBookingConfirmationQuery _bookingConfirmationQuery;
+    private readonly IEmailSender _emailSender;
 
     public HandleStripeWebhookCommandHandler(
-        IPaymentRepository paymentRepository,
-        IBookingRepository bookingRepository,
-        IRefundRepository refundRepository,
-        IPaymentGateway paymentGateway,
-        IBookingConcurrencyManager bookingConcurrencyManager,
-        ILogger<HandleStripeWebhookCommandHandler> logger)
+     IPaymentRepository paymentRepository,
+     IBookingRepository bookingRepository,
+     IRefundRepository refundRepository,
+     IPaymentGateway paymentGateway,
+     IBookingConcurrencyManager bookingConcurrencyManager,
+     IBookingConfirmationQuery bookingConfirmationQuery,
+     IEmailSender emailSender,
+     ILogger<HandleStripeWebhookCommandHandler> logger)
     {
         _paymentRepository = paymentRepository;
         _bookingRepository = bookingRepository;
         _refundRepository = refundRepository;
         _paymentGateway = paymentGateway;
         _bookingConcurrencyManager = bookingConcurrencyManager;
+        _bookingConfirmationQuery = bookingConfirmationQuery;
+        _emailSender = emailSender;
         _logger = logger;
     }
 
@@ -95,7 +103,18 @@ public sealed class HandleStripeWebhookCommandHandler
                             ct),
                     cancellationToken);
 
-        if (outcome == PaymentProcessingOutcome.Completed)
+        if (outcome == PaymentProcessingOutcome.Confirmed)
+        {
+            await SendBookingConfirmationEmailAsync(
+                bookingId.Value,
+                cancellationToken);
+
+            return new HandleStripeWebhookResult(
+                true,
+                Array.Empty<ApplicationError>());
+        }
+
+        if (outcome == PaymentProcessingOutcome.AlreadyConfirmed)
         {
             return new HandleStripeWebhookResult(
                 true,
@@ -150,7 +169,7 @@ public sealed class HandleStripeWebhookCommandHandler
                booking.Id);
 
 
-            return PaymentProcessingOutcome.Completed;
+            return PaymentProcessingOutcome.AlreadyConfirmed;
         }
 
         var holdIsActive =
@@ -179,7 +198,7 @@ public sealed class HandleStripeWebhookCommandHandler
                 booking.Id,
                 payment.Id);
 
-            return PaymentProcessingOutcome.Completed;
+            return PaymentProcessingOutcome.Confirmed;
         }
 
         await _paymentRepository.SaveChangesAsync(
@@ -314,9 +333,32 @@ public sealed class HandleStripeWebhookCommandHandler
         return $"HB-{Guid.NewGuid():N}".ToUpperInvariant();
     }
 
+    private async Task SendBookingConfirmationEmailAsync(
+    int bookingId,
+    CancellationToken cancellationToken)
+    {
+        var confirmation =
+            await _bookingConfirmationQuery.GetAsync(
+                bookingId,
+                cancellationToken);
+
+        if (confirmation is null)
+        {
+            throw new InvalidOperationException(
+                $"Booking confirmation could not be loaded for booking {bookingId}.");
+        }
+
+        var email =
+            BookingConfirmationEmailBuilder.Build(confirmation);
+
+        await _emailSender.SendAsync(
+            email,
+            cancellationToken);
+    }
     private enum PaymentProcessingOutcome
     {
-        Completed,
+        AlreadyConfirmed,
+        Confirmed,
         RefundRequired
     }
 }

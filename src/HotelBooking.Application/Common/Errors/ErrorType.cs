@@ -1,4 +1,4 @@
-﻿namespace HotelBooking.Application.Common.Models;
+﻿namespace HotelBooking.Application.Common.Errors;
 
 public enum ErrorType
 {

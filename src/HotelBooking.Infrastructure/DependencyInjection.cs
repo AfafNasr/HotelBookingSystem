@@ -8,22 +8,25 @@ using HotelBooking.Application.Bookings;
 using HotelBooking.Application.Bookings.GetBookingConfirmation;
 using HotelBooking.Application.Cities;
 using HotelBooking.Application.Cities.GetTrendingDestinations;
-using HotelBooking.Application.Common.Interfaces;
+using HotelBooking.Application.Common.Storage;
 using HotelBooking.Application.Countries;
 using HotelBooking.Application.Deals;
 using HotelBooking.Application.Deals.GetFeaturedDeals;
+using HotelBooking.Application.Emails;
 using HotelBooking.Application.HotelAmenities;
 using HotelBooking.Application.Hotels;
 using HotelBooking.Application.Hotels.GetHotelDetails;
 using HotelBooking.Application.Hotels.GetRecentlyVisitedHotels;
 using HotelBooking.Application.Hotels.SearchHotels;
 using HotelBooking.Application.Payments;
+using HotelBooking.Application.Payments.Gateway;
 using HotelBooking.Application.Reviews;
 using HotelBooking.Application.Rooms;
 using HotelBooking.Application.Rooms.GetAvailableRooms;
 using HotelBooking.Infrastructure.Authentication;
 using HotelBooking.Infrastructure.BackgroundJobs;
 using HotelBooking.Infrastructure.Documents;
+using HotelBooking.Infrastructure.Emails;
 using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Infrastructure.Payments.Stripe;
 using HotelBooking.Infrastructure.Persistence;
@@ -179,6 +182,25 @@ public static class DependencyInjection
         services.AddScoped<IBookingConfirmationQuery, BookingConfirmationQuery>();
         services.AddScoped<ITrendingDestinationsQuery,TrendingDestinationsQuery>();
         services.AddScoped< IBookingConfirmationPdfGenerator,BookingConfirmationPdfGenerator>();
+
+
+        services
+    .AddOptions<SmtpEmailOptions>()
+    .Bind(configuration.GetSection(SmtpEmailOptions.SectionName))
+    .Validate(options => !string.IsNullOrWhiteSpace(options.Host),
+        "Email:Host is required.")
+    .Validate(options => options.Port > 0,
+        "Email:Port must be greater than zero.")
+    .Validate(options => !string.IsNullOrWhiteSpace(options.Username),
+        "Email:Username is required.")
+    .Validate(options => !string.IsNullOrWhiteSpace(options.Password),
+        "Email:Password is required.")
+    .Validate(options => !string.IsNullOrWhiteSpace(options.FromEmail),
+        "Email:FromEmail is required.")
+    .ValidateOnStart();
+
+       
+        services.AddScoped<IEmailSender, SmtpEmailSender>();
 
         return services;
     }

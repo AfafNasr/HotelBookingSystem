@@ -1,5 +1,4 @@
 ﻿using HotelBooking.Application.Authentication.Register;
-using HotelBooking.Application.Common.Models;
 using HotelBooking.Application.Users.PromoteToHotelOwner;
 
 namespace HotelBooking.Application.Authentication;

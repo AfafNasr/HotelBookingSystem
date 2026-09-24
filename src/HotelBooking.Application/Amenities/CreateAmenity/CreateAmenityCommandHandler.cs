@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
+using HotelBooking.Application.Common.Errors;
 using HotelBooking.Application.Common.Extensions;
-using HotelBooking.Application.Common.Models;
 using HotelBooking.Domain.Amenities;
 
 namespace HotelBooking.Application.Amenities.CreateAmenity;

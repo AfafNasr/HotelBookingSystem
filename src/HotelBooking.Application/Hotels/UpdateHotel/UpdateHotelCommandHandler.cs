@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
 using HotelBooking.Application.Authentication;
 using HotelBooking.Application.Cities;
+using HotelBooking.Application.Common.Errors;
 using HotelBooking.Application.Common.Extensions;
-using HotelBooking.Application.Common.Models;
 using HotelBooking.Application.Common.Security;
 using HotelBooking.Domain.Hotels;
 

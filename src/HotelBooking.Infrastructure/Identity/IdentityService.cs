@@ -1,10 +1,10 @@
-﻿using HotelBooking.Application.Common.Models;
-using HotelBooking.Application.Common.Security;
+﻿using HotelBooking.Application.Common.Security;
 using HotelBooking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Users.PromoteToHotelOwner;
 using HotelBooking.Application.Authentication;
+using HotelBooking.Application.Common.Errors;
 
 namespace HotelBooking.Infrastructure.Identity;
 

@@ -19,7 +19,7 @@ public sealed class AddHotelAmenityEndpoint : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = HotelAmenityPermissions.Manage)]
+    [Authorize(Policy = HotelPermissions.ManageAmenities)]
     public async Task<IActionResult> Add(
         int hotelId,
         AddHotelAmenityRequest request,
