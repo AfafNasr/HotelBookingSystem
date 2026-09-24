@@ -14,10 +14,10 @@ public sealed class BookingConfirmationQuery : IBookingConfirmationQuery
     }
 
     public async Task<BookingConfirmation?> GetAsync(
-        int bookingId,
-        CancellationToken cancellationToken)
+    int bookingId,
+    CancellationToken cancellationToken)
     {
-        return await _dbContext.Bookings
+        var confirmation = await _dbContext.Bookings
             .AsNoTracking()
             .Where(booking => booking.Id == bookingId)
             .Select(booking => new BookingConfirmation(
@@ -30,7 +30,6 @@ public sealed class BookingConfirmationQuery : IBookingConfirmationQuery
                 booking.GuestEmail,
                 booking.CheckInDate,
                 booking.CheckOutDate,
-
                 booking.Rooms
                     .Select(bookingRoom => new BookingConfirmationRoom(
                         bookingRoom.RoomId,
@@ -38,20 +37,39 @@ public sealed class BookingConfirmationQuery : IBookingConfirmationQuery
                         bookingRoom.Room.Description,
                         bookingRoom.OriginalPricePerNight))
                     .ToList(),
-
                 booking.TotalAmount,
-
                 booking.Payment == null
                     ? null
                     : (PaymentStatus?)booking.Payment.Status,
-
                 booking.Payment == null
                     ? null
                     : (decimal?)booking.Payment.Amount,
-
                 booking.Payment == null
                     ? null
                     : booking.Payment.Currency))
             .SingleOrDefaultAsync(cancellationToken);
+
+        if (confirmation is null)
+        {
+            return null;
+        }
+
+        var numberOfNights =
+            confirmation.CheckOutDate.DayNumber -
+            confirmation.CheckInDate.DayNumber;
+
+        var subtotalAmount =
+            confirmation.Rooms.Sum(room => room.OriginalPricePerNight)
+            * numberOfNights;
+
+        var discountAmount =
+            subtotalAmount - confirmation.TotalAmount;
+
+        return confirmation with
+        {
+            NumberOfNights = numberOfNights,
+            SubtotalAmount = subtotalAmount,
+            DiscountAmount = discountAmount
+        };
     }
 }
