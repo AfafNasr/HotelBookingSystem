@@ -23,6 +23,7 @@ using HotelBooking.Application.Payments.Gateway;
 using HotelBooking.Application.Reviews;
 using HotelBooking.Application.Rooms;
 using HotelBooking.Application.Rooms.GetAvailableRooms;
+using HotelBooking.Application.Rooms.GetHotelRooms;
 using HotelBooking.Infrastructure.Authentication;
 using HotelBooking.Infrastructure.BackgroundJobs;
 using HotelBooking.Infrastructure.Documents;
@@ -201,6 +202,7 @@ public static class DependencyInjection
 
        
         services.AddScoped<IEmailSender, SmtpEmailSender>();
+        services.AddScoped<IHotelRoomsQuery, HotelRoomsQuery>();
 
         return services;
     } 

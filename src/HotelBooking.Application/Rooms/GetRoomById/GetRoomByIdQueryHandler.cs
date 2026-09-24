@@ -1,0 +1,51 @@
+﻿using HotelBooking.Application.Common.Errors;
+
+namespace HotelBooking.Application.Rooms.GetRoomById;
+
+public sealed class GetRoomByIdQueryHandler
+{
+    private readonly IRoomRepository _roomRepository;
+
+    public GetRoomByIdQueryHandler(IRoomRepository roomRepository)
+    {
+        _roomRepository = roomRepository;
+    }
+
+    public async Task<GetRoomByIdResult> HandleAsync(
+        GetRoomByIdQuery query,
+        CancellationToken cancellationToken)
+    {
+        var room = await _roomRepository.GetByIdAsync(
+            query.RoomId,
+            cancellationToken);
+
+        if (room is null)
+        {
+            return new GetRoomByIdResult(
+                false,
+                null,
+                new[]
+                {
+                    new ApplicationError(
+                        "RoomNotFound",
+                        "The specified room does not exist.",
+                        ErrorType.NotFound)
+                });
+        }
+
+        var roomDetails = new RoomDetails(
+            room.Id,
+            room.HotelId,
+            room.RoomNumber,
+            room.RoomType,
+            room.Description,
+            room.AdultsCapacity,
+            room.ChildrenCapacity,
+            room.PricePerNight);
+
+        return new GetRoomByIdResult(
+            true,
+            roomDetails,
+            Array.Empty<ApplicationError>());
+    }
+}

@@ -27,7 +27,6 @@ public sealed class RoomRepository : IRoomRepository
     CancellationToken cancellationToken)
     {
         return await _dbContext.Room
-            .AsNoTracking()
             .Where(room =>
                 roomIds.Contains(room.Id) &&
                 !room.IsDeleted)
@@ -44,6 +43,22 @@ public sealed class RoomRepository : IRoomRepository
         return _dbContext.Room.AnyAsync(
             room =>
                 room.HotelId == hotelId &&
+                room.RoomNumber == normalizedRoomNumber,
+            cancellationToken);
+    }
+
+    public Task<bool> ExistsByRoomNumberExceptAsync(
+    int hotelId,
+    string roomNumber,
+    int excludedRoomId,
+    CancellationToken cancellationToken)
+    {
+        var normalizedRoomNumber = roomNumber.Trim();
+
+        return _dbContext.Room.AnyAsync(
+            room =>
+                room.HotelId == hotelId &&
+                room.Id != excludedRoomId &&
                 room.RoomNumber == normalizedRoomNumber,
             cancellationToken);
     }
