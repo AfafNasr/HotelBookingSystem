@@ -1,5 +1,4 @@
 ﻿using HotelBooking.Api.Common;
-using HotelBooking.Application.Authorization.Permissions;
 using HotelBooking.Application.Common.Security.Authorization.Permissions;
 using HotelBooking.Application.Users.PromoteToHotelOwner;
 using Microsoft.AspNetCore.Authorization;
@@ -24,7 +23,7 @@ public sealed class AdminUsersController : ControllerBase
     public async Task<IActionResult> PromoteToHotelOwner(
         string userId)
     {
-        var command = new PromoteToHotelOwnerCommand(userId);
+        var command = new PromoteToHotelOwnerCommandHandler(userId);
 
         var result =
             await _promoteToHotelOwnerHandler.HandleAsync(command);

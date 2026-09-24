@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
-using HotelBooking.Application.Common.Interfaces;
-using HotelBooking.Application.Common.Models;
+using HotelBooking.Application.Common.Errors;
+using HotelBooking.Application.Common.Extensions;
+using HotelBooking.Application.Common.Security;
 using HotelBooking.Application.Common.Storage;
 using HotelBooking.Domain.Hotels;
 using Microsoft.Extensions.Logging;
@@ -42,17 +43,10 @@ public sealed class UploadHotelImageCommandHandler
 
         if (!validationResult.IsValid)
         {
-            var errors = validationResult.Errors
-                .Select(error => new ApplicationError(
-                    error.PropertyName,
-                    error.ErrorMessage,
-                    ErrorType.Validation))
-                .ToArray();
-
             return new UploadHotelImageResult(
                 false,
                 null,
-                errors);
+               validationResult.ToApplicationErrors());
         }
 
         var hotel = await _hotelRepository.GetByIdAsync(

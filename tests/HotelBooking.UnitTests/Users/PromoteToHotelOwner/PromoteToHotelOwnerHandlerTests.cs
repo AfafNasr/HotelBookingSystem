@@ -1,5 +1,5 @@
-﻿using HotelBooking.Application.Common.Interfaces;
-using HotelBooking.Application.Common.Models;
+﻿using HotelBooking.Application.Authentication;
+using HotelBooking.Application.Common.Errors;
 using HotelBooking.Application.Users.PromoteToHotelOwner;
 using Moq;
 
@@ -24,7 +24,7 @@ public sealed class PromoteToHotelOwnerHandlerTests
         // Arrange
         const string userId = "user-123";
 
-        var command = new PromoteToHotelOwnerCommand(userId);
+        var command = new PromoteToHotelOwnerCommandHandler(userId);
 
         var expectedResult = new PromoteToHotelOwnerResult(
             true,
@@ -68,7 +68,7 @@ public sealed class PromoteToHotelOwnerHandlerTests
                 service.PromoteToHotelOwnerAsync(userId))
             .ReturnsAsync(expectedResult);
 
-        var command = new PromoteToHotelOwnerCommand(userId);
+        var command = new PromoteToHotelOwnerCommandHandler(userId);
 
         // Act
         var result = await _handler.HandleAsync(command);

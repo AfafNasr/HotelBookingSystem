@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
-using HotelBooking.Application.Common.Interfaces;
-using HotelBooking.Application.Common.Models;
+using HotelBooking.Application.Common.Errors;
+using HotelBooking.Application.Common.Extensions;
+using HotelBooking.Application.Countries;
 using HotelBooking.Domain.Cities;
 
 namespace HotelBooking.Application.Cities.CreateCity;
@@ -31,17 +32,10 @@ public sealed class CreateCityCommandHandler
 
         if (!validationResult.IsValid)
         {
-            var errors = validationResult.Errors
-                .Select(error => new ApplicationError(
-                    error.PropertyName,
-                    error.ErrorMessage,
-                    ErrorType.Validation))
-                .ToArray();
-
             return new CreateCityResult(
                 false,
                 null,
-                errors);
+                validationResult.ToApplicationErrors());
         }
 
         var normalizedName = command.Name.Trim();

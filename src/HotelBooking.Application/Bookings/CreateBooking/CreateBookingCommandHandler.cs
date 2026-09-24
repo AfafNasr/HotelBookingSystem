@@ -1,8 +1,12 @@
 ﻿using FluentValidation;
 using HotelBooking.Application.Bookings.Pricing;
-using HotelBooking.Application.Common;
-using HotelBooking.Application.Common.Interfaces;
-using HotelBooking.Application.Common.Models;
+using HotelBooking.Application.Common.Errors;
+using HotelBooking.Application.Common.Extensions;
+using HotelBooking.Application.Common.Errors;
+using HotelBooking.Application.Common.Security;
+using HotelBooking.Application.Deals;
+using HotelBooking.Application.Hotels;
+using HotelBooking.Application.Rooms;
 using HotelBooking.Domain.Bookings;
 using Microsoft.Extensions.Logging;
 
@@ -51,14 +55,10 @@ public sealed class CreateBookingCommandHandler
 
         if (!validationResult.IsValid)
         {
-            var errors = validationResult.Errors
-                .Select(error => new ApplicationError(
-                    error.PropertyName,
-                    error.ErrorMessage,
-                    ErrorType.Validation))
-                .ToArray();
-
-            return new CreateBookingResult(false, null, errors);
+            return new CreateBookingResult(
+                false,
+                null,
+              validationResult.ToApplicationErrors());
         }
 
         var userId = _currentUserService.UserId;

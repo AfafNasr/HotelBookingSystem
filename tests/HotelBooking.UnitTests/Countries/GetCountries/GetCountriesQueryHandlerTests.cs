@@ -1,4 +1,4 @@
-﻿using HotelBooking.Application.Common.Interfaces;
+﻿using HotelBooking.Application.Countries;
 using HotelBooking.Application.Countries.GetCountries;
 using HotelBooking.Domain.Cities;
 using Moq;

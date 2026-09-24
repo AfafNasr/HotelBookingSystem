@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
-using HotelBooking.Application.Common.Interfaces;
-using HotelBooking.Application.Common.Models;
+using HotelBooking.Application.Authentication;
+using HotelBooking.Application.Cities;
+using HotelBooking.Application.Common.Errors;
+using HotelBooking.Application.Common.Extensions;
 using HotelBooking.Application.Common.Security;
 using HotelBooking.Domain.Hotels;
 
@@ -35,17 +37,10 @@ public sealed class CreateHotelCommandHandler
 
         if (!validationResult.IsValid)
         {
-            var errors = validationResult.Errors
-                .Select(error => new ApplicationError(
-                    error.PropertyName,
-                    error.ErrorMessage,
-                    ErrorType.Validation))
-                .ToArray();
-
             return new CreateHotelResult(
                 false,
                 null,
-                errors);
+                validationResult.ToApplicationErrors());
         }
 
         var city = await _cityRepository.GetByIdAsync(

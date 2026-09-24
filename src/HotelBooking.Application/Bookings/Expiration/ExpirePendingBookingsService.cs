@@ -1,5 +1,4 @@
-﻿using HotelBooking.Application.Common.Interfaces;
-using HotelBooking.Domain.Bookings;
+﻿using HotelBooking.Domain.Bookings;
 
 namespace HotelBooking.Application.Bookings.Expiration;
 

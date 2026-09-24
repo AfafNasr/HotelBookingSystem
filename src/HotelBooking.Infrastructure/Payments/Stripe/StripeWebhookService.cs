@@ -1,8 +1,8 @@
-﻿using HotelBooking.Application.Common.Interfaces;
-using HotelBooking.Application.Common.Payments;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Stripe;
 using Microsoft.Extensions.Logging;
+using HotelBooking.Application.Payments;
+using HotelBooking.Application.Payments.StartPayment;
 
 namespace HotelBooking.Infrastructure.Payments.Stripe;
 
@@ -46,8 +46,8 @@ public sealed class StripeWebhookService : IStripeWebhookService
         catch (StripeException exception)
         {
             _logger.LogWarning(
-                exception,
-                "Stripe webhook signature verification failed.");
+     exception,
+     "Failed to construct Stripe webhook event.");
 
             webhookEvent = null;
             return false;

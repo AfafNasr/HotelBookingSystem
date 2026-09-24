@@ -1,4 +1,4 @@
-﻿using HotelBooking.Application.Common.Models;
+﻿using HotelBooking.Application.Common.Errors;
 
 namespace HotelBooking.Application.Cities.CreateCity;
 

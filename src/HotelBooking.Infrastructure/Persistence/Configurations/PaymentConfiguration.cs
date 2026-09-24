@@ -33,9 +33,9 @@ public sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(payment => payment.UpdatedAt);
 
         builder.HasOne<Booking>()
-            .WithOne()
-            .HasForeignKey<Payment>(payment => payment.BookingId)
-            .OnDelete(DeleteBehavior.Restrict);
+    .WithOne(booking => booking.Payment)
+    .HasForeignKey<Payment>(payment => payment.BookingId)
+    .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(payment => payment.BookingId)
             .IsUnique();

@@ -1,5 +1,4 @@
-﻿using HotelBooking.Application.Common;
-using HotelBooking.Application.Common.Models;
+﻿using HotelBooking.Application.Common.Errors;
 
 namespace HotelBooking.Application.Bookings.CreateBooking;
 

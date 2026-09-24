@@ -1,5 +1,4 @@
-﻿using HotelBooking.Application.Authorization.Permissions;
-using HotelBooking.Application.Common.Security.Authorization.Permissions;
+﻿using HotelBooking.Application.Common.Security.Authorization.Permissions;
 
 namespace HotelBooking.Application.Common.Security.Authorization;
 
@@ -33,13 +32,15 @@ public static class RolePermissions
                 [Roles.Customer] = new HashSet<string>()
                 {
                     BookingPermissions.Create,
-                    BookingPermissions.StartPayment
+                    BookingPermissions.StartPayment,
+                    ReviewPermissions.Create,
+                    UserPermissions.ViewRecentlyVisited,
+                    BookingPermissions.ViewConfirmation
                 },
 
                 [Roles.HotelOwner] = new HashSet<string>()
                 {
-                    HotelAmenityPermissions.Manage,
-
+                    HotelPermissions.ManageAmenities,
                     RoomPermissions.Create,
                     HotelPermissions.CompleteProfile,
                     HotelPermissions.UploadImage,

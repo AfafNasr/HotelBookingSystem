@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
-using HotelBooking.Application.Common.Interfaces;
-using HotelBooking.Application.Common.Models;
+using HotelBooking.Application.Common.Errors;
+using HotelBooking.Application.Common.Extensions;
+using HotelBooking.Application.Countries;
 
 namespace HotelBooking.Application.Cities.UpdateCity;
 
@@ -29,14 +30,9 @@ public sealed class UpdateCityCommandHandler
 
         if (!validationResult.IsValid)
         {
-            var errors = validationResult.Errors
-                .Select(error => new ApplicationError(
-                    error.PropertyName,
-                    error.ErrorMessage,
-                    ErrorType.Validation))
-                .ToArray();
-
-            return new UpdateCityResult(false, errors);
+            return new UpdateCityResult(
+                false,
+                validationResult.ToApplicationErrors());
         }
 
         var city = await _cityRepository.GetByIdAsync(

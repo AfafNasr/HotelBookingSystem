@@ -1,5 +1,4 @@
-﻿
-namespace HotelBooking.Application.Common.Security.Authorization.Permissions;
+﻿namespace HotelBooking.Application.Common.Security.Authorization.Permissions;
 
 public static class DealPermissions
 {

@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
-using HotelBooking.Application.Common.Interfaces;
-using HotelBooking.Application.Common.Models;
+using HotelBooking.Application.Common.Errors;
+using HotelBooking.Application.Common.Extensions;
 using HotelBooking.Domain.Amenities;
 
 namespace HotelBooking.Application.Amenities.CreateAmenity;
@@ -29,17 +29,10 @@ public sealed class CreateAmenityCommandHandler
 
         if (!validationResult.IsValid)
         {
-            var errors = validationResult.Errors
-                .Select(error => new ApplicationError(
-                    error.PropertyName,
-                    error.ErrorMessage,
-                    ErrorType.Validation))
-                .ToArray();
-
             return new CreateAmenityResult(
                 false,
                 null,
-                errors);
+                validationResult.ToApplicationErrors());
         }
 
         var amenityExists =
