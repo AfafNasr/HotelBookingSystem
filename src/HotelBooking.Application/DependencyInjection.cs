@@ -7,6 +7,7 @@ using HotelBooking.Application.Bookings.Expiration;
 using HotelBooking.Application.Bookings.GetBookingConfirmation;
 using HotelBooking.Application.Bookings.Pricing;
 using HotelBooking.Application.Cities.CreateCity;
+using HotelBooking.Application.Cities.GetAdminCities;
 using HotelBooking.Application.Cities.GetTrendingDestinations;
 using HotelBooking.Application.Cities.UpdateCity;
 using HotelBooking.Application.Countries.GetCountries;
@@ -74,6 +75,8 @@ public static class DependencyInjection
         services.AddScoped<GetHotelRoomsQueryHandler>();
         services.AddScoped<UpdateRoomCommandHandler>();
         services.AddScoped<DeleteRoomCommandHandler>();
+        services.AddScoped<GetAdminCitiesQueryHandler>();
+
 
 
         return services;

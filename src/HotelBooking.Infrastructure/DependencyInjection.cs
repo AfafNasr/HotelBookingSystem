@@ -7,6 +7,7 @@ using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Bookings;
 using HotelBooking.Application.Bookings.GetBookingConfirmation;
 using HotelBooking.Application.Cities;
+using HotelBooking.Application.Cities.GetAdminCities;
 using HotelBooking.Application.Cities.GetTrendingDestinations;
 using HotelBooking.Application.Common.Storage;
 using HotelBooking.Application.Countries;
@@ -203,6 +204,7 @@ public static class DependencyInjection
        
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IHotelRoomsQuery, HotelRoomsQuery>();
+        services.AddScoped<IAdminCitiesQuery, AdminCitiesQuery>();
 
         return services;
     } 

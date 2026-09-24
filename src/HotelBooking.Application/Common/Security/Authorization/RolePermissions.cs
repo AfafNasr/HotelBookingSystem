@@ -17,6 +17,7 @@ public static class RolePermissions
                     CityPermissions.Create,
                     CityPermissions.Update,
                     CityPermissions.Delete,
+                     CityPermissions.View,
 
                     RoomPermissions.Create,
                     RoomPermissions.Update,
