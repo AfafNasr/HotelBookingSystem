@@ -16,6 +16,7 @@ using HotelBooking.Application.Deals.GetFeaturedDeals;
 using HotelBooking.Application.Emails;
 using HotelBooking.Application.HotelAmenities;
 using HotelBooking.Application.Hotels;
+using HotelBooking.Application.Hotels.GetAdminHotels;
 using HotelBooking.Application.Hotels.GetHotelDetails;
 using HotelBooking.Application.Hotels.GetRecentlyVisitedHotels;
 using HotelBooking.Application.Hotels.SearchHotels;
@@ -23,6 +24,7 @@ using HotelBooking.Application.Payments;
 using HotelBooking.Application.Payments.Gateway;
 using HotelBooking.Application.Reviews;
 using HotelBooking.Application.Rooms;
+using HotelBooking.Application.Rooms.GetAdminRooms;
 using HotelBooking.Application.Rooms.GetAvailableRooms;
 using HotelBooking.Application.Rooms.GetHotelRooms;
 using HotelBooking.Infrastructure.Authentication;
@@ -205,6 +207,8 @@ public static class DependencyInjection
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IHotelRoomsQuery, HotelRoomsQuery>();
         services.AddScoped<IAdminCitiesQuery, AdminCitiesQuery>();
+        services.AddScoped<IAdminHotelsQuery, AdminHotelsQuery>();
+        services.AddScoped<IAdminRoomsQuery, AdminRoomsQuery>();
 
         return services;
     } 

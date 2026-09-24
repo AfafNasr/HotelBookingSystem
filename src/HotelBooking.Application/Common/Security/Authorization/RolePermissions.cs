@@ -13,6 +13,7 @@ public static class RolePermissions
                     HotelPermissions.Create,
                     HotelPermissions.Update,
                     HotelPermissions.Delete,
+                    HotelPermissions.View,
 
                     CityPermissions.Create,
                     CityPermissions.Update,
@@ -23,6 +24,7 @@ public static class RolePermissions
                     RoomPermissions.Update,
                     RoomPermissions.Delete,
                      RoomPermissions.View,
+                     RoomPermissions.GetAdminRooms,
 
                     UserPermissions.PromoteToHotelOwner ,
 
