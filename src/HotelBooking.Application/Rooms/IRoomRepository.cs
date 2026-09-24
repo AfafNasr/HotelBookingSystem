@@ -12,10 +12,18 @@ public interface IRoomRepository
     IReadOnlyCollection<int> roomIds,
     CancellationToken cancellationToken);
 
+    // For Create Room
     Task<bool> ExistsByRoomNumberAsync(
         int hotelId,
         string roomNumber,
         CancellationToken cancellationToken);
+
+    //For Update Room
+    Task<bool> ExistsByRoomNumberExceptAsync(
+    int hotelId,
+    string roomNumber,
+    int excludedRoomId,
+    CancellationToken cancellationToken);
 
     void Add(Room room);
 

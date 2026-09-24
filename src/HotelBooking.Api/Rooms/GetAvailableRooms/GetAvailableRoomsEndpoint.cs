@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HotelBooking.Api.Rooms.GetAvailableRooms;
 
 [ApiController]
-[Route("api/hotels/{hotelId:int}/rooms")]
+[Route("api/hotels/{hotelId:int}/rooms/available")]
 public sealed class GetAvailableRoomsEndpoint : ControllerBase
 {
     private readonly GetAvailableRoomsQueryHandler _handler;

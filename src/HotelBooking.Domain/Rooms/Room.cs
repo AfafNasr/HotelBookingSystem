@@ -49,4 +49,46 @@ public sealed class Room
         CreatedAt = createdAt;
         IsDeleted = false;
     }
+
+    public void Update(
+    string roomNumber,
+    RoomType roomType,
+    string? description,
+    int adultsCapacity,
+    int childrenCapacity,
+    decimal pricePerNight,
+    DateTime updatedAt)
+    {
+        if (IsDeleted)
+        {
+            throw new InvalidOperationException(
+                "A deleted room cannot be updated.");
+        }
+
+        RoomNumber = roomNumber.Trim();
+        RoomType = roomType;
+
+        Description = string.IsNullOrWhiteSpace(description)
+            ? null
+            : description.Trim();
+
+        AdultsCapacity = adultsCapacity;
+        ChildrenCapacity = childrenCapacity;
+        PricePerNight = pricePerNight;
+        UpdatedAt = updatedAt;
+    }
+
+    public void Delete(DateTime deletedAt)
+    {
+        if (IsDeleted)
+        {
+            return;
+        }
+
+        IsDeleted = true;
+        DeletedAt = deletedAt;
+        UpdatedAt = deletedAt;
+    }
+
+
 }

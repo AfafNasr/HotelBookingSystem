@@ -24,7 +24,11 @@ using HotelBooking.Application.Payments.HandleStripeWebhook;
 using HotelBooking.Application.Payments.StartPayment;
 using HotelBooking.Application.Reviews.CreateReview;
 using HotelBooking.Application.Rooms.CreateRoom;
+using HotelBooking.Application.Rooms.DeleteRoom;
 using HotelBooking.Application.Rooms.GetAvailableRooms;
+using HotelBooking.Application.Rooms.GetHotelRooms;
+using HotelBooking.Application.Rooms.GetRoomById;
+using HotelBooking.Application.Rooms.UpdateRoom;
 using HotelBooking.Application.Rooms.UploadRoomImage;
 using HotelBooking.Application.Users.PromoteToHotelOwner;
 using Microsoft.Extensions.DependencyInjection;
@@ -67,6 +71,9 @@ public static class DependencyInjection
         services.AddScoped<GetRecentlyVisitedHotelsQueryHandler>();
         services.AddScoped<GetTrendingDestinationsQueryHandler>();
         services.AddScoped<GetBookingConfirmationQueryHandler>();
+        services.AddScoped<GetHotelRoomsQueryHandler>();
+        services.AddScoped<UpdateRoomCommandHandler>();
+        services.AddScoped<DeleteRoomCommandHandler>();
 
 
         return services;

@@ -21,6 +21,7 @@ public static class RolePermissions
                     RoomPermissions.Create,
                     RoomPermissions.Update,
                     RoomPermissions.Delete,
+                     RoomPermissions.View,
 
                     UserPermissions.PromoteToHotelOwner ,
 
@@ -36,6 +37,7 @@ public static class RolePermissions
                     ReviewPermissions.Create,
                     UserPermissions.ViewRecentlyVisited,
                     BookingPermissions.ViewConfirmation
+                    
                 },
 
                 [Roles.HotelOwner] = new HashSet<string>()
@@ -45,7 +47,10 @@ public static class RolePermissions
                     HotelPermissions.CompleteProfile,
                     HotelPermissions.UploadImage,
                     RoomPermissions.UploadImage,
-                    DealPermissions.Create
+                    DealPermissions.Create,
+                    RoomPermissions.View,
+                    RoomPermissions.Update,
+                    RoomPermissions.Delete
 
 
                 }
