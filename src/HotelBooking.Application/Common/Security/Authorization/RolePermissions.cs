@@ -57,7 +57,8 @@ public static class RolePermissions
                     DealPermissions.Create,
                     RoomPermissions.View,
                     RoomPermissions.Update,
-                    RoomPermissions.Delete
+                    RoomPermissions.Delete,
+                    HotelPermissions.DeleteAmenities
 
 
                 }

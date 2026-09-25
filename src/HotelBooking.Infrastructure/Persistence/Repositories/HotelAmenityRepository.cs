@@ -27,6 +27,24 @@ public sealed class HotelAmenityRepository
             cancellationToken);
     }
 
+    public async Task<HotelAmenity?> GetAsync(
+    int hotelId,
+    int amenityId,
+    CancellationToken cancellationToken)
+    {
+        return await _dbContext.HotelAmenities
+            .SingleOrDefaultAsync(
+                hotelAmenity =>
+                    hotelAmenity.HotelId == hotelId &&
+                    hotelAmenity.AmenityId == amenityId,
+                cancellationToken);
+    }
+
+    public void Remove(HotelAmenity hotelAmenity)
+    {
+        _dbContext.HotelAmenities.Remove(hotelAmenity);
+    }
+
     public void Add(HotelAmenity hotelAmenity)
     {
         _dbContext.HotelAmenities.Add(hotelAmenity);
