@@ -50,3 +50,10 @@ public sealed class CreateDealEndpoint : ControllerBase
             response);
     }
 }
+
+public sealed record CreateDealRequest(
+    decimal DiscountPercentage,
+    DateOnly StartDate,
+    DateOnly EndDate);
+
+public sealed record CreateDealResponse(int DealId);

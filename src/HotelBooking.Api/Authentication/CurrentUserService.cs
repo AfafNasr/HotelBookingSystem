@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
 using HotelBooking.Application.Common.Security;
 
 namespace HotelBooking.Api.Authentication;

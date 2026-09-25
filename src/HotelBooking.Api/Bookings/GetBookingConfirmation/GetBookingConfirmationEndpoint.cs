@@ -36,7 +36,7 @@ public sealed class GetBookingConfirmationEndpoint : ControllerBase
 
         var confirmation = result.Confirmation!;
 
-        var response = new BookingConfirmationResponse(
+        var response = new GetBookingConfirmationResponse(
             confirmation.ConfirmationNumber!,
             confirmation.HotelName,
             confirmation.HotelAddress,

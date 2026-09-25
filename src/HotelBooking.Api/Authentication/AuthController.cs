@@ -1,6 +1,4 @@
-﻿using HotelBooking.Api.Authentication.Login;
-using HotelBooking.Api.Authentication.Register;
-using HotelBooking.Application.Authentication.Login;
+﻿using HotelBooking.Application.Authentication.Login;
 using HotelBooking.Application.Authentication.Register;
 using Microsoft.AspNetCore.Mvc;
 using HotelBooking.Api.Common;
@@ -14,7 +12,9 @@ public sealed class AuthController : ControllerBase
     private readonly RegisterCommandHandler _registerHandler;
     private readonly LoginCommandHandler _loginHandler;
 
-    public AuthController(RegisterCommandHandler registerHandler , LoginCommandHandler loginHandler)
+    public AuthController(
+     RegisterCommandHandler registerHandler,
+     LoginCommandHandler loginHandler)
     {
         _registerHandler = registerHandler;
         _loginHandler = loginHandler;

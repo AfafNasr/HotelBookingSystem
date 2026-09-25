@@ -54,3 +54,9 @@ public sealed class UploadHotelImageEndpoint : ControllerBase
             response);
     }
 }
+
+public sealed record UploadHotelImageRequest(
+    IFormFile File);
+
+public sealed record UploadHotelImageResponse(
+    int ImageId);

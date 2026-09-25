@@ -1,5 +1,5 @@
 ﻿using HotelBooking.Api.Amenities.CreateAmenity;
-using HotelBooking.Api.Authentication.Login;
+using HotelBooking.Api.Authentication;
 using HotelBooking.Infrastructure.Persistence;
 using HotelBooking.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Identity;

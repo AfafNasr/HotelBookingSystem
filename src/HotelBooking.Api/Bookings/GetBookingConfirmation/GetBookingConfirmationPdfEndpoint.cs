@@ -4,7 +4,7 @@ using HotelBooking.Application.Common.Security.Authorization.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HotelBooking.Api.Bookings.GetBookingConfirmationPdf;
+namespace HotelBooking.Api.Bookings.GetBookingConfirmation;
 
 [ApiController]
 [Route("api/bookings/{bookingId:int}/confirmation/pdf")]

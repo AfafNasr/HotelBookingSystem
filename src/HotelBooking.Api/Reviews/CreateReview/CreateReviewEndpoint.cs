@@ -1,6 +1,4 @@
-﻿using Azure;
-using HotelBooking.Api.Common;
-using HotelBooking.Api.Hotels.CreateHotel;
+﻿using HotelBooking.Api.Common;
 using HotelBooking.Application.Common.Security.Authorization.Permissions;
 using HotelBooking.Application.Reviews.CreateReview;
 using Microsoft.AspNetCore.Authorization;
@@ -51,3 +49,10 @@ public sealed class CreateReviewEndpoint : ControllerBase
             response);
     }
 }
+
+public sealed record CreateReviewRequest(
+    int Rating,
+    string? Comment);
+
+public sealed record CreateReviewResponse(
+    int ReviewId);

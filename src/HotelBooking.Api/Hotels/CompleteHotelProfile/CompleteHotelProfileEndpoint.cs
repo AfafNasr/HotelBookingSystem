@@ -46,5 +46,11 @@ namespace HotelBooking.Api.Hotels.CompleteHotelProfile;
 
             return NoContent();
         }
+
     }
 
+public sealed record CompleteHotelProfileRequest(
+    string? Description,
+    string? Address,
+    decimal? Latitude,
+    decimal? Longitude);

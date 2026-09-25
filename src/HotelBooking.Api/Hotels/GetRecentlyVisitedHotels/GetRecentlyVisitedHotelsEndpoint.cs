@@ -35,7 +35,7 @@ public sealed class GetRecentlyVisitedHotelsEndpoint : ControllerBase
         }
 
         var response = result.Hotels
-            .Select(hotel => new GetRecentlyVisitedHotelsResponse(
+            .Select(hotel => new RecentlyVisitedHotelResponse(
                 hotel.HotelId,
                 hotel.Name,
                 hotel.CityName,
@@ -47,3 +47,11 @@ public sealed class GetRecentlyVisitedHotelsEndpoint : ControllerBase
         return Ok(response);
     }
 }
+
+public sealed record RecentlyVisitedHotelResponse(
+    int HotelId,
+    string Name,
+    string CityName,
+    int StarRating,
+    decimal? StartingPricePerNight,
+    string? ThumbnailStorageKey);

@@ -31,3 +31,7 @@ public sealed class GetCountriesEndpoint : ControllerBase
         return Ok(response);
     }
 }
+
+public sealed record CountryResponse(
+    string Code,
+    string Name);

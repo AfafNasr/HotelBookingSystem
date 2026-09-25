@@ -78,9 +78,5 @@ public sealed class GetHotelDetailsQueryHandler
             hotel,
             Array.Empty<ApplicationError>());
 
-        return new GetHotelDetailsResult(
-            true,
-            hotel,
-            Array.Empty<ApplicationError>());
     }
 }

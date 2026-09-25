@@ -13,7 +13,7 @@ public static class RolePermissions
                     HotelPermissions.Create,
                     HotelPermissions.Update,
                     HotelPermissions.Delete,
-                    HotelPermissions.View,
+                    HotelPermissions.GetAdminHotels,
                     HotelPermissions.GetAdminHotelById,
 
                     CityPermissions.Create,

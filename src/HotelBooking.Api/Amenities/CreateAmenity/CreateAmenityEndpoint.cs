@@ -44,3 +44,9 @@ public sealed class CreateAmenityEndpoint : ControllerBase
                 result.AmenityId!.Value));
     }
 }
+
+public sealed record CreateAmenityRequest(
+    string Name);
+
+public sealed record CreateAmenityResponse(
+    int AmenityId);

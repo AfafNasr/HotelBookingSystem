@@ -54,3 +54,6 @@ public sealed class UploadRoomImageEndpoint : ControllerBase
             response);
     }
 }
+
+public sealed record UploadRoomImageRequest(IFormFile File);
+public sealed record UploadRoomImageResponse(int ImageId);

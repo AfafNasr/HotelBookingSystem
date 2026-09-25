@@ -1,7 +1,5 @@
 ﻿using HotelBooking.Api.Common;
-using HotelBooking.Api.ErrorHandling;
 using HotelBooking.Application.Common.Security.Authorization.Permissions;
-using HotelBooking.Application.Payments;
 using HotelBooking.Application.Payments.StartPayment;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -47,3 +45,7 @@ public sealed class StartPaymentEndpoint : ControllerBase
         return Ok(response);
     }
 }
+
+public sealed record StartPaymentResponse(
+    int PaymentId,
+    string ClientSecret);

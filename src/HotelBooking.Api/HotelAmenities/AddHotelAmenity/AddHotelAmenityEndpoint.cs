@@ -43,3 +43,6 @@ public sealed class AddHotelAmenityEndpoint : ControllerBase
         return NoContent();
     }
 }
+
+public sealed record AddHotelAmenityRequest(
+    int AmenityId);

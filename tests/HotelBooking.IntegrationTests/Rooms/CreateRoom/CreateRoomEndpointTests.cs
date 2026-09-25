@@ -1,5 +1,5 @@
-﻿using HotelBooking.Api.Authentication.Login;
-using HotelBooking.Api.Rooms.CreateRoom;
+﻿using HotelBooking.Api.Authentication;
+using HotelBooking.Api.Rooms;
 using HotelBooking.Application.Common.Security;
 using HotelBooking.Domain.Cities;
 using HotelBooking.Domain.Hotels;
@@ -312,7 +312,7 @@ public sealed class CreateRoomEndpointTests
             "room-owner-invalid",
             TestPassword);
 
-        var request = new CreateRoomRequest(
+        var request = new SaveRoomRequest(
             "",
             RoomType.Standard,
             "Invalid room.",
@@ -342,10 +342,10 @@ public sealed class CreateRoomEndpointTests
         Assert.Equal(0, count);
     }
 
-    private static CreateRoomRequest CreateValidRequest(
+    private static SaveRoomRequest CreateValidRequest(
         string roomNumber)
     {
-        return new CreateRoomRequest(
+        return new SaveRoomRequest(
             roomNumber,
             RoomType.Standard,
             "Comfortable test room.",

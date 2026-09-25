@@ -1,4 +1,4 @@
-﻿using HotelBooking.Api.Authentication.Login;
+﻿using HotelBooking.Api.Authentication;
 using HotelBooking.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
