@@ -8,6 +8,12 @@ public interface IHotelRepository
         int hotelId,
         CancellationToken cancellationToken);
 
+    Task<bool> HasActiveOrUpcomingBookingsAsync(
+    int hotelId,
+    DateOnly today,
+    DateTime now,
+    CancellationToken cancellationToken);
+
     void Add(Hotel hotel);
 
     Task<int> SaveChangesAsync(

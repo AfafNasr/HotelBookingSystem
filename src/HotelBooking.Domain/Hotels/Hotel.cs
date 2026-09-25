@@ -97,4 +97,11 @@ public sealed class Hotel
         Longitude = longitude;
         UpdatedAt = updatedAt;
     }
+
+    public void Delete(DateTime deletedAt)
+    {
+        IsDeleted = true;
+        DeletedAt = deletedAt;
+        UpdatedAt = deletedAt;
+    }
 }

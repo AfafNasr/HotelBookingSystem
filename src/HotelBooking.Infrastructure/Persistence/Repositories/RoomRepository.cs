@@ -1,4 +1,5 @@
 ﻿using HotelBooking.Application.Rooms;
+using HotelBooking.Domain.Bookings;
 using HotelBooking.Domain.Rooms;
 using Microsoft.EntityFrameworkCore;
 
@@ -61,6 +62,28 @@ public sealed class RoomRepository : IRoomRepository
                 room.Id != excludedRoomId &&
                 room.RoomNumber == normalizedRoomNumber,
             cancellationToken);
+    }
+
+    public Task<bool> HasActiveOrUpcomingBookingsAsync(
+    int roomId,
+    DateOnly today,
+    DateTime now,
+    CancellationToken cancellationToken)
+    {
+        return _dbContext.BookingRooms
+            .AsNoTracking()
+            .AnyAsync(
+                bookingRoom =>
+                    bookingRoom.RoomId == roomId &&
+                    bookingRoom.Booking.CheckOutDate > today &&
+                    (
+                        bookingRoom.Booking.Status == BookingStatus.Confirmed ||
+                        (
+                            bookingRoom.Booking.Status == BookingStatus.PendingPayment &&
+                            bookingRoom.Booking.ExpiresAt > now
+                        )
+                    ),
+                cancellationToken);
     }
 
     public void Add(Room room)

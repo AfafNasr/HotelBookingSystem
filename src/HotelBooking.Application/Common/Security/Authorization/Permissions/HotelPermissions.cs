@@ -9,6 +9,7 @@ public static class HotelPermissions
     public const string UploadImage = "Hotels.UploadImage";
     public const string ManageAmenities = "Hotels.ManageAmenities";
     public const string View = "Hotels.View";
+    public const string GetAdminHotelById ="Hotels.GetAdminHotelById";
 
     public static readonly IReadOnlyCollection<string> All =
     [
@@ -18,6 +19,7 @@ public static class HotelPermissions
         CompleteProfile,
         UploadImage,
         ManageAmenities,
-        View
+        View,
+        GetAdminHotelById
     ];
 }

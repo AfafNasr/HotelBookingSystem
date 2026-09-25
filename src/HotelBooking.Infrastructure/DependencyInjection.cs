@@ -16,6 +16,7 @@ using HotelBooking.Application.Deals.GetFeaturedDeals;
 using HotelBooking.Application.Emails;
 using HotelBooking.Application.HotelAmenities;
 using HotelBooking.Application.Hotels;
+using HotelBooking.Application.Hotels.GetAdminHotelById;
 using HotelBooking.Application.Hotels.GetAdminHotels;
 using HotelBooking.Application.Hotels.GetHotelDetails;
 using HotelBooking.Application.Hotels.GetRecentlyVisitedHotels;
@@ -209,6 +210,7 @@ public static class DependencyInjection
         services.AddScoped<IAdminCitiesQuery, AdminCitiesQuery>();
         services.AddScoped<IAdminHotelsQuery, AdminHotelsQuery>();
         services.AddScoped<IAdminRoomsQuery, AdminRoomsQuery>();
+        services.AddScoped<IAdminHotelByIdQuery, AdminHotelByIdQuery>();
 
         return services;
     } 
