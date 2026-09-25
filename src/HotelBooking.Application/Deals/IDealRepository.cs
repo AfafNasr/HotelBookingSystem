@@ -4,6 +4,18 @@ namespace HotelBooking.Application.Deals;
 
 public interface IDealRepository
 {
+    Task<Deal?> GetByIdAsync(
+     int dealId,
+     CancellationToken cancellationToken);
+
+    Task<bool> HasOverlappingDealExceptAsync(
+    int hotelId,
+    DateOnly startDate,
+    DateOnly endDate,
+    int excludedDealId,
+    CancellationToken cancellationToken);
+
+
     Task<bool> HasOverlappingDealAsync(
         int hotelId,
         DateOnly startDate,
@@ -17,6 +29,8 @@ public interface IDealRepository
         CancellationToken cancellationToken);
 
     void Add(Deal deal);
+
+    void Remove(Deal deal);
 
     Task<int> SaveChangesAsync(
         CancellationToken cancellationToken);

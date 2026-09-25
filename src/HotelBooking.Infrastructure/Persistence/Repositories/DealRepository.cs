@@ -48,6 +48,37 @@ public sealed class DealRepository : IDealRepository
         _dbContext.Deals.Add(deal);
     }
 
+    public async Task<Deal?> GetByIdAsync(
+    int dealId,
+    CancellationToken cancellationToken)
+    {
+        return await _dbContext.Deals
+            .FirstOrDefaultAsync(
+                deal => deal.Id == dealId,
+                cancellationToken);
+    }
+
+    public async Task<bool> HasOverlappingDealExceptAsync(
+        int hotelId,
+        DateOnly startDate,
+        DateOnly endDate,
+        int excludedDealId,
+        CancellationToken cancellationToken)
+    {
+        return await _dbContext.Deals.AnyAsync(
+            deal =>
+                deal.HotelId == hotelId &&
+                deal.Id != excludedDealId &&
+                deal.StartDate <= endDate &&
+                deal.EndDate >= startDate,
+            cancellationToken);
+    }
+
+    public void Remove(Deal deal)
+    {
+        _dbContext.Deals.Remove(deal);
+    }
+
     public Task<int> SaveChangesAsync(
         CancellationToken cancellationToken)
     {

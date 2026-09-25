@@ -3,34 +3,33 @@ using HotelBooking.Application.Common.Errors;
 using HotelBooking.Application.Common.Extensions;
 using HotelBooking.Application.Common.Security;
 using HotelBooking.Application.Hotels;
-using HotelBooking.Domain.Deals;
 
-namespace HotelBooking.Application.Deals.CreateDeal;
+namespace HotelBooking.Application.Deals.UpdateDeal;
 
-public sealed class CreateDealCommandHandler
+public sealed class UpdateDealCommandHandler
 {
-    private readonly IValidator<CreateDealCommand> _validator;
-    private readonly IHotelRepository _hotelRepository;
+    private readonly IValidator<UpdateDealCommand> _validator;
     private readonly IDealRepository _dealRepository;
+    private readonly IHotelRepository _hotelRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly TimeProvider _timeProvider;
 
-    public CreateDealCommandHandler(
-        IValidator<CreateDealCommand> validator,
-        IHotelRepository hotelRepository,
+    public UpdateDealCommandHandler(
+        IValidator<UpdateDealCommand> validator,
         IDealRepository dealRepository,
+        IHotelRepository hotelRepository,
         ICurrentUserService currentUserService,
         TimeProvider timeProvider)
     {
         _validator = validator;
-        _hotelRepository = hotelRepository;
         _dealRepository = dealRepository;
+        _hotelRepository = hotelRepository;
         _currentUserService = currentUserService;
         _timeProvider = timeProvider;
     }
 
-    public async Task<CreateDealResult> HandleAsync(
-        CreateDealCommand command,
+    public async Task<UpdateDealResult> HandleAsync(
+        UpdateDealCommand command,
         CancellationToken cancellationToken)
     {
         var validationResult = await _validator.ValidateAsync(
@@ -39,67 +38,70 @@ public sealed class CreateDealCommandHandler
 
         if (!validationResult.IsValid)
         {
-            return new CreateDealResult(
+            return new UpdateDealResult(
                 false,
-                null,
-              validationResult.ToApplicationErrors());
+                validationResult.ToApplicationErrors());
+        }
+
+        var deal = await _dealRepository.GetByIdAsync(
+            command.DealId,
+            cancellationToken);
+
+        if (deal is null)
+        {
+            return new UpdateDealResult(
+                false,
+                [DealErrors.NotFound]);
         }
 
         var hotel = await _hotelRepository.GetByIdAsync(
-            command.HotelId,
+            deal.HotelId,
             cancellationToken);
 
         if (hotel is null)
         {
-            return new CreateDealResult(
+            return new UpdateDealResult(
                 false,
-                null,
-              [HotelErrors.NotFound]);
-
+                [HotelErrors.NotFound]);
         }
 
         if (!HotelAccessPolicy.CanManage(
-     hotel,
-     _currentUserService))
+            hotel,
+            _currentUserService))
         {
-            return new CreateDealResult(
+            return new UpdateDealResult(
                 false,
-                null,
-                 [HotelErrors.ManagementForbidden]);
+                [HotelErrors.ManagementForbidden]);
         }
 
         var hasOverlap =
-            await _dealRepository.HasOverlappingDealAsync(
-                hotel.Id,
+            await _dealRepository.HasOverlappingDealExceptAsync(
+                deal.HotelId,
                 command.StartDate,
                 command.EndDate,
+                deal.Id,
                 cancellationToken);
 
         if (hasOverlap)
         {
-            return new CreateDealResult(
+            return new UpdateDealResult(
                 false,
-                null,
-             [DealErrors.OverlappingDeal]);
+                [DealErrors.OverlappingDeal]);
         }
 
         var now = _timeProvider.GetUtcNow().UtcDateTime;
 
-        var deal = new Deal(
-            hotel.Id,
+        deal.Update(
             command.DiscountPercentage,
             command.StartDate,
             command.EndDate,
             now);
 
-        _dealRepository.Add(deal);
-
         await _dealRepository.SaveChangesAsync(
             cancellationToken);
 
-        return new CreateDealResult(
+        return new UpdateDealResult(
             true,
-            deal.Id,
-            Array.Empty<ApplicationError>());
+            []);
     }
 }

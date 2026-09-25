@@ -14,7 +14,9 @@ using HotelBooking.Application.Cities.GetTrendingDestinations;
 using HotelBooking.Application.Cities.UpdateCity;
 using HotelBooking.Application.Countries.GetCountries;
 using HotelBooking.Application.Deals.CreateDeal;
+using HotelBooking.Application.Deals.DeleteDeal;
 using HotelBooking.Application.Deals.GetFeaturedDeals;
+using HotelBooking.Application.Deals.UpdateDeal;
 using HotelBooking.Application.HotelAmenities.AddHotelAmenity;
 using HotelBooking.Application.HotelAmenities.DeleteHotelAmenity;
 using HotelBooking.Application.Hotels.CompleteHotelProfile;
@@ -97,6 +99,8 @@ public static class DependencyInjection
         services.AddScoped<UpdateAmenityCommandHandler>();
         services.AddScoped<DeleteAmenityCommandHandler>();
         services.AddScoped<DeleteHotelAmenityCommandHandler>();
+        services.AddScoped<UpdateDealCommandHandler>();
+        services.AddScoped<DeleteDealCommandHandler>();
 
 
         return services;

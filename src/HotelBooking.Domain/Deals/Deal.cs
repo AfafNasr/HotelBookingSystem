@@ -54,4 +54,29 @@ public sealed class Deal
         CreatedAt = createdAt;
         UpdatedAt = createdAt;
     }
+
+    public void Update(
+    decimal discountPercentage,
+    DateOnly startDate,
+    DateOnly endDate,
+    DateTime updatedAt)
+    {
+        if (discountPercentage <= 0 || discountPercentage >= 100)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(discountPercentage));
+        }
+
+        if (endDate < startDate)
+        {
+            throw new ArgumentException(
+                "Deal end date cannot be before the start date.",
+                nameof(endDate));
+        }
+
+        DiscountPercentage = discountPercentage;
+        StartDate = startDate;
+        EndDate = endDate;
+        UpdatedAt = updatedAt;
+    }
 }
