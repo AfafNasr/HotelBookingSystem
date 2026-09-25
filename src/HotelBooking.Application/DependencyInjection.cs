@@ -27,6 +27,8 @@ using HotelBooking.Application.Hotels.UploadHotelImage;
 using HotelBooking.Application.Payments.HandleStripeWebhook;
 using HotelBooking.Application.Payments.StartPayment;
 using HotelBooking.Application.Reviews.CreateReview;
+using HotelBooking.Application.Reviews.DeleteReview;
+using HotelBooking.Application.Reviews.UpdateReview;
 using HotelBooking.Application.Rooms.CreateRoom;
 using HotelBooking.Application.Rooms.DeleteRoom;
 using HotelBooking.Application.Rooms.GetAdminRooms;
@@ -86,6 +88,9 @@ public static class DependencyInjection
         services.AddScoped<GetAdminRoomsQueryHandler>();
         services.AddScoped<DeleteHotelCommandHandler>();
         services.AddScoped<GetAdminHotelByIdQueryHandler>();
+        services.AddScoped<CreateReviewCommandHandler>();
+        services.AddScoped<UpdateReviewCommandHandler>();
+        services.AddScoped<DeleteReviewCommandHandler>();
 
 
         return services;

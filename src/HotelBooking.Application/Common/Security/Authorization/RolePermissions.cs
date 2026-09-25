@@ -40,8 +40,11 @@ public static class RolePermissions
                     BookingPermissions.StartPayment,
                     ReviewPermissions.Create,
                     UserPermissions.ViewRecentlyVisited,
-                    BookingPermissions.ViewConfirmation
-                    
+                    BookingPermissions.ViewConfirmation,
+                     ReviewPermissions.View,
+                      ReviewPermissions.Update,
+                       ReviewPermissions.Delete
+
                 },
 
                 [Roles.HotelOwner] = new HashSet<string>()

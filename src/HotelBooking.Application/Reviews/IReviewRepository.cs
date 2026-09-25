@@ -8,6 +8,13 @@ public interface IReviewRepository
         int bookingId,
         CancellationToken cancellationToken);
 
+    Task<Review?> GetByIdForUserAsync(
+    int reviewId,
+    string userId,
+    CancellationToken cancellationToken);
+
+    void Remove(Review review);
+
     void Add(Review review);
 
     Task<int> SaveChangesAsync(

@@ -6,3 +6,7 @@ public sealed record CreateReviewRequest(
 
 public sealed record CreateReviewResponse(
     int ReviewId);
+
+public sealed record UpdateReviewRequest(
+    int Rating,
+    string? Comment);
