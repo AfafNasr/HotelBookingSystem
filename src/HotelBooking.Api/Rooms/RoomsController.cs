@@ -2,7 +2,7 @@
 using HotelBooking.Application.Common.Security.Authorization.Permissions;
 using HotelBooking.Application.Rooms.CreateRoom;
 using HotelBooking.Application.Rooms.DeleteRoom;
-using HotelBooking.Application.Rooms.GetAdminRooms;
+using HotelBooking.Application.Rooms.GetAvailableRooms;
 using HotelBooking.Application.Rooms.GetHotelRooms;
 using HotelBooking.Application.Rooms.GetRoomById;
 using HotelBooking.Application.Rooms.UpdateRoom;
@@ -13,29 +13,28 @@ namespace HotelBooking.Api.Rooms;
 
 [ApiController]
 public sealed class RoomsController : ControllerBase
-
 {
     private readonly CreateRoomCommandHandler _createHandler;
     private readonly UpdateRoomCommandHandler _updateHandler;
     private readonly DeleteRoomCommandHandler _deleteHandler;
-    private readonly GetAdminRoomsQueryHandler _getAdminRoomsHandler;
     private readonly GetHotelRoomsQueryHandler _getHotelRoomsHandler;
     private readonly GetRoomByIdQueryHandler _getRoomByIdHandler;
+    private readonly GetAvailableRoomsQueryHandler _getAvailableRoomsHandler;
 
     public RoomsController(
-       CreateRoomCommandHandler createHandler,
-       UpdateRoomCommandHandler updateHandler,
-       DeleteRoomCommandHandler deleteHandler,
-       GetAdminRoomsQueryHandler getAdminRoomsHandler,
-       GetHotelRoomsQueryHandler getHotelRoomsHandler,
-       GetRoomByIdQueryHandler getRoomByIdHandler)
+        CreateRoomCommandHandler createHandler,
+        UpdateRoomCommandHandler updateHandler,
+        DeleteRoomCommandHandler deleteHandler,
+        GetHotelRoomsQueryHandler getHotelRoomsHandler,
+        GetRoomByIdQueryHandler getRoomByIdHandler,
+        GetAvailableRoomsQueryHandler getAvailableRoomsHandler)
     {
         _createHandler = createHandler;
         _updateHandler = updateHandler;
         _deleteHandler = deleteHandler;
-        _getAdminRoomsHandler = getAdminRoomsHandler;
         _getHotelRoomsHandler = getHotelRoomsHandler;
         _getRoomByIdHandler = getRoomByIdHandler;
+        _getAvailableRoomsHandler = getAvailableRoomsHandler;
     }
 
     [HttpPost("api/hotels/{hotelId:int}/rooms")]
@@ -65,16 +64,16 @@ public sealed class RoomsController : ControllerBase
                 result.Errors);
         }
 
-        return Created(
-            $"/api/hotels/{hotelId}/rooms/{result.RoomId}",
+        return StatusCode(
+            StatusCodes.Status201Created,
             new CreateRoomResponse(result.RoomId!.Value));
     }
 
     [HttpDelete("api/rooms/{roomId:int}")]
     [Authorize(Policy = RoomPermissions.Delete)]
     public async Task<IActionResult> Delete(
-       int roomId,
-       CancellationToken cancellationToken)
+        int roomId,
+        CancellationToken cancellationToken)
     {
         var command = new DeleteRoomCommand(roomId);
 
@@ -92,33 +91,11 @@ public sealed class RoomsController : ControllerBase
         return NoContent();
     }
 
-    [HttpGet("api/admin/rooms")]
-    [Authorize(Policy = RoomPermissions.GetAdminRooms)]
-    public async Task<IActionResult> GetAdminRooms(
-       [FromQuery] string? search,
-       CancellationToken cancellationToken)
-    {
-        var query = new GetAdminRoomsQuery(search);
-
-        var result = await _getAdminRoomsHandler.HandleAsync(
-            query,
-            cancellationToken);
-
-        if (!result.Succeeded)
-        {
-            return ErrorResponseFactory.Create(
-                this,
-                result.Errors);
-        }
-
-        return Ok(result.Rooms);
-    }
-
     [HttpGet("api/hotels/{hotelId:int}/rooms")]
     [Authorize(Policy = RoomPermissions.View)]
     public async Task<IActionResult> GetHotelRooms(
-      int hotelId,
-      CancellationToken cancellationToken)
+        int hotelId,
+        CancellationToken cancellationToken)
     {
         var query = new GetHotelRoomsQuery(hotelId);
 
@@ -137,9 +114,9 @@ public sealed class RoomsController : ControllerBase
     }
 
     [HttpGet("api/rooms/{roomId:int}")]
-    public async Task<IActionResult> GetRoomById(
-       int roomId,
-       CancellationToken cancellationToken)
+    public async Task<IActionResult> GetById(
+        int roomId,
+        CancellationToken cancellationToken)
     {
         var query = new GetRoomByIdQuery(roomId);
 
@@ -157,5 +134,77 @@ public sealed class RoomsController : ControllerBase
         return Ok(result.Room);
     }
 
-}
+    [HttpGet("api/hotels/{hotelId:int}/rooms/available")]
+    public async Task<IActionResult> GetAvailable(
+        int hotelId,
+        [FromQuery] GetAvailableRoomsRequest request,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetAvailableRoomsQuery(
+            hotelId,
+            request.RoomType,
+            request.CheckInDate,
+            request.CheckOutDate,
+            request.Adults,
+            request.Children);
 
+        var result = await _getAvailableRoomsHandler.HandleAsync(
+            query,
+            cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return ErrorResponseFactory.Create(
+                this,
+                result.Errors);
+        }
+
+        var response = result.Rooms
+            .Select(room => new GetAvailableRoomsResponse(
+                room.Id,
+                room.RoomType,
+                room.Description,
+                room.AdultsCapacity,
+                room.ChildrenCapacity,
+                room.PricePerNight,
+                room.Images
+                    .Select(image => new AvailableRoomImageResponse(
+                        image.StorageKey,
+                        image.DisplayOrder,
+                        image.IsPrimary))
+                    .ToArray()))
+            .ToArray();
+
+        return Ok(response);
+    }
+
+    [HttpPut("api/rooms/{roomId:int}")]
+    [Authorize(Policy = RoomPermissions.Update)]
+    public async Task<IActionResult> Update(
+    int roomId,
+    SaveRoomRequest request,
+    CancellationToken cancellationToken)
+    {
+        var command = new UpdateRoomCommand(
+            roomId,
+            request.RoomNumber,
+            request.RoomType,
+            request.Description,
+            request.AdultsCapacity,
+            request.ChildrenCapacity,
+            request.PricePerNight);
+
+        var result = await _updateHandler.HandleAsync(
+            command,
+            cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return ErrorResponseFactory.Create(
+                this,
+                result.Errors);
+        }
+
+        return NoContent();
+    }
+}

@@ -1,16 +1,15 @@
 ﻿using HotelBooking.Application.Countries.GetCountries;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HotelBooking.Api.Countries.GetCountries;
+namespace HotelBooking.Api.Countries;
 
 [ApiController]
 [Route("api/countries")]
-public sealed class GetCountriesEndpoint : ControllerBase
+public sealed class CountriesController : ControllerBase
 {
     private readonly GetCountriesQueryHandler _handler;
 
-    public GetCountriesEndpoint(
-        GetCountriesQueryHandler handler)
+    public CountriesController(GetCountriesQueryHandler handler)
     {
         _handler = handler;
     }
@@ -19,8 +18,7 @@ public sealed class GetCountriesEndpoint : ControllerBase
     public async Task<ActionResult<IReadOnlyList<CountryResponse>>> Get(
         CancellationToken cancellationToken)
     {
-        var countries = await _handler.HandleAsync(
-            cancellationToken);
+        var countries = await _handler.HandleAsync(cancellationToken);
 
         var response = countries
             .Select(country => new CountryResponse(

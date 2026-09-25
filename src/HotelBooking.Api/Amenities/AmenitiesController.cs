@@ -4,30 +4,30 @@ using HotelBooking.Application.Common.Security.Authorization.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HotelBooking.Api.Amenities.CreateAmenity;
+namespace HotelBooking.Api.Amenities;
 
 [ApiController]
 [Route("api/admin/amenities")]
-public sealed class CreateAmenityEndpoint : ControllerBase
+public sealed class AmenitiesController : ControllerBase
 {
-    private readonly CreateAmenityCommandHandler _handler;
+    private readonly CreateAmenityCommandHandler _createHandler;
 
-    public CreateAmenityEndpoint(
-        CreateAmenityCommandHandler handler)
+    public AmenitiesController(
+        CreateAmenityCommandHandler createHandler)
     {
-        _handler = handler;
+        _createHandler = createHandler;
     }
 
     [HttpPost]
     [Authorize(Policy = AmenityPermissions.Create)]
     public async Task<IActionResult> Create(
-        CreateAmenityRequest request,
-        CancellationToken cancellationToken)
+       CreateAmenityRequest request,
+       CancellationToken cancellationToken)
     {
         var command = new CreateAmenityCommand(
             request.Name);
 
-        var result = await _handler.HandleAsync(
+        var result = await _createHandler.HandleAsync(
             command,
             cancellationToken);
 
@@ -50,3 +50,4 @@ public sealed record CreateAmenityRequest(
 
 public sealed record CreateAmenityResponse(
     int AmenityId);
+

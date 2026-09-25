@@ -4,22 +4,23 @@ using HotelBooking.Application.Hotels.GetRecentlyVisitedHotels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HotelBooking.Api.Hotels.GetRecentlyVisitedHotels;
+namespace HotelBooking.Api.Users;
+
 
 [ApiController]
-[Route("api/users/me/recently-visited-hotels")]
+[Route("api/users/me")]
+public sealed class UsersController : ControllerBase
 
-public sealed class GetRecentlyVisitedHotelsEndpoint : ControllerBase
 {
     private readonly GetRecentlyVisitedHotelsQueryHandler _handler;
 
-    public GetRecentlyVisitedHotelsEndpoint(
+    public UsersController(
         GetRecentlyVisitedHotelsQueryHandler handler)
     {
         _handler = handler;
     }
 
-    [HttpGet]
+    [HttpGet("recently-visited-hotels")]
     [Authorize(Policy = UserPermissions.ViewRecentlyVisited)]
     public async Task<IActionResult> Get(
         CancellationToken cancellationToken)
@@ -55,3 +56,6 @@ public sealed record RecentlyVisitedHotelResponse(
     int StarRating,
     decimal? StartingPricePerNight,
     string? ThumbnailStorageKey);
+
+
+

@@ -4,18 +4,18 @@ using HotelBooking.Application.Rooms.UploadRoomImage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HotelBooking.Api.Rooms.UploadRoomImage;
+namespace HotelBooking.Api.Rooms;
 
 [ApiController]
 [Route("api/rooms/{roomId:int}/images")]
-public sealed class UploadRoomImageEndpoint : ControllerBase
+public sealed class RoomImagesController : ControllerBase
 {
-    private readonly UploadRoomImageCommandHandler _handler;
+    private readonly UploadRoomImageCommandHandler _uploadHandler;
 
-    public UploadRoomImageEndpoint(
-        UploadRoomImageCommandHandler handler)
+    public RoomImagesController(
+        UploadRoomImageCommandHandler uploadHandler)
     {
-        _handler = handler;
+        _uploadHandler = uploadHandler;
     }
 
     [HttpPost]
@@ -35,7 +35,7 @@ public sealed class UploadRoomImageEndpoint : ControllerBase
             request.File.ContentType,
             request.File.Length);
 
-        var result = await _handler.HandleAsync(
+        var result = await _uploadHandler.HandleAsync(
             command,
             cancellationToken);
 
@@ -54,6 +54,3 @@ public sealed class UploadRoomImageEndpoint : ControllerBase
             response);
     }
 }
-
-public sealed record UploadRoomImageRequest(IFormFile File);
-public sealed record UploadRoomImageResponse(int ImageId);

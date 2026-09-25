@@ -1,4 +1,4 @@
-﻿using HotelBooking.Api.Amenities.CreateAmenity;
+﻿using HotelBooking.Api.Amenities;
 using HotelBooking.Api.Authentication;
 using HotelBooking.Infrastructure.Persistence;
 using HotelBooking.IntegrationTests.Infrastructure;

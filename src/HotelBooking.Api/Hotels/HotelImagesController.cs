@@ -4,27 +4,28 @@ using HotelBooking.Application.Hotels.UploadHotelImage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HotelBooking.Api.Hotels.UploadHotelImage;
+namespace HotelBooking.Api.Hotels;
+
 
 [ApiController]
 [Route("api/hotels/{hotelId:int}/images")]
-public sealed class UploadHotelImageEndpoint : ControllerBase
+public class HotelImagesController : ControllerBase
 {
-    private readonly UploadHotelImageCommandHandler _handler;
 
-    public UploadHotelImageEndpoint(
-        UploadHotelImageCommandHandler handler)
+    private readonly UploadHotelImageCommandHandler _uploadHandler;
+
+    public HotelImagesController(
+        UploadHotelImageCommandHandler uploadHandler)
     {
-        _handler = handler;
+        _uploadHandler = uploadHandler;
     }
-
     [HttpPost]
     [Authorize(Policy = HotelPermissions.UploadImage)]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Upload(
-        int hotelId,
-        [FromForm] UploadHotelImageRequest request,
-        CancellationToken cancellationToken)
+            int hotelId,
+            [FromForm] UploadHotelImageRequest request,
+            CancellationToken cancellationToken)
     {
         await using var stream = request.File.OpenReadStream();
 
@@ -35,7 +36,7 @@ public sealed class UploadHotelImageEndpoint : ControllerBase
             request.File.ContentType,
             request.File.Length);
 
-        var result = await _handler.HandleAsync(
+        var result = await _uploadHandler.HandleAsync(
             command,
             cancellationToken);
 
@@ -46,17 +47,10 @@ public sealed class UploadHotelImageEndpoint : ControllerBase
                 result.Errors);
         }
 
-        var response = new UploadHotelImageResponse(
-     result.ImageId!.Value);
-
         return StatusCode(
             StatusCodes.Status201Created,
-            response);
+            new UploadHotelImageResponse(
+                result.ImageId!.Value));
     }
 }
 
-public sealed record UploadHotelImageRequest(
-    IFormFile File);
-
-public sealed record UploadHotelImageResponse(
-    int ImageId);

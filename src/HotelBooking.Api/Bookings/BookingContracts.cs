@@ -1,7 +1,23 @@
-﻿using HotelBooking.Domain.Payments;
+﻿using HotelBooking.Domain.Bookings;
+using HotelBooking.Domain.Payments;
 using HotelBooking.Domain.Rooms;
 
-namespace HotelBooking.Api.Bookings.GetBookingConfirmation;
+namespace HotelBooking.Api.Bookings;
+
+
+public sealed record CreateBookingRequest(
+    int HotelId,
+    IReadOnlyCollection<int> RoomIds,
+    DateOnly CheckInDate,
+    DateOnly CheckOutDate,
+    string GuestFullName,
+    string GuestEmail,
+    string GuestPhoneNumber,
+    string? SpecialRequests);
+
+public sealed record CreateBookingResponse(
+    int BookingId,
+    BookingStatus Status);
 
 public sealed record GetBookingConfirmationResponse(
     string ConfirmationNumber,

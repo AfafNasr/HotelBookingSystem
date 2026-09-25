@@ -4,21 +4,20 @@ using HotelBooking.Application.Reviews.CreateReview;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HotelBooking.Api.Reviews.CreateReview;
+namespace HotelBooking.Api.Reviews;
 
 [ApiController]
-[Route("api/bookings/{bookingId:int}/review")]
-public sealed class CreateReviewEndpoint : ControllerBase
+public sealed class ReviewsController : ControllerBase
 {
-    private readonly CreateReviewCommandHandler _handler;
+    private readonly CreateReviewCommandHandler _createHandler;
 
-    public CreateReviewEndpoint(
-        CreateReviewCommandHandler handler)
+    public ReviewsController(
+        CreateReviewCommandHandler createHandler)
     {
-        _handler = handler;
+        _createHandler = createHandler;
     }
 
-    [HttpPost]
+    [HttpPost("api/bookings/{bookingId:int}/review")]
     [Authorize(Policy = ReviewPermissions.Create)]
     public async Task<IActionResult> Create(
         int bookingId,
@@ -30,7 +29,7 @@ public sealed class CreateReviewEndpoint : ControllerBase
             request.Rating,
             request.Comment);
 
-        var result = await _handler.HandleAsync(
+        var result = await _createHandler.HandleAsync(
             command,
             cancellationToken);
 
@@ -41,18 +40,9 @@ public sealed class CreateReviewEndpoint : ControllerBase
                 result.Errors);
         }
 
-        var response = new CreateReviewResponse(
-             result.ReviewId!.Value);
-
         return StatusCode(
             StatusCodes.Status201Created,
-            response);
+            new CreateReviewResponse(
+                result.ReviewId!.Value));
     }
 }
-
-public sealed record CreateReviewRequest(
-    int Rating,
-    string? Comment);
-
-public sealed record CreateReviewResponse(
-    int ReviewId);

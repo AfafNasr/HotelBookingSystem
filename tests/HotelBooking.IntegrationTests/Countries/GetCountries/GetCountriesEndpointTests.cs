@@ -1,4 +1,4 @@
-﻿using HotelBooking.Api.Countries.GetCountries;
+﻿using HotelBooking.Api.Countries;
 using HotelBooking.IntegrationTests.Infrastructure;
 using System.Net;
 using System.Net.Http.Json;
