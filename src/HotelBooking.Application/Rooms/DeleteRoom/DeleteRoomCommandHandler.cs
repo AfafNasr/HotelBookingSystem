@@ -90,6 +90,31 @@ public sealed class DeleteRoomCommandHandler
                 });
         }
 
+        var now = DateTime.UtcNow;
+        var today = DateOnly.FromDateTime(now);
+
+        var hasActiveOrUpcomingBookings =
+            await _roomRepository.HasActiveOrUpcomingBookingsAsync(
+                room.Id,
+                today,
+                now,
+                cancellationToken);
+
+        if (hasActiveOrUpcomingBookings)
+        {
+            return new DeleteRoomResult(
+                false,
+                new[]
+                {
+            new ApplicationError(
+                "RoomHasActiveBookings",
+                "The room cannot be deleted because it has active or upcoming bookings.",
+                ErrorType.Conflict)
+                });
+        }
+
+        room.Delete(now);
+
         room.Delete(DateTime.UtcNow);
 
         await _roomRepository.SaveChangesAsync(

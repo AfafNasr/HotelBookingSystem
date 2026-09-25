@@ -7,6 +7,7 @@ using HotelBooking.Application.Bookings.Expiration;
 using HotelBooking.Application.Bookings.GetBookingConfirmation;
 using HotelBooking.Application.Bookings.Pricing;
 using HotelBooking.Application.Cities.CreateCity;
+using HotelBooking.Application.Cities.GetAdminCities;
 using HotelBooking.Application.Cities.GetTrendingDestinations;
 using HotelBooking.Application.Cities.UpdateCity;
 using HotelBooking.Application.Countries.GetCountries;
@@ -15,6 +16,9 @@ using HotelBooking.Application.Deals.GetFeaturedDeals;
 using HotelBooking.Application.HotelAmenities.AddHotelAmenity;
 using HotelBooking.Application.Hotels.CompleteHotelProfile;
 using HotelBooking.Application.Hotels.CreateHotel;
+using HotelBooking.Application.Hotels.DeleteHotel;
+using HotelBooking.Application.Hotels.GetAdminHotelById;
+using HotelBooking.Application.Hotels.GetAdminHotels;
 using HotelBooking.Application.Hotels.GetHotelDetails;
 using HotelBooking.Application.Hotels.GetRecentlyVisitedHotels;
 using HotelBooking.Application.Hotels.SearchHotels;
@@ -25,6 +29,7 @@ using HotelBooking.Application.Payments.StartPayment;
 using HotelBooking.Application.Reviews.CreateReview;
 using HotelBooking.Application.Rooms.CreateRoom;
 using HotelBooking.Application.Rooms.DeleteRoom;
+using HotelBooking.Application.Rooms.GetAdminRooms;
 using HotelBooking.Application.Rooms.GetAvailableRooms;
 using HotelBooking.Application.Rooms.GetHotelRooms;
 using HotelBooking.Application.Rooms.GetRoomById;
@@ -74,6 +79,11 @@ public static class DependencyInjection
         services.AddScoped<GetHotelRoomsQueryHandler>();
         services.AddScoped<UpdateRoomCommandHandler>();
         services.AddScoped<DeleteRoomCommandHandler>();
+        services.AddScoped<GetAdminCitiesQueryHandler>();
+        services.AddScoped<GetAdminHotelsQueryHandler>();
+        services.AddScoped<GetAdminRoomsQueryHandler>();
+        services.AddScoped<DeleteHotelCommandHandler>();
+        services.AddScoped<GetAdminHotelByIdQueryHandler>();
 
 
         return services;

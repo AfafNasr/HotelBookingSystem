@@ -1,4 +1,5 @@
 ﻿using HotelBooking.Application.Hotels;
+using HotelBooking.Domain.Bookings;
 using HotelBooking.Domain.Hotels;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +23,28 @@ public sealed class HotelRepository : IHotelRepository
                 hotel =>
                     hotel.Id == hotelId &&
                     !hotel.IsDeleted,
+                cancellationToken);
+    }
+
+    public Task<bool> HasActiveOrUpcomingBookingsAsync(
+    int hotelId,
+    DateOnly today,
+    DateTime now,
+    CancellationToken cancellationToken)
+    {
+        return _dbContext.Bookings
+            .AsNoTracking()
+            .AnyAsync(
+                booking =>
+                    booking.HotelId == hotelId &&
+                    booking.CheckOutDate > today &&
+                    (
+                        booking.Status == BookingStatus.Confirmed ||
+                        (
+                            booking.Status == BookingStatus.PendingPayment &&
+                            booking.ExpiresAt > now
+                        )
+                    ),
                 cancellationToken);
     }
 

@@ -25,6 +25,12 @@ public interface IRoomRepository
     int excludedRoomId,
     CancellationToken cancellationToken);
 
+    Task<bool> HasActiveOrUpcomingBookingsAsync(
+    int roomId,
+    DateOnly today,
+    DateTime now,
+    CancellationToken cancellationToken);
+
     void Add(Room room);
 
     Task<int> SaveChangesAsync(
