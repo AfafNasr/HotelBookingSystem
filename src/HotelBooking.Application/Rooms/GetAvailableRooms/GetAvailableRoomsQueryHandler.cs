@@ -8,13 +8,16 @@ public sealed class GetAvailableRoomsQueryHandler
 {
     private readonly IValidator<GetAvailableRoomsQuery> _validator;
     private readonly IAvailableRoomsQuery _availableRoomsQuery;
+    private readonly TimeProvider _timeProvider;
 
     public GetAvailableRoomsQueryHandler(
         IValidator<GetAvailableRoomsQuery> validator,
-        IAvailableRoomsQuery availableRoomsQuery)
+        IAvailableRoomsQuery availableRoomsQuery,
+        TimeProvider timeProvider)
     {
         _validator = validator;
         _availableRoomsQuery = availableRoomsQuery;
+        _timeProvider = timeProvider;
     }
 
     public async Task<GetAvailableRoomsResult> HandleAsync(
@@ -33,7 +36,7 @@ public sealed class GetAvailableRoomsQueryHandler
                  validationResult.ToApplicationErrors());
         }
 
-        var now = DateTime.UtcNow;
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
 
         var rooms = await _availableRoomsQuery.GetAsync(
             query,

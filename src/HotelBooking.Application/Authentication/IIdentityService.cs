@@ -8,14 +8,15 @@ public interface IIdentityService
     Task<RegisterResult> CreateCustomerAsync(
         string username,
         string email,
-        string password );
+        string password ,
+        CancellationToken cancellationToken);
 
     Task<AuthenticatedUser?> AuthenticateAsync(
         string username,
         string password);
 
     Task<PromoteToHotelOwnerResult> PromoteToHotelOwnerAsync(
-    string userId);
+    string userId, CancellationToken cancellationToken);
 
     Task<bool> IsUserInRoleAsync(
     string userId,

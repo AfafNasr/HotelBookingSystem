@@ -11,13 +11,16 @@ public sealed class BookingExpirationWorker : BackgroundService
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<BookingExpirationWorker> _logger;
+    private readonly TimeProvider _timeProvider;
 
     public BookingExpirationWorker(
         IServiceScopeFactory scopeFactory,
-        ILogger<BookingExpirationWorker> logger)
+        ILogger<BookingExpirationWorker> logger,
+        TimeProvider timeProvider)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
+        _timeProvider = timeProvider;
     }
 
     protected override async Task ExecuteAsync(
@@ -59,8 +62,10 @@ public sealed class BookingExpirationWorker : BackgroundService
             scope.ServiceProvider
                 .GetRequiredService<ExpirePendingBookingsService>();
 
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
+
         var expiredCount = await expirationService.ExecuteAsync(
-            DateTime.UtcNow,
+            now,
             cancellationToken);
 
         if (expiredCount > 0)

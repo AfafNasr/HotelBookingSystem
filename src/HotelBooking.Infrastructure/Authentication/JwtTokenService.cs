@@ -10,16 +10,19 @@ namespace HotelBooking.Infrastructure.Authentication;
 public sealed class JwtTokenService : ITokenService
 {
     private readonly JwtOptions _options;
+    private readonly TimeProvider _timeProvider;
 
-    public JwtTokenService(IOptions<JwtOptions> options)
+    public JwtTokenService(IOptions<JwtOptions> options , TimeProvider timeProvider) 
     {
         _options = options.Value;
+        _timeProvider = timeProvider;
     }
 
     public AccessToken CreateToken(AuthenticatedUser user)
     {
-        var now = DateTimeOffset.UtcNow;
-        var expiresAt = now.AddMinutes(_options.ExpirationMinutes);
+        var now = _timeProvider.GetUtcNow();
+        var expiresAt =
+            now.AddMinutes(_options.ExpirationMinutes);
 
         var claims = new List<Claim>
         {

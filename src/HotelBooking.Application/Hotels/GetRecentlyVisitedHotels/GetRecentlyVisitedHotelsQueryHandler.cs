@@ -28,13 +28,7 @@ public sealed class GetRecentlyVisitedHotelsQueryHandler
             return new GetRecentlyVisitedHotelsResult(
                 false,
                 [],
-                new[]
-                {
-                    new ApplicationError(
-                        "AuthenticationRequired",
-                        "Authentication is required.",
-                        ErrorType.Authentication)
-                });
+               [AuthenticationErrors.Required]);
         }
 
         var hotels = await _recentlyVisitedHotelsQuery.GetAsync(

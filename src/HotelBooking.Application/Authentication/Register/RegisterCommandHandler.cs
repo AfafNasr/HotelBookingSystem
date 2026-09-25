@@ -18,9 +18,9 @@ public sealed class RegisterCommandHandler
     }
 
     public async Task<RegisterResult> HandleAsync(
-        RegisterCommand command)
+        RegisterCommand command , CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command);
+        var validationResult = await _validator.ValidateAsync(command , cancellationToken);
 
         if (!validationResult.IsValid)
         {
@@ -33,6 +33,7 @@ public sealed class RegisterCommandHandler
         return await _identityService.CreateCustomerAsync(
             command.Username,
             command.Email,
-            command.Password);
+            command.Password,
+            cancellationToken);
     }
 }

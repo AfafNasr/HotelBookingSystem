@@ -22,6 +22,7 @@ public sealed class HandleStripeWebhookCommandHandler
     private readonly ILogger<HandleStripeWebhookCommandHandler> _logger;
     private readonly IBookingConfirmationQuery _bookingConfirmationQuery;
     private readonly IEmailSender _emailSender;
+    private readonly TimeProvider _timeProvider;
 
     public HandleStripeWebhookCommandHandler(
      IPaymentRepository paymentRepository,
@@ -31,7 +32,8 @@ public sealed class HandleStripeWebhookCommandHandler
      IBookingConcurrencyManager bookingConcurrencyManager,
      IBookingConfirmationQuery bookingConfirmationQuery,
      IEmailSender emailSender,
-     ILogger<HandleStripeWebhookCommandHandler> logger)
+     ILogger<HandleStripeWebhookCommandHandler> logger,
+     TimeProvider timeProvider)
     {
         _paymentRepository = paymentRepository;
         _bookingRepository = bookingRepository;
@@ -41,6 +43,7 @@ public sealed class HandleStripeWebhookCommandHandler
         _bookingConfirmationQuery = bookingConfirmationQuery;
         _emailSender = emailSender;
         _logger = logger;
+        _timeProvider = timeProvider;
     }
 
     public async Task<HandleStripeWebhookResult> HandleAsync(
@@ -55,23 +58,24 @@ public sealed class HandleStripeWebhookCommandHandler
         }
 
         if (string.IsNullOrWhiteSpace(
-                command.ProviderPaymentIntentId))
+        command.ProviderPaymentIntentId))
         {
-            PaymentLog.StripePaymentSucceededEventReceived(
-                        _logger,
-                        command.EventId,
-                        command.ProviderPaymentIntentId);
-
             return new HandleStripeWebhookResult(
                 false,
                 new[]
                 {
-                    new ApplicationError(
-                        "Payment.ProviderPaymentIntentMissing",
-                        "The Stripe event does not contain a payment intent ID.",
-                        ErrorType.Validation)
+            new ApplicationError(
+                "Payment.ProviderPaymentIntentMissing",
+                "The Stripe event does not contain a payment intent ID.",
+                ErrorType.Validation)
                 });
         }
+
+        PaymentLog.StripePaymentSucceededEventReceived(
+    _logger,
+    command.EventId,
+    command.ProviderPaymentIntentId);
+
 
         var bookingId =
     await _paymentRepository
@@ -83,13 +87,7 @@ public sealed class HandleStripeWebhookCommandHandler
         {
             return new HandleStripeWebhookResult(
                 false,
-                new[]
-                {
-            new ApplicationError(
-                "Payment.NotFound",
-                "No payment was found for the Stripe payment intent.",
-                ErrorType.NotFound)
-                });
+           [PaymentErrors.NotFound]);
         }
 
         var outcome =
@@ -105,9 +103,24 @@ public sealed class HandleStripeWebhookCommandHandler
 
         if (outcome == PaymentProcessingOutcome.Confirmed)
         {
-            await SendBookingConfirmationEmailAsync(
-                bookingId.Value,
-                cancellationToken);
+            try
+            {
+                await SendBookingConfirmationEmailAsync(
+                    bookingId.Value,
+                    cancellationToken);
+            }
+            catch (OperationCanceledException)
+                when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                PaymentLog.BookingConfirmationEmailFailed(
+                    _logger,
+                    bookingId.Value,
+                    exception);
+            }
 
             return new HandleStripeWebhookResult(
                 true,
@@ -155,7 +168,7 @@ public sealed class HandleStripeWebhookCommandHandler
                 "The booking disappeared while processing the Stripe webhook.");
         }
 
-        var now = DateTime.UtcNow;
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
 
         payment.MarkSucceeded(now);
 
@@ -232,13 +245,7 @@ public sealed class HandleStripeWebhookCommandHandler
         {
             return new HandleStripeWebhookResult(
                 false,
-                new[]
-                {
-                    new ApplicationError(
-                        "Payment.NotFound",
-                        "The payment could not be found while processing the refund.",
-                        ErrorType.NotFound)
-                });
+             [PaymentErrors.NotFound]);
         }
 
         var refund =
@@ -252,7 +259,7 @@ public sealed class HandleStripeWebhookCommandHandler
                 payment.Id,
                 payment.Amount,
                 payment.Currency,
-                DateTime.UtcNow);
+                 _timeProvider.GetUtcNow().UtcDateTime);
 
             _refundRepository.Add(refund);
 
@@ -313,7 +320,7 @@ public sealed class HandleStripeWebhookCommandHandler
 
         refund.MarkSucceeded(
             refundResult.ProviderRefundId,
-            DateTime.UtcNow);
+            _timeProvider.GetUtcNow().UtcDateTime);
 
         await _refundRepository.SaveChangesAsync(
             cancellationToken);

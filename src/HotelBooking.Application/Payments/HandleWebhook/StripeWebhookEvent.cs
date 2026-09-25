@@ -1,4 +1,4 @@
-﻿namespace HotelBooking.Application.Payments.StartPayment;
+﻿namespace HotelBooking.Application.Payments.HandleWebhook;
 
 public sealed record StripeWebhookEvent(
     string EventId,

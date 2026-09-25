@@ -14,23 +14,28 @@ public sealed class CreateHotelCommandHandler
     private readonly ICityRepository _cityRepository;
     private readonly IIdentityService _identityService;
     private readonly IHotelRepository _hotelRepository;
+    private readonly TimeProvider _timeProvider;
 
     public CreateHotelCommandHandler(
         IValidator<CreateHotelCommand> validator,
         ICityRepository cityRepository,
         IIdentityService identityService,
-        IHotelRepository hotelRepository)
+        IHotelRepository hotelRepository,
+        TimeProvider timeProvider)
     {
         _validator = validator;
         _cityRepository = cityRepository;
         _identityService = identityService;
         _hotelRepository = hotelRepository;
+        _timeProvider = timeProvider;
     }
 
     public async Task<CreateHotelResult> HandleAsync(
         CreateHotelCommand command,
         CancellationToken cancellationToken)
     {
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
+
         var validationResult = await _validator.ValidateAsync(
             command,
             cancellationToken);
@@ -85,7 +90,7 @@ public sealed class CreateHotelCommandHandler
             command.OwnerId,
             command.StarRating,
             command.Category,
-            DateTime.UtcNow);
+            now);
 
         _hotelRepository.Add(hotel);
 

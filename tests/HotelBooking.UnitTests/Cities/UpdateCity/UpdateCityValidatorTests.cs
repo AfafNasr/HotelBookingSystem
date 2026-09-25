@@ -5,7 +5,7 @@ namespace HotelBooking.UnitTests.Cities.UpdateCity;
 
 public sealed class UpdateCityValidatorTests
 {
-    private readonly UpdateCityValidator _validator = new();
+    private readonly UpdateCityCommandValidator _validator = new();
 
     [Fact]
     public void Validate_WhenCommandIsValid_ShouldNotHaveValidationErrors()

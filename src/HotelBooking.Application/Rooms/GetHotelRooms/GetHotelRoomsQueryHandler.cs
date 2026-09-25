@@ -33,30 +33,17 @@ public sealed class GetHotelRoomsQueryHandler
             return new GetHotelRoomsResult(
                 false,
                 Array.Empty<HotelRoom>(),
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelNotFound",
-                        "The specified hotel does not exist.",
-                        ErrorType.NotFound)
-                });
+               [HotelErrors.NotFound]);
         }
 
-        var isAdmin = _currentUserService.IsInRole(Roles.Admin);
-        var isOwner = hotel.OwnerId == _currentUserService.UserId;
-
-        if (!isAdmin && !isOwner)
+        if (!HotelAccessPolicy.CanManage(
+        hotel,
+        _currentUserService))
         {
             return new GetHotelRoomsResult(
                 false,
-                Array.Empty<HotelRoom>(),
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelOwnershipRequired",
-                        "You are not allowed to view rooms for this hotel.",
-                        ErrorType.Authorization)
-                });
+                [],
+                [HotelErrors.ManagementForbidden]);
         }
 
         var rooms = await _hotelRoomsQuery.GetAsync(

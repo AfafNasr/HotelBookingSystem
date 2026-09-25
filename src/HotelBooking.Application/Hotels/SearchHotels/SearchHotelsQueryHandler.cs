@@ -8,13 +8,16 @@ public sealed class SearchHotelsQueryHandler
 {
     private readonly IValidator<SearchHotelsQuery> _validator;
     private readonly IHotelSearchQuery _hotelSearchQuery;
+    private readonly TimeProvider _timeProvider;
 
     public SearchHotelsQueryHandler(
         IValidator<SearchHotelsQuery> validator,
-        IHotelSearchQuery hotelSearchQuery)
+        IHotelSearchQuery hotelSearchQuery,
+        TimeProvider timeProvider)
     {
         _validator = validator;
         _hotelSearchQuery = hotelSearchQuery;
+        _timeProvider = timeProvider;
     }
 
     public async Task<SearchHotelsResult> HandleAsync(
@@ -36,7 +39,7 @@ public sealed class SearchHotelsQueryHandler
                 validationResult.ToApplicationErrors());
         }
 
-        var now = DateTime.UtcNow;
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
 
         var page = await _hotelSearchQuery.SearchAsync(
             query,

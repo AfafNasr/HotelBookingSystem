@@ -2,9 +2,9 @@
 
 namespace HotelBooking.Application.Cities.CreateCity;
 
-public sealed class CreateCityValidator : AbstractValidator<CreateCityCommand>
+public sealed class CreateCityCommandValidator : AbstractValidator<CreateCityCommand>
 {
-    public CreateCityValidator()
+    public CreateCityCommandValidator()
     {
         RuleFor(command => command.Name)
             .NotEmpty()

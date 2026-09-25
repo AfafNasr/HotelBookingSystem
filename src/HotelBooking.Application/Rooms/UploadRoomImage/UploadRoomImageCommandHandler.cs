@@ -63,13 +63,8 @@ public sealed class UploadRoomImageCommandHandler
             return new UploadRoomImageResult(
                 false,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "RoomNotFound",
-                        "The specified room does not exist.",
-                        ErrorType.NotFound)
-                });
+                [RoomErrors.NotFound]);
+
         }
 
         var hotel = await _hotelRepository.GetByIdAsync(
@@ -81,27 +76,17 @@ public sealed class UploadRoomImageCommandHandler
             return new UploadRoomImageResult(
                 false,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelNotFound",
-                        "The hotel associated with the room does not exist.",
-                        ErrorType.NotFound)
-                });
+              [HotelErrors.NotFound]);
         }
 
-        if (hotel.OwnerId != _currentUserService.UserId)
+        if (!HotelAccessPolicy.CanManage(
+     hotel,
+     _currentUserService))
         {
             return new UploadRoomImageResult(
                 false,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelOwnershipRequired",
-                        "You can only upload images for rooms belonging to hotels you own.",
-                        ErrorType.Authorization)
-                });
+               [HotelErrors.ManagementForbidden]);
         }
 
         if (!ImageFileValidator.HasValidSignature(

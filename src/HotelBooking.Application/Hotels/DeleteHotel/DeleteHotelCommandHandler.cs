@@ -8,13 +8,15 @@ public sealed class DeleteHotelCommandHandler
 {
     private readonly IValidator<DeleteHotelCommand> _validator;
     private readonly IHotelRepository _hotelRepository;
-
+    private readonly TimeProvider _timeProvider;
     public DeleteHotelCommandHandler(
         IValidator<DeleteHotelCommand> validator,
-        IHotelRepository hotelRepository)
+        IHotelRepository hotelRepository,
+        TimeProvider timeProvider)
     {
         _validator = validator;
         _hotelRepository = hotelRepository;
+        _timeProvider = timeProvider;
     }
 
     public async Task<DeleteHotelResult> HandleAsync(
@@ -40,16 +42,10 @@ public sealed class DeleteHotelCommandHandler
         {
             return new DeleteHotelResult(
                 false,
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelNotFound",
-                        "The specified hotel does not exist.",
-                        ErrorType.NotFound)
-                });
+                [HotelErrors.NotFound]);
         }
 
-        var now = DateTime.UtcNow;
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
         var today = DateOnly.FromDateTime(now);
 
         var hasActiveOrUpcomingBookings =
@@ -63,13 +59,7 @@ public sealed class DeleteHotelCommandHandler
         {
             return new DeleteHotelResult(
                 false,
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelHasActiveBookings",
-                        "The hotel cannot be deleted because it has active or upcoming bookings.",
-                        ErrorType.Conflict)
-                });
+              [HotelErrors.HasActiveBookings]);
         }
 
         hotel.Delete(now);

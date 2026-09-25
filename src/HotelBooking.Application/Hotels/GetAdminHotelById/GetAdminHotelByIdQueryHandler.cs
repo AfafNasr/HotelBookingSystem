@@ -25,13 +25,8 @@ public sealed class GetAdminHotelByIdQueryHandler
             return new GetAdminHotelByIdResult(
                 false,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelNotFound",
-                        "The specified hotel does not exist.",
-                        ErrorType.NotFound)
-                });
+               [HotelErrors.NotFound]);
+
         }
 
         return new GetAdminHotelByIdResult(

@@ -10,23 +10,23 @@ namespace HotelBooking.Api.Users;
 [Route("api/admin/users")]
 public sealed class AdminUsersController : ControllerBase
 {
-    private readonly PromoteToHotelOwnerHandler _promoteToHotelOwnerHandler;
+    private readonly PromoteToHotelOwnerCommandHandler _promoteHandler;
 
     public AdminUsersController(
-        PromoteToHotelOwnerHandler promoteToHotelOwnerHandler)
+        PromoteToHotelOwnerCommandHandler promoteHandler )
     {
-        _promoteToHotelOwnerHandler = promoteToHotelOwnerHandler;
+        _promoteHandler = promoteHandler;
     }
 
     [HttpPost("{userId}/hotel-owner-role")]
     [Authorize(Policy = UserPermissions.PromoteToHotelOwner)]
     public async Task<IActionResult> PromoteToHotelOwner(
-        string userId)
+        string userId , CancellationToken cancellationToken)
     {
-        var command = new PromoteToHotelOwnerCommandHandler(userId);
+        var command = new PromoteToHotelOwnerCommand(userId);
 
         var result =
-            await _promoteToHotelOwnerHandler.HandleAsync(command);
+            await _promoteHandler.HandleAsync(command, cancellationToken);
 
         if (!result.Succeeded)
         {

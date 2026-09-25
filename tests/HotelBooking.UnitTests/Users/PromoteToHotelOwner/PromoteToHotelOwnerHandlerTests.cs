@@ -8,13 +8,13 @@ namespace HotelBooking.UnitTests.Users.PromoteToHotelOwner;
 public sealed class PromoteToHotelOwnerHandlerTests
 {
     private readonly Mock<IIdentityService> _identityServiceMock;
-    private readonly PromoteToHotelOwnerHandler _handler;
+    private readonly PromoteToHotelOwnerCommandHandler _handler;
 
     public PromoteToHotelOwnerHandlerTests()
     {
         _identityServiceMock = new Mock<IIdentityService>();
 
-        _handler = new PromoteToHotelOwnerHandler(
+        _handler = new PromoteToHotelOwnerCommandHandler(
             _identityServiceMock.Object);
     }
 
@@ -24,7 +24,7 @@ public sealed class PromoteToHotelOwnerHandlerTests
         // Arrange
         const string userId = "user-123";
 
-        var command = new PromoteToHotelOwnerCommandHandler(userId);
+        var command = new PromoteToHotelOwnerCommand(userId);
 
         var expectedResult = new PromoteToHotelOwnerResult(
             true,
@@ -32,11 +32,15 @@ public sealed class PromoteToHotelOwnerHandlerTests
 
         _identityServiceMock
             .Setup(service =>
-                service.PromoteToHotelOwnerAsync(userId))
+                service.PromoteToHotelOwnerAsync(
+                    userId,
+                    It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedResult);
 
         // Act
-        var result = await _handler.HandleAsync(command);
+        var result = await _handler.HandleAsync(
+            command,
+            CancellationToken.None);
 
         // Assert
         Assert.True(result.Succeeded);
@@ -44,7 +48,9 @@ public sealed class PromoteToHotelOwnerHandlerTests
 
         _identityServiceMock.Verify(
             service =>
-                service.PromoteToHotelOwnerAsync(userId),
+                service.PromoteToHotelOwnerAsync(
+                    userId,
+                    It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -65,13 +71,17 @@ public sealed class PromoteToHotelOwnerHandlerTests
 
         _identityServiceMock
             .Setup(service =>
-                service.PromoteToHotelOwnerAsync(userId))
+                service.PromoteToHotelOwnerAsync(
+                    userId,
+                    It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedResult);
 
-        var command = new PromoteToHotelOwnerCommandHandler(userId);
+        var command = new PromoteToHotelOwnerCommand(userId);
 
         // Act
-        var result = await _handler.HandleAsync(command);
+        var result = await _handler.HandleAsync(
+            command,
+            CancellationToken.None);
 
         // Assert
         Assert.False(result.Succeeded);
@@ -83,7 +93,9 @@ public sealed class PromoteToHotelOwnerHandlerTests
 
         _identityServiceMock.Verify(
             service =>
-                service.PromoteToHotelOwnerAsync(userId),
+                service.PromoteToHotelOwnerAsync(
+                    userId,
+                    It.IsAny<CancellationToken>()),
             Times.Once);
     }
 }

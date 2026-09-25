@@ -311,7 +311,8 @@ public sealed class CompleteHotelProfileCommandHandlerTests
         return new CompleteHotelProfileCommandHandler(
             _validator,
             _hotelRepositoryMock.Object,
-            _currentUserServiceMock.Object);
+            _currentUserServiceMock.Object,
+            TimeProvider.System);
     }
 
     private static CompleteHotelProfileCommand CreateValidCommand()

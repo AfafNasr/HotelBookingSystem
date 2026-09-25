@@ -2,10 +2,10 @@
 
 namespace HotelBooking.Application.Cities.UpdateCity;
 
-public sealed class UpdateCityValidator
+public sealed class UpdateCityCommandValidator
     : AbstractValidator<UpdateCityCommand>
 {
-    public UpdateCityValidator()
+    public UpdateCityCommandValidator()
     {
         RuleFor(command => command.CityId)
             .GreaterThan(0)

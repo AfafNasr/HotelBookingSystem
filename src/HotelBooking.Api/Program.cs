@@ -2,12 +2,14 @@ using HotelBooking.Api.Authentication;
 using HotelBooking.Api.Authorization;
 using HotelBooking.Api.ErrorHandling;
 using HotelBooking.Application;
+using HotelBooking.Application.Bookings;
 using HotelBooking.Application.Common.Security;
 using HotelBooking.Infrastructure;
 using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +35,20 @@ builder.Services.AddProblemDetails();
 builder.Services.AddScoped< ICurrentUserService, CurrentUserService>();
 
 QuestPDF.Settings.License = LicenseType.Community;
+
+builder.Services
+    .AddOptions<BookingOptions>()
+    .Bind(builder.Configuration.GetSection(BookingOptions.SectionName))
+    .Validate(
+        options => options.PaymentHoldDurationMinutes > 0,
+        "Payment hold duration must be greater than zero.")
+    .ValidateOnStart();
+
+builder.Services.AddSingleton(
+    serviceProvider =>
+        serviceProvider
+            .GetRequiredService<IOptions<BookingOptions>>()
+            .Value);
 
 var app = builder.Build();
 

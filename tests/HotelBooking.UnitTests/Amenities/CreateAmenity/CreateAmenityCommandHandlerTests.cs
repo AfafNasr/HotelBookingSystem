@@ -12,6 +12,7 @@ public sealed class CreateAmenityCommandHandlerTests
 
     private readonly IValidator<CreateAmenityCommand> _validator =
         new CreateAmenityCommandValidator();
+    private readonly TimeProvider _timeProvider = TimeProvider.System;
 
     [Fact]
     public async Task HandleAsync_WhenCommandIsInvalid_ShouldReturnValidationErrorsWithoutAccessingRepository()
@@ -128,6 +129,7 @@ public sealed class CreateAmenityCommandHandlerTests
     {
         return new CreateAmenityCommandHandler(
             _validator,
-            _amenityRepositoryMock.Object);
+            _amenityRepositoryMock.Object,
+            TimeProvider.System);
     }
 }

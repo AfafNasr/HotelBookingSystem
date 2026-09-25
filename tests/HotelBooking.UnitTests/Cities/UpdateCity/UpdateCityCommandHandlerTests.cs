@@ -11,14 +11,16 @@ public sealed class UpdateCityCommandHandlerTests
 {
     private readonly Mock<ICityRepository> _cityRepositoryMock = new();
     private readonly Mock<ICountryRepository> _countryRepositoryMock = new();
-    private readonly UpdateCityValidator _validator = new();
+    private readonly UpdateCityCommandValidator _validator = new();
+    private readonly TimeProvider _timeProvider = TimeProvider.System;
 
     private UpdateCityCommandHandler CreateHandler()
     {
         return new UpdateCityCommandHandler(
             _cityRepositoryMock.Object,
             _countryRepositoryMock.Object,
-            _validator);
+            _validator,
+             _timeProvider);
     }
 
     [Fact]

@@ -6,17 +6,21 @@ public sealed class GetTrendingDestinationsQueryHandler
     private const int TrendingDestinationsLimit = 5;
 
     private readonly ITrendingDestinationsQuery _trendingDestinationsQuery;
+    private readonly TimeProvider _timeProvider;
 
     public GetTrendingDestinationsQueryHandler(
-        ITrendingDestinationsQuery trendingDestinationsQuery)
+        ITrendingDestinationsQuery trendingDestinationsQuery,
+        TimeProvider timeProvider )
     {
         _trendingDestinationsQuery = trendingDestinationsQuery;
+        _timeProvider = timeProvider;
     }
 
     public async Task<GetTrendingDestinationsResult> HandleAsync(
         CancellationToken cancellationToken)
     {
-        var from = DateTime.UtcNow.AddDays(-TrendingPeriodDays);
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
+        var from = now.AddDays(-TrendingPeriodDays);
 
         var destinations = await _trendingDestinationsQuery.GetAsync(
             from,

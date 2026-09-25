@@ -24,10 +24,11 @@ public sealed class IdentityService : IIdentityService
     public async Task<RegisterResult> CreateCustomerAsync(
      string username,
      string email,
-     string password)
+     string password,
+     CancellationToken cancellationToken)
     {
         await using var transaction =
-            await _dbContext.Database.BeginTransactionAsync();
+            await _dbContext.Database.BeginTransactionAsync(cancellationToken);
 
         var user = new IdentityUser
         {
@@ -48,10 +49,11 @@ public sealed class IdentityService : IIdentityService
 
         if (!roleResult.Succeeded)
         {
+            await transaction.RollbackAsync(cancellationToken);
             return Failure(roleResult);
         }
 
-        await transaction.CommitAsync();
+        await transaction.CommitAsync(cancellationToken);
 
         return new RegisterResult(
             true,
@@ -110,7 +112,7 @@ public sealed class IdentityService : IIdentityService
     }
 
     public async Task<PromoteToHotelOwnerResult> PromoteToHotelOwnerAsync(
-    string userId)
+    string userId , CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByIdAsync(userId);
 

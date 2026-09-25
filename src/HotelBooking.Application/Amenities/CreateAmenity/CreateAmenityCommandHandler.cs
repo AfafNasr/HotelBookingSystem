@@ -9,19 +9,23 @@ public sealed class CreateAmenityCommandHandler
 {
     private readonly IValidator<CreateAmenityCommand> _validator;
     private readonly IAmenityRepository _amenityRepository;
+    private readonly TimeProvider _timeProvider;
 
     public CreateAmenityCommandHandler(
         IValidator<CreateAmenityCommand> validator,
-        IAmenityRepository amenityRepository)
+        IAmenityRepository amenityRepository,
+        TimeProvider timeProvider)
     {
         _validator = validator;
         _amenityRepository = amenityRepository;
+        _timeProvider = timeProvider;
     }
 
     public async Task<CreateAmenityResult> HandleAsync(
         CreateAmenityCommand command,
         CancellationToken cancellationToken)
     {
+       
         var validationResult =
             await _validator.ValidateAsync(
                 command,
@@ -53,10 +57,11 @@ public sealed class CreateAmenityCommandHandler
                         ErrorType.Conflict)
                 });
         }
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
 
         var amenity = new Amenity(
             command.Name,
-            DateTime.UtcNow);
+            now);
 
         _amenityRepository.Add(amenity);
 

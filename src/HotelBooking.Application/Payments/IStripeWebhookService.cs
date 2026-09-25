@@ -1,4 +1,4 @@
-﻿using HotelBooking.Application.Payments.StartPayment;
+﻿using HotelBooking.Application.Payments.HandleWebhook;
 
 namespace HotelBooking.Application.Payments;
 
