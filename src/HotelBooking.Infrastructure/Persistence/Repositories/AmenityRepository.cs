@@ -37,6 +37,32 @@ public sealed class AmenityRepository : IAmenityRepository
                     amenity.Name == normalizedName,
                 cancellationToken);
     }
+    public async Task<Amenity?> GetByIdAsync(
+    int amenityId,
+    CancellationToken cancellationToken)
+    {
+        return await _dbContext.Amenities
+            .FirstOrDefaultAsync(
+                amenity =>
+                    amenity.Id == amenityId &&
+                    !amenity.IsDeleted,
+                cancellationToken);
+    }
+
+    public Task<bool> ExistsByNameExceptAsync(
+    string name,
+    int excludedAmenityId,
+    CancellationToken cancellationToken)
+    {
+        var normalizedName = name.Trim();
+
+        return _dbContext.Amenities.AnyAsync(
+            amenity =>
+                !amenity.IsDeleted &&
+                amenity.Id != excludedAmenityId &&
+                amenity.Name == normalizedName,
+            cancellationToken);
+    }
 
     public void Add(Amenity amenity)
     {

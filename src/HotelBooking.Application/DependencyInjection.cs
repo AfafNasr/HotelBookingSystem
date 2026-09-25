@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
 using HotelBooking.Application.Amenities.CreateAmenity;
+using HotelBooking.Application.Amenities.DeleteAmenity;
+using HotelBooking.Application.Amenities.UpdateAmenity;
 using HotelBooking.Application.Authentication.Login;
 using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Bookings.CreateBooking;
@@ -91,6 +93,8 @@ public static class DependencyInjection
         services.AddScoped<CreateReviewCommandHandler>();
         services.AddScoped<UpdateReviewCommandHandler>();
         services.AddScoped<DeleteReviewCommandHandler>();
+        services.AddScoped<UpdateAmenityCommandHandler>();
+        services.AddScoped<DeleteAmenityCommandHandler>();
 
 
         return services;
