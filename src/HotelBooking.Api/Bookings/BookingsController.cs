@@ -1,6 +1,7 @@
 ﻿using HotelBooking.Api.Common;
 using HotelBooking.Application.Bookings.CreateBooking;
 using HotelBooking.Application.Bookings.GetBookingConfirmation;
+using HotelBooking.Application.Bookings.GetMyBookings;
 using HotelBooking.Application.Common.Security.Authorization.Permissions;
 using HotelBooking.Domain.Bookings;
 using Microsoft.AspNetCore.Authorization;
@@ -16,14 +17,17 @@ public sealed class BookingsController : ControllerBase
     private readonly CreateBookingCommandHandler _createHandler;
     private readonly GetBookingConfirmationQueryHandler _confirmationHandler;
     private readonly IBookingConfirmationPdfGenerator _pdfGenerator;
+    private readonly GetMyBookingsQueryHandler _myBookingsHandler;
 
     public BookingsController(
-        CreateBookingCommandHandler createHandler,
-        GetBookingConfirmationQueryHandler confirmationHandler,
-        IBookingConfirmationPdfGenerator pdfGenerator)
+      CreateBookingCommandHandler createHandler,
+      GetBookingConfirmationQueryHandler confirmationHandler,
+      GetMyBookingsQueryHandler myBookingsHandler,
+      IBookingConfirmationPdfGenerator pdfGenerator)
     {
         _createHandler = createHandler;
         _confirmationHandler = confirmationHandler;
+        _myBookingsHandler = myBookingsHandler;
         _pdfGenerator = pdfGenerator;
     }
 
@@ -132,6 +136,36 @@ public sealed class BookingsController : ControllerBase
             pdf,
             "application/pdf",
             fileName);
+    }
+
+    [HttpGet]
+    [Authorize(Policy = BookingPermissions.ViewBooking)]
+    public async Task<IActionResult> GetMyBookings(
+    CancellationToken cancellationToken)
+    {
+        var result = await _myBookingsHandler.HandleAsync(
+            cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return ErrorResponseFactory.Create(
+                this,
+                result.Errors);
+        }
+
+        var response = result.Bookings
+            .Select(booking => new GetMyBookingResponse(
+                booking.BookingId,
+                booking.HotelName,
+                booking.CheckInDate,
+                booking.CheckOutDate,
+                booking.TotalAmount,
+                booking.Status,
+                booking.ConfirmationNumber,
+                booking.CreatedAt))
+            .ToArray();
+
+        return Ok(response);
     }
 
 }

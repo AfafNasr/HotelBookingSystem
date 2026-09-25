@@ -41,3 +41,13 @@ public sealed record BookingConfirmationRoomResponse(
     RoomType RoomType,
     string? Description,
     decimal OriginalPricePerNight);
+
+public sealed record GetMyBookingResponse(
+    int BookingId,
+    string HotelName,
+    DateOnly CheckInDate,
+    DateOnly CheckOutDate,
+    decimal TotalAmount,
+    BookingStatus Status,
+    string? ConfirmationNumber,
+    DateTime CreatedAt);

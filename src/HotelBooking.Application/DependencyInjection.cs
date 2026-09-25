@@ -7,6 +7,7 @@ using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Bookings.CreateBooking;
 using HotelBooking.Application.Bookings.Expiration;
 using HotelBooking.Application.Bookings.GetBookingConfirmation;
+using HotelBooking.Application.Bookings.GetMyBookings;
 using HotelBooking.Application.Bookings.Pricing;
 using HotelBooking.Application.Cities.CreateCity;
 using HotelBooking.Application.Cities.GetAdminCities;
@@ -101,6 +102,7 @@ public static class DependencyInjection
         services.AddScoped<DeleteHotelAmenityCommandHandler>();
         services.AddScoped<UpdateDealCommandHandler>();
         services.AddScoped<DeleteDealCommandHandler>();
+        services.AddScoped<GetMyBookingsQueryHandler>();
 
 
         return services;

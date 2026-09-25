@@ -43,7 +43,8 @@ public static class RolePermissions
                     BookingPermissions.ViewConfirmation,
                      ReviewPermissions.View,
                       ReviewPermissions.Update,
-                       ReviewPermissions.Delete
+                       ReviewPermissions.Delete,
+                    BookingPermissions.ViewBooking
 
                 },
 

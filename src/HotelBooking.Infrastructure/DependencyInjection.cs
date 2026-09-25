@@ -213,6 +213,7 @@ public static class DependencyInjection
         services.AddScoped<IAdminRoomsQuery, AdminRoomsQuery>();
         services.AddScoped<IAdminHotelByIdQuery, AdminHotelByIdQuery>();
         services.AddScoped<IGetMyReviewsQuery, GetMyReviewsQuery>();
+        services.AddScoped< IBookingConfirmationQuery,  BookingConfirmationQuery>();
 
         return services;
     } 
