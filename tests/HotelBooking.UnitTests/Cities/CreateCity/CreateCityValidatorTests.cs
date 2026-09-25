@@ -5,7 +5,7 @@ namespace HotelBooking.UnitTests.Cities.CreateCity;
 
 public sealed class CreateCityValidatorTests
 {
-    private readonly CreateCityValidator _validator = new();
+    private readonly CreateCityCommandValidator _validator = new();
 
     [Fact]
     public void Validate_WhenCommandIsValid_ShouldNotHaveValidationErrors()

@@ -25,7 +25,7 @@ public sealed class LoginHandlerTests
         var handler = CreateHandler();
         var command = new LoginCommand("", "");
 
-        var result = await handler.HandleAsync(command);
+        var result = await handler.HandleAsync(command , CancellationToken.None);
 
         Assert.False(result.Succeeded);
         Assert.Null(result.AccessToken);
@@ -59,7 +59,7 @@ public sealed class LoginHandlerTests
                 command.Password))
             .ReturnsAsync((AuthenticatedUser?)null);
 
-        var result = await handler.HandleAsync(command);
+        var result = await handler.HandleAsync(command , CancellationToken.None);
 
         Assert.False(result.Succeeded);
         Assert.Null(result.AccessToken);
@@ -108,7 +108,7 @@ public sealed class LoginHandlerTests
             .Setup(service => service.CreateToken(authenticatedUser))
             .Returns(accessToken);
 
-        var result = await handler.HandleAsync(command);
+        var result = await handler.HandleAsync(command , CancellationToken.None);
 
         Assert.True(result.Succeeded);
         Assert.Equal(accessToken, result.AccessToken);

@@ -13,7 +13,7 @@ public sealed class CreateCityCommandHandlerTests
     private readonly Mock<ICountryRepository> _countryRepositoryMock = new();
     private readonly Mock<ICityRepository> _cityRepositoryMock = new();
     private readonly IValidator<CreateCityCommand> _validator =
-        new CreateCityValidator();
+        new CreateCityCommandValidator();
 
     [Fact]
     public async Task HandleAsync_WhenCountryDoesNotExist_ShouldReturnValidationError()
@@ -61,7 +61,8 @@ public sealed class CreateCityCommandHandlerTests
         return new CreateCityCommandHandler(
             _validator,
             _countryRepositoryMock.Object,
-            _cityRepositoryMock.Object);
+            _cityRepositoryMock.Object,
+            TimeProvider.System);
     }
 
     [Fact]

@@ -5,15 +5,17 @@ namespace HotelBooking.Application.Hotels.SearchHotels;
 public sealed class SearchHotelsQueryValidator
     : AbstractValidator<SearchHotelsQuery>
 {
-    public SearchHotelsQueryValidator()
+    public SearchHotelsQueryValidator(TimeProvider timeProvider)
     {
         RuleFor(query => query.Destination)
             .NotEmpty()
             .MaximumLength(150);
 
-        RuleFor(query => query.CheckInDate)
-            .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow))
-            .WithMessage("Check-in date cannot be in the past.");
+        RuleFor(x => x.CheckInDate)
+           .Must(checkInDate =>
+               checkInDate >= DateOnly.FromDateTime(
+                   timeProvider.GetUtcNow().UtcDateTime))
+           .WithMessage("Check-in date cannot be in the past.");
 
         RuleFor(query => query.CheckOutDate)
             .GreaterThan(query => query.CheckInDate)

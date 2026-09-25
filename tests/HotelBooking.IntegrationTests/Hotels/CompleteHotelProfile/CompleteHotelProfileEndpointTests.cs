@@ -1,5 +1,5 @@
-﻿using HotelBooking.Api.Authentication.Login;
-using HotelBooking.Api.Hotels.CompleteHotelProfile;
+﻿using HotelBooking.Api.Authentication;
+using HotelBooking.Api.Hotels;
 using HotelBooking.Application.Common.Security;
 using HotelBooking.Domain.Cities;
 using HotelBooking.Domain.Hotels;

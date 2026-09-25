@@ -13,17 +13,20 @@ public sealed class CreateDealCommandHandler
     private readonly IHotelRepository _hotelRepository;
     private readonly IDealRepository _dealRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly TimeProvider _timeProvider;
 
     public CreateDealCommandHandler(
         IValidator<CreateDealCommand> validator,
         IHotelRepository hotelRepository,
         IDealRepository dealRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        TimeProvider timeProvider)
     {
         _validator = validator;
         _hotelRepository = hotelRepository;
         _dealRepository = dealRepository;
         _currentUserService = currentUserService;
+        _timeProvider = timeProvider;
     }
 
     public async Task<CreateDealResult> HandleAsync(
@@ -51,27 +54,18 @@ public sealed class CreateDealCommandHandler
             return new CreateDealResult(
                 false,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelNotFound",
-                        "Hotel was not found.",
-                        ErrorType.NotFound)
-                });
+              [HotelErrors.NotFound]);
+
         }
 
-        if (hotel.OwnerId != _currentUserService.UserId)
+        if (!HotelAccessPolicy.CanManage(
+     hotel,
+     _currentUserService))
         {
             return new CreateDealResult(
                 false,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelOwnershipRequired",
-                        "You can only manage deals for hotels you own.",
-                        ErrorType.Authorization)
-                });
+                 [HotelErrors.ManagementForbidden]);
         }
 
         var hasOverlap =
@@ -95,7 +89,7 @@ public sealed class CreateDealCommandHandler
                 });
         }
 
-        var now = DateTime.UtcNow;
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
 
         var deal = new Deal(
             hotel.Id,

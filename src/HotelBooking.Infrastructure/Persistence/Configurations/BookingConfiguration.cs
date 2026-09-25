@@ -1,8 +1,7 @@
 ﻿using HotelBooking.Domain.Bookings;
-using HotelBooking.Domain.Hotels;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace HotelBooking.Infrastructure.Persistence.Configurations;
 
@@ -70,7 +69,11 @@ public sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
             .IsUnique()
             .HasFilter("[ConfirmationNumber] IS NOT NULL");
 
-
+        builder.HasIndex(booking => new
+        {
+            booking.Status,
+            booking.ExpiresAt
+        });
 
         builder.HasCheckConstraint(
             "CK_Bookings_DateRange",

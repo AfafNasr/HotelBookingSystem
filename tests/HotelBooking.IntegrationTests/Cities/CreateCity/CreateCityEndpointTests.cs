@@ -1,5 +1,5 @@
-﻿using HotelBooking.Api.Authentication.Login;
-using HotelBooking.Api.Cities.CreateCity;
+﻿using HotelBooking.Api.Authentication;
+using HotelBooking.Api.Cities;
 using HotelBooking.Infrastructure.Persistence;
 using HotelBooking.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Identity;

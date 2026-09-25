@@ -125,6 +125,8 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
+                    b.HasIndex("Status", "ExpiresAt");
+
                     b.ToTable("Bookings", null, t =>
                         {
                             t.HasCheckConstraint("CK_Bookings_DateRange", "[CheckOutDate] > [CheckInDate]");
@@ -834,7 +836,7 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("HotelBooking.Domain.Bookings.Booking", b =>
                 {
-                    b.HasOne("HotelBooking.Domain.Hotels.Hotel", null)
+                    b.HasOne("HotelBooking.Domain.Hotels.Hotel", "Hotel")
                         .WithMany()
                         .HasForeignKey("HotelId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -845,6 +847,8 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Hotel");
                 });
 
             modelBuilder.Entity("HotelBooking.Domain.Bookings.BookingRoom", b =>
@@ -951,7 +955,7 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("HotelBooking.Domain.Payments.Payment", b =>
                 {
                     b.HasOne("HotelBooking.Domain.Bookings.Booking", null)
-                        .WithOne()
+                        .WithOne("Payment")
                         .HasForeignKey("HotelBooking.Domain.Payments.Payment", "BookingId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1052,6 +1056,8 @@ namespace HotelBooking.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("HotelBooking.Domain.Bookings.Booking", b =>
                 {
+                    b.Navigation("Payment");
+
                     b.Navigation("Rooms");
                 });
 #pragma warning restore 612, 618

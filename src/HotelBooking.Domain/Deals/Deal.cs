@@ -30,6 +30,23 @@ public sealed class Deal
         DateOnly endDate,
         DateTime createdAt)
     {
+        if (hotelId <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(hotelId));
+        }
+
+        if (discountPercentage <= 0 || discountPercentage >= 100)
+        {
+            throw new ArgumentOutOfRangeException(nameof(discountPercentage));
+        }
+
+        if (endDate < startDate)
+        {
+            throw new ArgumentException(
+                "Deal end date cannot be before the start date.",
+                nameof(endDate));
+        }
+
         HotelId = hotelId;
         DiscountPercentage = discountPercentage;
         StartDate = startDate;

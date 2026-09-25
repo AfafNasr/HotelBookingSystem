@@ -8,13 +8,16 @@ public sealed class GetAdminRoomsQueryHandler
 {
     private readonly IValidator<GetAdminRoomsQuery> _validator;
     private readonly IAdminRoomsQuery _adminRoomsQuery;
+    private readonly TimeProvider _timeProvider;
 
     public GetAdminRoomsQueryHandler(
         IValidator<GetAdminRoomsQuery> validator,
-        IAdminRoomsQuery adminRoomsQuery)
+        IAdminRoomsQuery adminRoomsQuery,
+        TimeProvider timeProvider)
     {
         _validator = validator;
         _adminRoomsQuery = adminRoomsQuery;
+        _timeProvider = timeProvider;
     }
 
     public async Task<GetAdminRoomsResult> HandleAsync(
@@ -32,10 +35,11 @@ public sealed class GetAdminRoomsQueryHandler
                 Array.Empty<AdminRoom>(),
                 validationResult.ToApplicationErrors());
         }
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
 
         var rooms = await _adminRoomsQuery.GetAsync(
             query,
-            DateTime.UtcNow,
+            now,
             cancellationToken);
 
         return new GetAdminRoomsResult(

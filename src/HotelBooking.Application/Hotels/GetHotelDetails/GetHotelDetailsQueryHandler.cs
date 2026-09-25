@@ -12,17 +12,19 @@ public sealed class GetHotelDetailsQueryHandler
     private readonly IHotelDetailsQuery _hotelDetailsQuery;
     private readonly ICurrentUserService _currentUserService;
     private readonly IRecentlyVisitedHotelRepository _recentlyVisitedHotelRepository;
-
+    private readonly TimeProvider _timeProvider;
     public GetHotelDetailsQueryHandler(
         IValidator<GetHotelDetailsQuery> validator,
         IHotelDetailsQuery hotelDetailsQuery,
         ICurrentUserService currentUserService,
-        IRecentlyVisitedHotelRepository recentlyVisitedHotelRepository)
+        IRecentlyVisitedHotelRepository recentlyVisitedHotelRepository,
+        TimeProvider timeProvider)
     {
         _validator = validator;
         _hotelDetailsQuery = hotelDetailsQuery;
         _currentUserService = currentUserService;
         _recentlyVisitedHotelRepository = recentlyVisitedHotelRepository;
+        _timeProvider = timeProvider;
     }
 
     public async Task<GetHotelDetailsResult> HandleAsync(
@@ -41,7 +43,7 @@ public sealed class GetHotelDetailsQueryHandler
                 validationResult.ToApplicationErrors());
         }
 
-        var now = DateTime.UtcNow;
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
 
         var hotel = await _hotelDetailsQuery.GetByIdAsync(
             query,
@@ -53,13 +55,7 @@ public sealed class GetHotelDetailsQueryHandler
             return new GetHotelDetailsResult(
                 false,
                 null,
-                new[]
-                {
-            new ApplicationError(
-                "HotelNotFound",
-                "The specified hotel does not exist.",
-                ErrorType.NotFound)
-                });
+               [HotelErrors.NotFound]);
         }
 
         var userId = _currentUserService.UserId;
@@ -78,9 +74,5 @@ public sealed class GetHotelDetailsQueryHandler
             hotel,
             Array.Empty<ApplicationError>());
 
-        return new GetHotelDetailsResult(
-            true,
-            hotel,
-            Array.Empty<ApplicationError>());
     }
 }

@@ -22,18 +22,24 @@ public sealed class RegisterCommandHandlerTests
             "invalid-email",
             "");
 
-        var result = await handler.HandleAsync(command);
+        var result = await handler.HandleAsync(
+            command,
+            CancellationToken.None);
 
         Assert.False(result.Succeeded);
+
         Assert.All(
             result.Errors,
-            error => Assert.Equal(ErrorType.Validation, error.Type));
+            error => Assert.Equal(
+                ErrorType.Validation,
+                error.Type));
 
         _identityServiceMock.Verify(
             service => service.CreateCustomerAsync(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
-                It.IsAny<string>()),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -49,7 +55,8 @@ public sealed class RegisterCommandHandlerTests
             .Setup(service => service.CreateCustomerAsync(
                 "customer1",
                 "customer1@example.com",
-                "Customer123!"))
+                "Customer123!",
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedResult);
 
         var handler = new RegisterCommandHandler(
@@ -61,7 +68,9 @@ public sealed class RegisterCommandHandlerTests
             "customer1@example.com",
             "Customer123!");
 
-        var result = await handler.HandleAsync(command);
+        var result = await handler.HandleAsync(
+            command,
+            CancellationToken.None);
 
         Assert.True(result.Succeeded);
         Assert.Equal("user-123", result.UserId);
@@ -70,7 +79,8 @@ public sealed class RegisterCommandHandlerTests
             service => service.CreateCustomerAsync(
                 "customer1",
                 "customer1@example.com",
-                "Customer123!"),
+                "Customer123!",
+                It.IsAny<CancellationToken>()),
             Times.Once);
     }
 }

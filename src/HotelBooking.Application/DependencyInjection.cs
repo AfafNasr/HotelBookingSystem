@@ -45,6 +45,8 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(
         this IServiceCollection services)
     {
+
+        services.AddSingleton<TimeProvider>(TimeProvider.System);
         services.AddValidatorsFromAssemblyContaining<RegisterCommand>();
 
         services.AddScoped<BookingPricingCalculator>();
@@ -55,7 +57,7 @@ public static class DependencyInjection
         services.AddScoped<CreateCityCommandHandler>();
         services.AddScoped<GetCountriesQueryHandler>();
         services.AddScoped<UpdateCityCommandHandler>();
-        services.AddScoped<PromoteToHotelOwnerHandler>();
+        services.AddScoped<PromoteToHotelOwnerCommandHandler>();
         services.AddScoped<CreateHotelCommandHandler>();
         services.AddScoped<UpdateHotelCommandHandler>();
         services.AddScoped<CreateAmenityCommandHandler>();

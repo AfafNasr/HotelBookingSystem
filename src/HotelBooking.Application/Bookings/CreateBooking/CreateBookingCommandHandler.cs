@@ -2,13 +2,13 @@
 using HotelBooking.Application.Bookings.Pricing;
 using HotelBooking.Application.Common.Errors;
 using HotelBooking.Application.Common.Extensions;
-using HotelBooking.Application.Common.Errors;
 using HotelBooking.Application.Common.Security;
 using HotelBooking.Application.Deals;
 using HotelBooking.Application.Hotels;
 using HotelBooking.Application.Rooms;
 using HotelBooking.Domain.Bookings;
 using Microsoft.Extensions.Logging;
+
 
 namespace HotelBooking.Application.Bookings.CreateBooking;
 
@@ -23,6 +23,8 @@ public sealed class CreateBookingCommandHandler
     private readonly BookingPricingCalculator _pricingCalculator;
     private readonly IBookingConcurrencyManager _bookingConcurrencyManager;
     private readonly ILogger<CreateBookingCommandHandler> _logger;
+    private readonly TimeProvider _timeProvider;
+    private readonly BookingOptions _bookingOptions;
 
     public CreateBookingCommandHandler(
         IValidator<CreateBookingCommand> validator,
@@ -33,7 +35,9 @@ public sealed class CreateBookingCommandHandler
         ICurrentUserService currentUserService,
         BookingPricingCalculator pricingCalculator,
         IBookingConcurrencyManager bookingConcurrencyManager,
-        ILogger<CreateBookingCommandHandler> logger)
+        ILogger<CreateBookingCommandHandler> logger,
+        TimeProvider timeProvider,
+       BookingOptions bookingOptions)
     {
         _validator = validator;
         _hotelRepository = hotelRepository;
@@ -44,6 +48,9 @@ public sealed class CreateBookingCommandHandler
         _pricingCalculator = pricingCalculator;
         _bookingConcurrencyManager = bookingConcurrencyManager;
         _logger = logger;
+        _timeProvider = timeProvider;
+        _bookingOptions = bookingOptions;
+
     }
 
     public async Task<CreateBookingResult> HandleAsync(
@@ -68,12 +75,7 @@ public sealed class CreateBookingCommandHandler
             return new CreateBookingResult(
                 false,
                 null,
-                [
-                    new ApplicationError(
-                        "Authentication.Required",
-                        "The authenticated user could not be identified.",
-                        ErrorType.Authentication)
-                ]);
+               [AuthenticationErrors.Required]);
         }
 
         var hotel = await _hotelRepository.GetByIdAsync(
@@ -85,12 +87,8 @@ public sealed class CreateBookingCommandHandler
             return new CreateBookingResult(
                 false,
                 null,
-                [
-                    new ApplicationError(
-                        "Hotel.NotFound",
-                        "The selected hotel was not found.",
-                        ErrorType.NotFound)
-                ]);
+              [HotelErrors.NotFound]);
+
         }
 
         var rooms = await _roomRepository.GetByIdsAsync(
@@ -104,12 +102,7 @@ public sealed class CreateBookingCommandHandler
             return new CreateBookingResult(
                 false,
                 null,
-                [
-                    new ApplicationError(
-                        "Booking.RoomNotFound",
-                        "One or more selected rooms were not found.",
-                        ErrorType.NotFound)
-                ]);
+                [BookingErrors.RoomNotFound]);
         }
 
         // A single booking belongs to exactly one hotel.
@@ -118,15 +111,10 @@ public sealed class CreateBookingCommandHandler
             return new CreateBookingResult(
                 false,
                 null,
-                [
-                    new ApplicationError(
-                        "Booking.RoomHotelMismatch",
-                        "All selected rooms must belong to the selected hotel.",
-                        ErrorType.Validation)
-                ]);
+                [BookingErrors.RoomHotelMismatch]);
         }
 
-        var now = DateTime.UtcNow;
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
 
 
         var deals = await _dealRepository.GetOverlappingDealsAsync(
@@ -148,7 +136,8 @@ public sealed class CreateBookingCommandHandler
 
         // Temporary value for now.
         // The hold duration will become an explicit booking policy/configuration.
-        var expiresAt = now.AddMinutes(15);
+        var expiresAt = now.AddMinutes(
+    _bookingOptions.PaymentHoldDurationMinutes);
 
         return await _bookingConcurrencyManager.ExecuteWithRoomLocksAsync(
        command.RoomIds,
@@ -175,13 +164,7 @@ public sealed class CreateBookingCommandHandler
                return new CreateBookingResult(
                    false,
                    null,
-                   [
-                       new ApplicationError(
-                        "Booking.RoomUnavailable",
-                        $"One or more selected rooms are unavailable: " +
-                        $"{string.Join(", ", unavailableRoomIds)}.",
-                        ErrorType.Conflict)
-                   ]);
+                  [BookingErrors.RoomsUnavailable(unavailableRoomIds)]);
            }
 
            var booking = new Booking(

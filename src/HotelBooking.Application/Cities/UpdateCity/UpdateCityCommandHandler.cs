@@ -10,15 +10,18 @@ public sealed class UpdateCityCommandHandler
     private readonly ICityRepository _cityRepository;
     private readonly ICountryRepository _countryRepository;
     private readonly IValidator<UpdateCityCommand> _validator;
+    private readonly TimeProvider _timeProvider;
 
     public UpdateCityCommandHandler(
         ICityRepository cityRepository,
         ICountryRepository countryRepository,
-        IValidator<UpdateCityCommand> validator)
+        IValidator<UpdateCityCommand> validator,
+        TimeProvider timeProvider)
     {
         _cityRepository = cityRepository;
         _countryRepository = countryRepository;
         _validator = validator;
+        _timeProvider = timeProvider;
     }
 
     public async Task<UpdateCityResult> HandleAsync(
@@ -90,12 +93,13 @@ public sealed class UpdateCityCommandHandler
                         ErrorType.Conflict)
                 ]);
         }
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
 
         city.Update(
             normalizedName,
             normalizedCountryCode,
             command.PostOffice,
-            DateTime.UtcNow);
+            now);
 
         await _cityRepository.SaveChangesAsync(cancellationToken);
 

@@ -13,6 +13,7 @@ public sealed class CreateRoomCommandHandlerTests
     private readonly Mock<IHotelRepository> _hotelRepository = new();
     private readonly Mock<IRoomRepository> _roomRepository = new();
     private readonly Mock<ICurrentUserService> _currentUserService = new();
+    private readonly TimeProvider _timeProvider = TimeProvider.System;
 
     private readonly CreateRoomCommandValidator _validator = new();
 
@@ -22,7 +23,8 @@ public sealed class CreateRoomCommandHandlerTests
             _validator,
             _hotelRepository.Object,
             _roomRepository.Object,
-            _currentUserService.Object);
+            _currentUserService.Object,
+             _timeProvider);
     }
 
     private static CreateRoomCommand CreateValidCommand()

@@ -18,19 +18,22 @@ public sealed class StartPaymentCommandHandler
     private readonly IPaymentRepository _paymentRepository;
     private readonly IPaymentGateway _paymentGateway;
     private readonly ICurrentUserService _currentUserService;
+    private readonly TimeProvider _timeProvider;
 
     public StartPaymentCommandHandler(
         IValidator<StartPaymentCommand> validator,
         IBookingRepository bookingRepository,
         IPaymentRepository paymentRepository,
         IPaymentGateway paymentGateway,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        TimeProvider timeProvider)
     {
         _validator = validator;
         _bookingRepository = bookingRepository;
         _paymentRepository = paymentRepository;
         _paymentGateway = paymentGateway;
         _currentUserService = currentUserService;
+        _timeProvider = timeProvider;
     }
 
     public async Task<StartPaymentResult> HandleAsync(
@@ -58,13 +61,7 @@ public sealed class StartPaymentCommandHandler
                 false,
                 null,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "Authentication.Required",
-                        "The authenticated user could not be identified.",
-                        ErrorType.Authentication)
-                });
+              [AuthenticationErrors.Required]);
         }
 
         var booking = await _bookingRepository.GetByIdAsync(
@@ -77,13 +74,7 @@ public sealed class StartPaymentCommandHandler
                 false,
                 null,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "Booking.NotFound",
-                        "The booking was not found.",
-                        ErrorType.NotFound)
-                });
+              [BookingErrors.NotFound]);
         }
 
         if (booking.UserId != userId)
@@ -92,16 +83,10 @@ public sealed class StartPaymentCommandHandler
                 false,
                 null,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "Booking.AccessDenied",
-                        "You are not allowed to pay for this booking.",
-                        ErrorType.Authorization)
-                });
+               [BookingErrors.AccessDenied]);
         }
 
-        var now = DateTime.UtcNow;
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
 
         if (booking.Status != BookingStatus.PendingPayment)
         {
@@ -109,13 +94,7 @@ public sealed class StartPaymentCommandHandler
                 false,
                 null,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "Booking.NotPendingPayment",
-                        "Only a pending payment booking can be paid.",
-                        ErrorType.Conflict)
-                });
+               [BookingErrors.NotPendingPayment]);
         }
 
         if (booking.ExpiresAt is null ||
@@ -125,13 +104,7 @@ public sealed class StartPaymentCommandHandler
                 false,
                 null,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "Booking.PaymentHoldExpired",
-                        "The booking payment hold has expired.",
-                        ErrorType.Conflict)
-                });
+                [BookingErrors.PaymentHoldExpired]);
         }
 
         var payment = await _paymentRepository.GetByBookingIdAsync(
@@ -158,13 +131,7 @@ public sealed class StartPaymentCommandHandler
                 false,
                 null,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "Payment.NotPending",
-                        "The payment is no longer pending.",
-                        ErrorType.Conflict)
-                });
+               [PaymentErrors.NotPending]);
         }
 
         if (payment.ProviderPaymentIntentId is not null)
@@ -189,10 +156,9 @@ public sealed class StartPaymentCommandHandler
                     payment.Id,
                     booking.Id),
                 cancellationToken);
-
         payment.AttachProviderPaymentIntent(
-            paymentIntent.ProviderPaymentIntentId,
-            DateTime.UtcNow);
+              paymentIntent.ProviderPaymentIntentId,
+              now);
 
         await _paymentRepository.SaveChangesAsync(
             cancellationToken);
@@ -204,3 +170,6 @@ public sealed class StartPaymentCommandHandler
             Array.Empty<ApplicationError>());
     }
 }
+
+public sealed record StartPaymentCommand(
+    int BookingId);

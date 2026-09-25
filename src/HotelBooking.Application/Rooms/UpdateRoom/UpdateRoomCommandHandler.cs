@@ -12,23 +12,28 @@ public sealed class UpdateRoomCommandHandler
     private readonly IRoomRepository _roomRepository;
     private readonly IHotelRepository _hotelRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly TimeProvider _timeProvider;
 
     public UpdateRoomCommandHandler(
         IValidator<UpdateRoomCommand> validator,
         IRoomRepository roomRepository,
         IHotelRepository hotelRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        TimeProvider timeProvider)
     {
         _validator = validator;
         _roomRepository = roomRepository;
         _hotelRepository = hotelRepository;
         _currentUserService = currentUserService;
+        _timeProvider = timeProvider;
     }
 
     public async Task<UpdateRoomResult> HandleAsync(
         UpdateRoomCommand command,
         CancellationToken cancellationToken)
     {
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
+
         var validationResult = await _validator.ValidateAsync(
             command,
             cancellationToken);
@@ -48,13 +53,7 @@ public sealed class UpdateRoomCommandHandler
         {
             return new UpdateRoomResult(
                 false,
-                new[]
-                {
-                    new ApplicationError(
-                        "RoomNotFound",
-                        "The specified room does not exist.",
-                        ErrorType.NotFound)
-                });
+                [RoomErrors.NotFound]);
         }
 
         var hotel = await _hotelRepository.GetByIdAsync(
@@ -65,29 +64,16 @@ public sealed class UpdateRoomCommandHandler
         {
             return new UpdateRoomResult(
                 false,
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelNotFound",
-                        "The hotel associated with this room does not exist.",
-                        ErrorType.NotFound)
-                });
+                [HotelErrors.NotFound]);
         }
 
-        var isAdmin = _currentUserService.IsInRole(Roles.Admin);
-        var isOwner = hotel.OwnerId == _currentUserService.UserId;
-
-        if (!isAdmin && !isOwner)
+        if (!HotelAccessPolicy.CanManage(
+        hotel,
+        _currentUserService))
         {
             return new UpdateRoomResult(
                 false,
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelOwnershipRequired",
-                        "You are not allowed to update rooms for this hotel.",
-                        ErrorType.Authorization)
-                });
+              [HotelErrors.ManagementForbidden]);
         }
 
         var roomNumberExists =
@@ -101,13 +87,7 @@ public sealed class UpdateRoomCommandHandler
         {
             return new UpdateRoomResult(
                 false,
-                new[]
-                {
-                    new ApplicationError(
-                        "RoomNumberAlreadyExists",
-                        "A room with this number already exists in the hotel.",
-                        ErrorType.Conflict)
-                });
+                [RoomErrors.NumberAlreadyExists]);
         }
 
         room.Update(
@@ -117,7 +97,7 @@ public sealed class UpdateRoomCommandHandler
             command.AdultsCapacity,
             command.ChildrenCapacity,
             command.PricePerNight,
-            DateTime.UtcNow);
+           now);
 
         await _roomRepository.SaveChangesAsync(
             cancellationToken);

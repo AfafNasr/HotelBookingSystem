@@ -230,7 +230,8 @@ public sealed class CreateHotelCommandHandlerTests
             _validator,
             _cityRepositoryMock.Object,
             _identityServiceMock.Object,
-            _hotelRepositoryMock.Object);
+            _hotelRepositoryMock.Object,
+            TimeProvider.System);
     }
 
     private static CreateHotelCommand CreateValidCommand()

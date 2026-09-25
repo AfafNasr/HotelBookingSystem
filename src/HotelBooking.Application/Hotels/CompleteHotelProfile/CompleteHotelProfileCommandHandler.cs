@@ -10,21 +10,27 @@ public sealed class CompleteHotelProfileCommandHandler
     private readonly IValidator<CompleteHotelProfileCommand> _validator;
     private readonly IHotelRepository _hotelRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly TimeProvider _timeProvider;
 
     public CompleteHotelProfileCommandHandler(
         IValidator<CompleteHotelProfileCommand> validator,
         IHotelRepository hotelRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        TimeProvider timeProvider)
     {
         _validator = validator;
         _hotelRepository = hotelRepository;
         _currentUserService = currentUserService;
+        _timeProvider = timeProvider;
     }
 
     public async Task<CompleteHotelProfileResult> HandleAsync(
         CompleteHotelProfileCommand command,
         CancellationToken cancellationToken)
     {
+
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
+
         var validationResult = await _validator.ValidateAsync(
             command,
             cancellationToken);
@@ -44,29 +50,19 @@ public sealed class CompleteHotelProfileCommandHandler
         {
             return new CompleteHotelProfileResult(
                 false,
-                new[]
-                {
-                    new ApplicationError(
-                        "Hotel.NotFound",
-                        "Hotel was not found.",
-                        ErrorType.NotFound)
-                });
+               [HotelErrors.NotFound]);
         }
 
         var currentUserId = _currentUserService.UserId;
 
         if (string.IsNullOrWhiteSpace(currentUserId) ||
-            hotel.OwnerId != currentUserId)
+             !HotelAccessPolicy.CanManage(
+             hotel,
+            _currentUserService))
         {
             return new CompleteHotelProfileResult(
                 false,
-                new[]
-                {
-                    new ApplicationError(
-                        "Hotel.Forbidden",
-                        "You are not allowed to manage this hotel.",
-                        ErrorType.Authorization)
-                });
+              [HotelErrors.ManagementForbidden]);
         }
 
         hotel.CompleteProfile(
@@ -74,7 +70,7 @@ public sealed class CompleteHotelProfileCommandHandler
             command.Address,
             command.Latitude,
             command.Longitude,
-            DateTime.UtcNow);
+           now);
 
         await _hotelRepository.SaveChangesAsync(cancellationToken);
 

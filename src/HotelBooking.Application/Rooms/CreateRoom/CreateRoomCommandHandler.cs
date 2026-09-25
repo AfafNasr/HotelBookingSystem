@@ -13,23 +13,29 @@ public sealed class CreateRoomCommandHandler
     private readonly IHotelRepository _hotelRepository;
     private readonly IRoomRepository _roomRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly TimeProvider _timeProvider;
 
     public CreateRoomCommandHandler(
         IValidator<CreateRoomCommand> validator,
         IHotelRepository hotelRepository,
         IRoomRepository roomRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        TimeProvider timeProvider)
     {
         _validator = validator;
         _hotelRepository = hotelRepository;
         _roomRepository = roomRepository;
         _currentUserService = currentUserService;
+        _timeProvider = timeProvider;
     }
 
     public async Task<CreateRoomResult> HandleAsync(
         CreateRoomCommand command,
         CancellationToken cancellationToken)
     {
+
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
+
         var validationResult = await _validator.ValidateAsync(
             command,
             cancellationToken);
@@ -51,30 +57,17 @@ public sealed class CreateRoomCommandHandler
             return new CreateRoomResult(
                 false,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelNotFound",
-                        "The specified hotel does not exist.",
-                        ErrorType.NotFound)
-                });
+                [HotelErrors.NotFound]);
         }
 
-        var isAdmin = _currentUserService.IsInRole(Roles.Admin);
-        var isOwner = hotel.OwnerId == _currentUserService.UserId;
-
-        if (!isAdmin && !isOwner)
+        if (!HotelAccessPolicy.CanManage(
+         hotel,
+         _currentUserService))
         {
             return new CreateRoomResult(
                 false,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelOwnershipRequired",
-                        "You are not allowed to create rooms for this hotel.",
-                        ErrorType.Authorization)
-                });
+                [HotelErrors.ManagementForbidden]);
         }
 
         var roomNumberExists =
@@ -88,13 +81,7 @@ public sealed class CreateRoomCommandHandler
             return new CreateRoomResult(
                 false,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "RoomNumberAlreadyExists",
-                        "A room with this number already exists in the hotel.",
-                        ErrorType.Conflict)
-                });
+                [RoomErrors.NumberAlreadyExists]);
         }
 
         var room = new Room(
@@ -105,7 +92,7 @@ public sealed class CreateRoomCommandHandler
             command.AdultsCapacity,
             command.ChildrenCapacity,
             command.PricePerNight,
-            DateTime.UtcNow);
+            now);
 
         _roomRepository.Add(room);
 

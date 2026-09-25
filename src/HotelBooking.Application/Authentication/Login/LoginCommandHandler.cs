@@ -21,11 +21,11 @@ public sealed class LoginCommandHandler
     }
 
     public async Task<LoginResult> HandleAsync(
-        LoginCommand command )
+        LoginCommand command, CancellationToken cancellationToken)
         
     {
         var validationResult =
-            await _validator.ValidateAsync(command);
+            await _validator.ValidateAsync(command , cancellationToken);
 
         if (!validationResult.IsValid)
         {
@@ -44,13 +44,7 @@ public sealed class LoginCommandHandler
             return new LoginResult(
                 false,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "InvalidCredentials",
-                        "Invalid username or password.",
-                        ErrorType.Authentication)
-                });
+                [AuthenticationErrors.InvalidCredentials]);
         }
 
         var accessToken = _tokenService.CreateToken(user);

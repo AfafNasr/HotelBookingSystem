@@ -29,12 +29,7 @@ public sealed class GetBookingConfirmationQueryHandler
             return new GetBookingConfirmationResult(
                 false,
                 null,
-                [
-                    new ApplicationError(
-                        "Authentication.Required",
-                        "The authenticated user could not be identified.",
-                        ErrorType.Authentication)
-                ]);
+              [AuthenticationErrors.Required]);
         }
 
         var confirmation = await _bookingConfirmationQuery.GetAsync(
@@ -47,12 +42,7 @@ public sealed class GetBookingConfirmationQueryHandler
             return new GetBookingConfirmationResult(
                 false,
                 null,
-                [
-                    new ApplicationError(
-                        "Booking.NotFound",
-                        "The booking was not found.",
-                        ErrorType.NotFound)
-                ]);
+                [BookingErrors.NotFound]);
         }
 
         if (confirmation.BookingStatus != BookingStatus.Confirmed ||
@@ -62,33 +52,12 @@ public sealed class GetBookingConfirmationQueryHandler
             return new GetBookingConfirmationResult(
                 false,
                 null,
-                [
-                    new ApplicationError(
-                        "Booking.ConfirmationNotReady",
-                        "The booking confirmation is not available until payment succeeds.",
-                        ErrorType.Conflict)
-                ]);
+               [BookingErrors.ConfirmationNotReady]);
         }
-
-        var numberOfNights =
-             confirmation.CheckOutDate.DayNumber -confirmation.CheckInDate.DayNumber;
-
-        var subtotalAmount = confirmation.Rooms.Sum(
-            room => room.OriginalPricePerNight * numberOfNights);
-
-        var discountAmount =
-            subtotalAmount - confirmation.TotalAmount;
-
-        var completedConfirmation = confirmation with
-        {
-            NumberOfNights = numberOfNights,
-            SubtotalAmount = subtotalAmount,
-            DiscountAmount = discountAmount
-        };
 
         return new GetBookingConfirmationResult(
             true,
-            completedConfirmation,
+            confirmation,
             []);
     }
 }

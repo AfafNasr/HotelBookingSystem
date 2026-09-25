@@ -67,6 +67,15 @@ internal static class PaymentLog
                     nameof(TerminalRefundFailure)),
                 "Refund {RefundId} for payment {PaymentId} is in a terminal failed state.");
 
+    private static readonly Action<ILogger, int, Exception?>
+    BookingConfirmationEmailFailedMessage =
+        LoggerMessage.Define<int>(
+            LogLevel.Error,
+            new EventId(
+                2008,
+                nameof(BookingConfirmationEmailFailed)),
+            "Failed to send confirmation email for booking {BookingId}.");
+
     public static void StripePaymentSucceededEventReceived(
         ILogger logger,
         string stripeEventId,
@@ -150,4 +159,16 @@ internal static class PaymentLog
             paymentId,
             null);
     }
+
+    public static void BookingConfirmationEmailFailed(
+    ILogger logger,
+    int bookingId,
+    Exception exception)
+    {
+        BookingConfirmationEmailFailedMessage(
+            logger,
+            bookingId,
+            exception);
+    }
+
 }

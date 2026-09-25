@@ -14,17 +14,20 @@ public sealed class CreateReviewCommandHandler
     private readonly IBookingRepository _bookingRepository;
     private readonly IReviewRepository _reviewRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly TimeProvider _timeProvider;
 
     public CreateReviewCommandHandler(
         IValidator<CreateReviewCommand> validator,
         IBookingRepository bookingRepository,
         IReviewRepository reviewRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        TimeProvider timeProvider)
     {
         _validator = validator;
         _bookingRepository = bookingRepository;
         _reviewRepository = reviewRepository;
         _currentUserService = currentUserService;
+        _timeProvider = timeProvider;
     }
 
     public async Task<CreateReviewResult> HandleAsync(
@@ -77,8 +80,9 @@ public sealed class CreateReviewCommandHandler
                         ErrorType.Conflict)
                 });
         }
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
 
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(now);
 
         if (booking.CheckOutDate > today)
         {
@@ -117,7 +121,7 @@ public sealed class CreateReviewCommandHandler
             booking.Id,
             command.Rating,
             command.Comment,
-            DateTime.UtcNow);
+           now);
 
         _reviewRepository.Add(review);
 

@@ -18,19 +18,12 @@ public sealed class GetRoomByIdQueryHandler
         var room = await _roomRepository.GetByIdAsync(
             query.RoomId,
             cancellationToken);
-
         if (room is null)
         {
             return new GetRoomByIdResult(
                 false,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "RoomNotFound",
-                        "The specified room does not exist.",
-                        ErrorType.NotFound)
-                });
+                [RoomErrors.NotFound]);
         }
 
         var roomDetails = new RoomDetails(

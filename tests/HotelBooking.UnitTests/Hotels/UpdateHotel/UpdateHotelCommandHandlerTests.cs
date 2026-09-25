@@ -347,7 +347,8 @@ public sealed class UpdateHotelCommandHandlerTests
             _validator,
             _hotelRepositoryMock.Object,
             _cityRepositoryMock.Object,
-            _identityServiceMock.Object);
+            _identityServiceMock.Object,
+            TimeProvider.System);
     }
 
     private static UpdateHotelCommand CreateValidCommand()

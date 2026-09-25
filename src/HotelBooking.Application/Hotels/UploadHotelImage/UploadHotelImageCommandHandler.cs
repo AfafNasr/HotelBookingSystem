@@ -58,27 +58,18 @@ public sealed class UploadHotelImageCommandHandler
             return new UploadHotelImageResult(
                 false,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelNotFound",
-                        "The specified hotel does not exist.",
-                        ErrorType.NotFound)
-                });
+              [HotelErrors.NotFound]);
+
         }
 
-        if (hotel.OwnerId != _currentUserService.UserId)
+        if (!HotelAccessPolicy.CanManage(
+     hotel,
+     _currentUserService))
         {
             return new UploadHotelImageResult(
                 false,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelOwnershipRequired",
-                        "You can only upload images for hotels you own.",
-                        ErrorType.Authorization)
-                });
+               [HotelErrors.ManagementForbidden]);
         }
 
         if (!ImageFileValidator.HasValidSignature(
@@ -129,9 +120,7 @@ public sealed class UploadHotelImageCommandHandler
         }
         catch
         {
-            await TryDeleteUploadedImageAsync(
-                storageKey,
-                CancellationToken.None);
+            await TryDeleteUploadedImageAsync(storageKey); 
 
             throw;
         }
@@ -143,15 +132,14 @@ public sealed class UploadHotelImageCommandHandler
     }
 
     private async Task TryDeleteUploadedImageAsync(
-        string storageKey,
-        CancellationToken cancellationToken)
+     string storageKey)
     {
         try
         {
             await _imageStorageService.DeleteAsync(
-    ImageContainer.HotelImages,
-    storageKey,
-    CancellationToken.None);
+                ImageContainer.HotelImages,
+                storageKey,
+                CancellationToken.None);
         }
         catch (Exception ex)
         {

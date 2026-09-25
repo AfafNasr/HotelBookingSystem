@@ -14,23 +14,30 @@ public sealed class UpdateHotelCommandHandler
     private readonly IHotelRepository _hotelRepository;
     private readonly ICityRepository _cityRepository;
     private readonly IIdentityService _identityService;
+    private readonly TimeProvider _timeProvider;
+
 
     public UpdateHotelCommandHandler(
         IValidator<UpdateHotelCommand> validator,
         IHotelRepository hotelRepository,
         ICityRepository cityRepository,
-        IIdentityService identityService)
+        IIdentityService identityService,
+        TimeProvider timeProvider)
     {
         _validator = validator;
         _hotelRepository = hotelRepository;
         _cityRepository = cityRepository;
         _identityService = identityService;
+        _timeProvider = timeProvider;
     }
 
     public async Task<UpdateHotelResult> HandleAsync(
         UpdateHotelCommand command,
         CancellationToken cancellationToken)
     {
+
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
+
         var validationResult = await _validator.ValidateAsync(
             command,
             cancellationToken);
@@ -50,13 +57,8 @@ public sealed class UpdateHotelCommandHandler
         {
             return new UpdateHotelResult(
                 false,
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelNotFound",
-                        "The specified hotel does not exist.",
-                        ErrorType.NotFound)
-                });
+              [HotelErrors.NotFound]);
+
         }
 
         var city = await _cityRepository.GetByIdAsync(
@@ -103,7 +105,7 @@ public sealed class UpdateHotelCommandHandler
             command.Address,
             command.Latitude,
             command.Longitude,
-            DateTime.UtcNow);
+            now);
 
         await _hotelRepository.SaveChangesAsync(
             cancellationToken);

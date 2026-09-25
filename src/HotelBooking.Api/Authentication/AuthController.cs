@@ -1,6 +1,4 @@
-﻿using HotelBooking.Api.Authentication.Login;
-using HotelBooking.Api.Authentication.Register;
-using HotelBooking.Application.Authentication.Login;
+﻿using HotelBooking.Application.Authentication.Login;
 using HotelBooking.Application.Authentication.Register;
 using Microsoft.AspNetCore.Mvc;
 using HotelBooking.Api.Common;
@@ -14,21 +12,23 @@ public sealed class AuthController : ControllerBase
     private readonly RegisterCommandHandler _registerHandler;
     private readonly LoginCommandHandler _loginHandler;
 
-    public AuthController(RegisterCommandHandler registerHandler , LoginCommandHandler loginHandler)
+    public AuthController(
+     RegisterCommandHandler registerHandler,
+     LoginCommandHandler loginHandler)
     {
         _registerHandler = registerHandler;
         _loginHandler = loginHandler;
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterRequest request)
+    public async Task<IActionResult> Register(RegisterRequest request , CancellationToken cancellationToken)
     {
         var command = new RegisterCommand(
             request.Username,
             request.Email,
             request.Password);
 
-        var result = await _registerHandler.HandleAsync(command);
+        var result = await _registerHandler.HandleAsync(command , cancellationToken);
 
         if (!result.Succeeded)
         {
@@ -45,13 +45,13 @@ public sealed class AuthController : ControllerBase
 
     [HttpPost("login")]
     public async Task<IActionResult> Login(
-    LoginRequest request)
+    LoginRequest request , CancellationToken cancellationToken)
     {
         var command = new LoginCommand(
             request.Username,
             request.Password);
 
-        var result = await _loginHandler.HandleAsync(command);
+        var result = await _loginHandler.HandleAsync(command , cancellationToken);
 
         if (!result.Succeeded)
         {

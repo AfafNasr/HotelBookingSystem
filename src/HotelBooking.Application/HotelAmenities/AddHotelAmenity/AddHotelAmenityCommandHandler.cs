@@ -53,26 +53,17 @@ public sealed class AddHotelAmenityCommandHandler
         {
             return new AddHotelAmenityResult(
                 false,
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelNotFound",
-                        "The specified hotel does not exist.",
-                        ErrorType.NotFound)
-                });
+                [HotelErrors.NotFound]);
+
         }
 
-        if (hotel.OwnerId != _currentUserService.UserId)
+        if (!HotelAccessPolicy.CanManage(
+     hotel,
+     _currentUserService))
         {
             return new AddHotelAmenityResult(
                 false,
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelOwnershipRequired",
-                        "You are not allowed to manage amenities for this hotel.",
-                        ErrorType.Authorization)
-                });
+                [HotelErrors.ManagementForbidden]);
         }
 
         var amenityExists = await _amenityRepository.ExistsByIdAsync(

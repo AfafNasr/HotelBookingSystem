@@ -2,7 +2,7 @@
 using Stripe;
 using Microsoft.Extensions.Logging;
 using HotelBooking.Application.Payments;
-using HotelBooking.Application.Payments.StartPayment;
+using HotelBooking.Application.Payments.HandleWebhook;
 
 namespace HotelBooking.Infrastructure.Payments.Stripe;
 

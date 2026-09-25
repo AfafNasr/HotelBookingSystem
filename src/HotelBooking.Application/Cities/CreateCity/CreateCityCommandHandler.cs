@@ -11,21 +11,26 @@ public sealed class CreateCityCommandHandler
     private readonly IValidator<CreateCityCommand> _validator;
     private readonly ICountryRepository _countryRepository;
     private readonly ICityRepository _cityRepository;
+    private readonly TimeProvider _timeProvider;
 
     public CreateCityCommandHandler(
         IValidator<CreateCityCommand> validator,
         ICountryRepository countryRepository,
-        ICityRepository cityRepository)
+        ICityRepository cityRepository,
+        TimeProvider timeProvider)
     {
         _validator = validator;
         _countryRepository = countryRepository;
         _cityRepository = cityRepository;
+        _timeProvider = timeProvider;
     }
 
     public async Task<CreateCityResult> HandleAsync(
         CreateCityCommand command,
         CancellationToken cancellationToken)
     {
+        
+
         var validationResult = await _validator.ValidateAsync(
             command,
             cancellationToken);
@@ -84,11 +89,13 @@ public sealed class CreateCityCommandHandler
                 });
         }
 
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
+
         var city = new City(
             normalizedName,
             normalizedCountryCode,
             command.PostOffice,
-            DateTime.UtcNow);
+            now);
 
         _cityRepository.Add(city);
 
