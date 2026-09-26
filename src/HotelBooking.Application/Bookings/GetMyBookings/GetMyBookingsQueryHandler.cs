@@ -39,3 +39,8 @@ public sealed class GetMyBookingsQueryHandler
             []);
     }
 }
+
+public sealed record GetMyBookingsResult(
+    bool Succeeded,
+    IReadOnlyCollection<MyBooking> Bookings,
+    IReadOnlyCollection<ApplicationError> Errors);

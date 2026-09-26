@@ -1,4 +1,6 @@
-﻿namespace HotelBooking.Application.Bookings.GetMyBookings;
+﻿using HotelBooking.Domain.Bookings;
+
+namespace HotelBooking.Application.Bookings.GetMyBookings;
 
 public interface IMyBookingsQuery
 {
@@ -6,3 +8,13 @@ public interface IMyBookingsQuery
         string userId,
         CancellationToken cancellationToken);
 }
+
+public sealed record MyBooking(
+    int BookingId,
+    string HotelName,
+    DateOnly CheckInDate,
+    DateOnly CheckOutDate,
+    decimal TotalAmount,
+    BookingStatus Status,
+    string? ConfirmationNumber,
+    DateTime CreatedAt);

@@ -61,3 +61,8 @@ public sealed class GetBookingConfirmationQueryHandler
             []);
     }
 }
+
+public sealed record GetBookingConfirmationResult(
+    bool Succeeded,
+    BookingConfirmation? Confirmation,
+    IReadOnlyCollection<ApplicationError> Errors);
