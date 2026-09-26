@@ -173,3 +173,9 @@ public sealed class StartPaymentCommandHandler
 
 public sealed record StartPaymentCommand(
     int BookingId);
+
+public sealed record StartPaymentResult(
+    bool Succeeded,
+    int? PaymentId,
+    string? ClientSecret,
+    IReadOnlyCollection<ApplicationError> Errors);

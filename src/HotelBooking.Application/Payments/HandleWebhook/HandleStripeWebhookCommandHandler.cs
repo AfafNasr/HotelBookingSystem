@@ -369,3 +369,7 @@ public sealed class HandleStripeWebhookCommandHandler
         RefundRequired
     }
 }
+
+public sealed record HandleStripeWebhookResult(
+    bool Succeeded,
+    IReadOnlyCollection<ApplicationError> Errors);
