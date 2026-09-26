@@ -1,4 +1,6 @@
-﻿namespace HotelBooking.Application.Cities.GetTrendingDestinations;
+﻿using HotelBooking.Application.Common.Errors;
+
+namespace HotelBooking.Application.Cities.GetTrendingDestinations;
 
 public sealed class GetTrendingDestinationsQueryHandler
 {
@@ -33,3 +35,8 @@ public sealed class GetTrendingDestinationsQueryHandler
             []);
     }
 }
+
+public sealed record GetTrendingDestinationsResult(
+    bool Succeeded,
+    IReadOnlyCollection<TrendingDestination> Destinations,
+    IReadOnlyCollection<ApplicationError> Errors);

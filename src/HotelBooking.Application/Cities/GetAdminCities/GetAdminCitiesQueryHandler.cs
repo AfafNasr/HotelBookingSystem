@@ -43,3 +43,8 @@ public sealed class GetAdminCitiesQueryHandler
             Array.Empty<ApplicationError>());
     }
 }
+
+public sealed record GetAdminCitiesResult(
+    bool Succeeded,
+    IReadOnlyCollection<AdminCity> Cities,
+    IReadOnlyCollection<ApplicationError> Errors);
