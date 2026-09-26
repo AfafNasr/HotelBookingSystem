@@ -83,3 +83,7 @@ public sealed class DeleteHotelAmenityCommandHandler
             []);
     }
 }
+
+public sealed record DeleteHotelAmenityResult(
+    bool Succeeded,
+    IReadOnlyCollection<ApplicationError> Errors);
