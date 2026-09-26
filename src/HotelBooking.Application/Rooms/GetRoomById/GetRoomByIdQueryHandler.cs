@@ -42,3 +42,8 @@ public sealed class GetRoomByIdQueryHandler
             Array.Empty<ApplicationError>());
     }
 }
+
+public sealed record GetRoomByIdResult(
+    bool Succeeded,
+    RoomDetails? Room,
+    IReadOnlyCollection<ApplicationError> Errors);

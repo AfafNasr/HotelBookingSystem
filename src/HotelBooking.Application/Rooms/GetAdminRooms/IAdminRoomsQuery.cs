@@ -7,3 +7,11 @@ public interface IAdminRoomsQuery
         DateTime now,
         CancellationToken cancellationToken);
 }
+public sealed record AdminRoom(
+    int Id,
+    string RoomNumber,
+    bool IsAvailable,
+    int AdultsCapacity,
+    int ChildrenCapacity,
+    DateTime CreatedAt,
+    DateTime? UpdatedAt);

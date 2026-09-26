@@ -1,4 +1,6 @@
-﻿namespace HotelBooking.Application.Rooms.GetHotelRooms;
+﻿using HotelBooking.Domain.Rooms;
+
+namespace HotelBooking.Application.Rooms.GetHotelRooms;
 
 public interface IHotelRoomsQuery
 {
@@ -6,3 +8,12 @@ public interface IHotelRoomsQuery
         int hotelId,
         CancellationToken cancellationToken);
 }
+
+public sealed record HotelRoom(
+    int Id,
+    string RoomNumber,
+    RoomType RoomType,
+    string? Description,
+    int AdultsCapacity,
+    int ChildrenCapacity,
+    decimal PricePerNight);

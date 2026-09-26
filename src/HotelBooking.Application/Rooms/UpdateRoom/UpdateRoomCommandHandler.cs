@@ -107,3 +107,7 @@ public sealed class UpdateRoomCommandHandler
             Array.Empty<ApplicationError>());
     }
 }
+
+public sealed record UpdateRoomResult(
+    bool Succeeded,
+    IReadOnlyCollection<ApplicationError> Errors);
