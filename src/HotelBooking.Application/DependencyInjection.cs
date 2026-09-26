@@ -7,9 +7,11 @@ using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Bookings.CreateBooking;
 using HotelBooking.Application.Bookings.Expiration;
 using HotelBooking.Application.Bookings.GetBookingConfirmation;
+using HotelBooking.Application.Bookings.GetHotelBookings;
 using HotelBooking.Application.Bookings.GetMyBookings;
 using HotelBooking.Application.Bookings.Pricing;
 using HotelBooking.Application.Cities.CreateCity;
+using HotelBooking.Application.Cities.DeleteCity;
 using HotelBooking.Application.Cities.GetAdminCities;
 using HotelBooking.Application.Cities.GetTrendingDestinations;
 using HotelBooking.Application.Cities.UpdateCity;
@@ -34,6 +36,7 @@ using HotelBooking.Application.Payments.HandleStripeWebhook;
 using HotelBooking.Application.Payments.StartPayment;
 using HotelBooking.Application.Reviews.CreateReview;
 using HotelBooking.Application.Reviews.DeleteReview;
+using HotelBooking.Application.Reviews.GetHotelReviews;
 using HotelBooking.Application.Reviews.UpdateReview;
 using HotelBooking.Application.Rooms.CreateRoom;
 using HotelBooking.Application.Rooms.DeleteRoom;
@@ -103,6 +106,9 @@ public static class DependencyInjection
         services.AddScoped<UpdateDealCommandHandler>();
         services.AddScoped<DeleteDealCommandHandler>();
         services.AddScoped<GetMyBookingsQueryHandler>();
+        services.AddScoped<DeleteCityCommandHandler>();
+        services.AddScoped<GetHotelReviewsQueryHandler>();
+        services.AddScoped<GetHotelBookingsQueryHandler>();
 
 
         return services;

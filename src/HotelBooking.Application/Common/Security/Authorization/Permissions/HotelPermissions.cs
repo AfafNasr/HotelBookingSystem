@@ -12,6 +12,7 @@ public static class HotelPermissions
     public const string GetAdminHotelById ="Hotels.GetAdminHotelById";
     public const string DeleteAmenities= "Hotels.DeleteAmenities";
 
+
     public static readonly IReadOnlyCollection<string> All =
     [
         Create,

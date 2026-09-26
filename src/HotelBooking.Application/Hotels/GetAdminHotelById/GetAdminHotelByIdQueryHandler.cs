@@ -35,3 +35,8 @@ public sealed class GetAdminHotelByIdQueryHandler
             Array.Empty<ApplicationError>());
     }
 }
+
+public sealed record GetAdminHotelByIdResult(
+    bool Succeeded,
+    AdminHotelDetails? Hotel,
+    IReadOnlyCollection<ApplicationError> Errors);

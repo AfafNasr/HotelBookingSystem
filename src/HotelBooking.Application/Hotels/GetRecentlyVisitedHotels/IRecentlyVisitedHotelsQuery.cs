@@ -7,3 +7,11 @@ public interface IRecentlyVisitedHotelsQuery
         int limit,
         CancellationToken cancellationToken);
 }
+
+public sealed record RecentlyVisitedHotelItem(
+    int HotelId,
+    string Name,
+    string CityName,
+    int StarRating,
+    decimal? StartingPricePerNight,
+    string? ThumbnailStorageKey);

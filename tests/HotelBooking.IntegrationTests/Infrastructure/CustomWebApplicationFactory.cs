@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
 
 namespace HotelBooking.IntegrationTests.Infrastructure;
 
@@ -14,6 +15,19 @@ public sealed class CustomWebApplicationFactory
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+
+        builder.ConfigureAppConfiguration((_, configuration) =>
+        {
+            configuration.AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["Email:Host"] = "localhost",
+                    ["Email:Port"] = "1025",
+                    ["Email:Username"] = "integration-test",
+                    ["Email:Password"] = "integration-test",
+                    ["Email:FromEmail"] = "integration-test@example.com"
+                });
+        });
     }
 
     protected override IHost CreateHost(IHostBuilder builder)

@@ -42,3 +42,8 @@ public sealed class GetRecentlyVisitedHotelsQueryHandler
             []);
     }
 }
+
+public sealed record GetRecentlyVisitedHotelsResult(
+    bool Succeeded,
+    IReadOnlyCollection<RecentlyVisitedHotelItem> Hotels,
+    IReadOnlyCollection<ApplicationError> Errors);

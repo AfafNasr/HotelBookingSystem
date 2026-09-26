@@ -2,6 +2,7 @@
 using HotelBooking.Application.Common.Security.Authorization.Permissions;
 using HotelBooking.Application.Reviews.CreateReview;
 using HotelBooking.Application.Reviews.DeleteReview;
+using HotelBooking.Application.Reviews.GetHotelReviews;
 using HotelBooking.Application.Reviews.GetMyReviews;
 using HotelBooking.Application.Reviews.UpdateReview;
 using Microsoft.AspNetCore.Authorization;
@@ -16,15 +17,18 @@ public sealed class ReviewsController : ControllerBase
     private readonly GetMyReviewsQueryHandler _getMyReviewsHandler;
     private readonly UpdateReviewCommandHandler _updateHandler;
     private readonly DeleteReviewCommandHandler _deleteHandler;
+    private readonly GetHotelReviewsQueryHandler _getHotelReviewsHandler;
 
     public ReviewsController(
      CreateReviewCommandHandler createHandler,
      GetMyReviewsQueryHandler getMyReviewsHandler,
+     GetHotelReviewsQueryHandler getHotelReviewsHandler,
      UpdateReviewCommandHandler updateHandler,
      DeleteReviewCommandHandler deleteHandler)
     {
         _createHandler = createHandler;
         _getMyReviewsHandler = getMyReviewsHandler;
+        _getHotelReviewsHandler = getHotelReviewsHandler;
         _updateHandler = updateHandler;
         _deleteHandler = deleteHandler;
     }
@@ -122,5 +126,38 @@ public sealed class ReviewsController : ControllerBase
         }
 
         return NoContent();
+    }
+
+    [HttpGet("api/hotels/{hotelId:int}/reviews")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetHotelReviews(
+    int hotelId,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 20,
+    CancellationToken cancellationToken = default)
+    {
+        var query = new GetHotelReviewsQuery(
+            hotelId,
+            page,
+            pageSize);
+
+        var result = await _getHotelReviewsHandler.HandleAsync(
+            query,
+            cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return ErrorResponseFactory.Create(
+                this,
+                result.Errors);
+        }
+
+        return Ok(new
+        {
+            result.Reviews,
+            result.Page,
+            result.PageSize,
+            result.HasNextPage
+        });
     }
 }

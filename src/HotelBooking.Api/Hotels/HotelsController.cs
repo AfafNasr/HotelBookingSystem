@@ -1,6 +1,9 @@
 ﻿using HotelBooking.Api.Common;
+using HotelBooking.Application.Bookings.GetHotelBookings;
+using HotelBooking.Application.Common.Security.Authorization.Permissions;
 using HotelBooking.Application.Hotels.GetHotelDetails;
 using HotelBooking.Application.Hotels.SearchHotels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelBooking.Api.Hotels;
@@ -11,14 +14,17 @@ namespace HotelBooking.Api.Hotels;
 public sealed class HotelsController : ControllerBase
 {
     private readonly SearchHotelsQueryHandler _searchHandler;
+    private readonly GetHotelBookingsQueryHandler _getHotelBookingsHandler;
     private readonly GetHotelDetailsQueryHandler _detailsHandler;
 
     public HotelsController(
         SearchHotelsQueryHandler searchHandler,
-        GetHotelDetailsQueryHandler detailsHandler)
+        GetHotelDetailsQueryHandler detailsHandler,
+        GetHotelBookingsQueryHandler getHotelBookingsHandler)
     {
         _searchHandler = searchHandler;
         _detailsHandler = detailsHandler;
+        _getHotelBookingsHandler = getHotelBookingsHandler;
     }
 
     [HttpGet("search")]
@@ -124,6 +130,39 @@ public sealed class HotelsController : ControllerBase
                 .ToArray());
 
         return Ok(response);
+    }
+
+    [HttpGet("{hotelId:int}/bookings")]
+    [Authorize(Policy = BookingPermissions.ViewHotelBookings)]
+    public async Task<IActionResult> GetHotelBookings(
+    int hotelId,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 20,
+    CancellationToken cancellationToken = default)
+    {
+        var query = new GetHotelBookingsQuery(
+            hotelId,
+            page,
+            pageSize);
+
+        var result = await _getHotelBookingsHandler.HandleAsync(
+            query,
+            cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return ErrorResponseFactory.Create(
+                this,
+                result.Errors);
+        }
+
+        return Ok(new
+        {
+            result.Bookings,
+            result.Page,
+            result.PageSize,
+            result.HasNextPage
+        });
     }
 
 }

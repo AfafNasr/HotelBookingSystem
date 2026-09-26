@@ -55,3 +55,11 @@ public sealed class SearchHotelsQueryHandler
             Array.Empty<ApplicationError>());
     }
 }
+
+public sealed record SearchHotelsResult(
+    bool Succeeded,
+    IReadOnlyCollection<SearchHotelItem> Hotels,
+    int Page,
+    int PageSize,
+    bool HasNextPage,
+    IReadOnlyCollection<ApplicationError> Errors);

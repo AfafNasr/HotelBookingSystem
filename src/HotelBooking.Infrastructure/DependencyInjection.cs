@@ -6,6 +6,7 @@ using HotelBooking.Application.Authentication;
 using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Bookings;
 using HotelBooking.Application.Bookings.GetBookingConfirmation;
+using HotelBooking.Application.Bookings.GetHotelBookings;
 using HotelBooking.Application.Cities;
 using HotelBooking.Application.Cities.GetAdminCities;
 using HotelBooking.Application.Cities.GetTrendingDestinations;
@@ -24,6 +25,7 @@ using HotelBooking.Application.Hotels.SearchHotels;
 using HotelBooking.Application.Payments;
 using HotelBooking.Application.Payments.Gateway;
 using HotelBooking.Application.Reviews;
+using HotelBooking.Application.Reviews.GetHotelReviews;
 using HotelBooking.Application.Reviews.GetMyReviews;
 using HotelBooking.Application.Rooms;
 using HotelBooking.Application.Rooms.GetAdminRooms;
@@ -213,7 +215,8 @@ public static class DependencyInjection
         services.AddScoped<IAdminRoomsQuery, AdminRoomsQuery>();
         services.AddScoped<IAdminHotelByIdQuery, AdminHotelByIdQuery>();
         services.AddScoped<IGetMyReviewsQuery, GetMyReviewsQuery>();
-  
+        services.AddScoped<IHotelReviewsQuery, HotelReviewsQuery>();
+        services.AddScoped< IHotelBookingsQuery,HotelBookingsQuery>();
 
         return services;
     } 

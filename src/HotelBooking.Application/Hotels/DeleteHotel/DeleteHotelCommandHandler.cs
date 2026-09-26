@@ -72,3 +72,7 @@ public sealed class DeleteHotelCommandHandler
             Array.Empty<ApplicationError>());
     }
 }
+
+public sealed record DeleteHotelResult(
+    bool Succeeded,
+    IReadOnlyCollection<ApplicationError> Errors);
