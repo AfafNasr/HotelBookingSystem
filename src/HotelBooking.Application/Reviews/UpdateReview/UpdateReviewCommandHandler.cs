@@ -75,3 +75,7 @@ public sealed class UpdateReviewCommandHandler
             []);
     }
 }
+
+public sealed record UpdateReviewResult(
+    bool Succeeded,
+    IReadOnlyCollection<ApplicationError> Errors);

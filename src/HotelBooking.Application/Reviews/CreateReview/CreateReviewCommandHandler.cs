@@ -134,3 +134,8 @@ public sealed class CreateReviewCommandHandler
             Array.Empty<ApplicationError>());
     }
 }
+
+public sealed record CreateReviewResult(
+    bool Succeeded,
+    int? ReviewId,
+    IReadOnlyCollection<ApplicationError> Errors);

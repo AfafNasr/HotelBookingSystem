@@ -63,3 +63,7 @@ public sealed class DeleteReviewCommandHandler
             []);
     }
 }
+
+public sealed record DeleteReviewResult(
+    bool Succeeded,
+    IReadOnlyCollection<ApplicationError> Errors);

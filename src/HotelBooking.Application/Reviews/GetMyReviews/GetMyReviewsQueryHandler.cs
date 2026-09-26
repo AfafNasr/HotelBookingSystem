@@ -39,3 +39,8 @@ public sealed class GetMyReviewsQueryHandler
             []);
     }
 }
+
+public sealed record GetMyReviewsResult(
+    bool Succeeded,
+    IReadOnlyCollection<MyReview> Reviews,
+    IReadOnlyCollection<ApplicationError> Errors);
