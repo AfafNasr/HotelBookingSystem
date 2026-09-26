@@ -37,6 +37,7 @@ using HotelBooking.Application.Payments.StartPayment;
 using HotelBooking.Application.Reviews.CreateReview;
 using HotelBooking.Application.Reviews.DeleteReview;
 using HotelBooking.Application.Reviews.GetHotelReviews;
+using HotelBooking.Application.Reviews.GetMyReviews;
 using HotelBooking.Application.Reviews.UpdateReview;
 using HotelBooking.Application.Rooms.CreateRoom;
 using HotelBooking.Application.Rooms.DeleteRoom;
@@ -109,6 +110,7 @@ public static class DependencyInjection
         services.AddScoped<DeleteCityCommandHandler>();
         services.AddScoped<GetHotelReviewsQueryHandler>();
         services.AddScoped<GetHotelBookingsQueryHandler>();
+        services.AddScoped<GetMyReviewsQueryHandler>();
 
 
         return services;

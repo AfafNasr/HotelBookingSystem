@@ -16,6 +16,7 @@ public sealed class StartPaymentCommandHandlerTests
     private readonly Mock<IPaymentRepository> _paymentRepository = new();
     private readonly Mock<IPaymentGateway> _paymentGateway = new();
     private readonly Mock<ICurrentUserService> _currentUserService = new();
+    private readonly Mock<IBookingConcurrencyManager>  _bookingConcurrencyManager = new();
 
     private readonly StartPaymentCommandValidator _validator = new();
 
@@ -31,7 +32,36 @@ public sealed class StartPaymentCommandHandlerTests
 
     private StartPaymentCommandHandler CreateHandler()
     {
-        var timeProvider = new TestTimeProvider(_now);
+        var timeProvider =
+            new TestTimeProvider(_now);
+
+        /*
+         * Unit tests are not responsible for testing SQL locking.
+         *
+         * The real BookingConcurrencyManager and its UPDLOCK/HOLDLOCK
+         * behavior are covered by integration tests against SQL Server.
+         *
+         * Here we make the concurrency abstraction execute the supplied
+         * operation immediately, so each unit test stays focused on the
+         * StartPayment business rules.
+         */
+        _bookingConcurrencyManager
+            .Setup(manager =>
+                manager.ExecuteWithBookingLockAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<
+                        Func<
+                            CancellationToken,
+                            Task<StartPaymentResult>>>(),
+                    It.IsAny<CancellationToken>()))
+            .Returns(
+                (
+                    int _,
+                    Func<
+                        CancellationToken,
+                        Task<StartPaymentResult>> operation,
+                    CancellationToken cancellationToken) =>
+                        operation(cancellationToken));
 
         return new StartPaymentCommandHandler(
             _validator,
@@ -39,6 +69,7 @@ public sealed class StartPaymentCommandHandlerTests
             _paymentRepository.Object,
             _paymentGateway.Object,
             _currentUserService.Object,
+            _bookingConcurrencyManager.Object,
             timeProvider);
     }
 

@@ -18,6 +18,7 @@ public sealed class StartPaymentCommandHandler
     private readonly IPaymentRepository _paymentRepository;
     private readonly IPaymentGateway _paymentGateway;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IBookingConcurrencyManager _bookingConcurrencyManager;
     private readonly TimeProvider _timeProvider;
 
     public StartPaymentCommandHandler(
@@ -26,6 +27,7 @@ public sealed class StartPaymentCommandHandler
         IPaymentRepository paymentRepository,
         IPaymentGateway paymentGateway,
         ICurrentUserService currentUserService,
+        IBookingConcurrencyManager bookingConcurrencyManager,
         TimeProvider timeProvider)
     {
         _validator = validator;
@@ -33,6 +35,7 @@ public sealed class StartPaymentCommandHandler
         _paymentRepository = paymentRepository;
         _paymentGateway = paymentGateway;
         _currentUserService = currentUserService;
+        _bookingConcurrencyManager = bookingConcurrencyManager;
         _timeProvider = timeProvider;
     }
 
@@ -40,9 +43,10 @@ public sealed class StartPaymentCommandHandler
         StartPaymentCommand command,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(
-            command,
-            cancellationToken);
+        var validationResult =
+            await _validator.ValidateAsync(
+                command,
+                cancellationToken);
 
         if (!validationResult.IsValid)
         {
@@ -53,7 +57,8 @@ public sealed class StartPaymentCommandHandler
                 validationResult.ToApplicationErrors());
         }
 
-        var userId = _currentUserService.UserId;
+        var userId =
+            _currentUserService.UserId;
 
         if (string.IsNullOrWhiteSpace(userId))
         {
@@ -61,12 +66,55 @@ public sealed class StartPaymentCommandHandler
                 false,
                 null,
                 null,
-              [AuthenticationErrors.Required]);
+                [AuthenticationErrors.Required]);
         }
 
-        var booking = await _bookingRepository.GetByIdAsync(
-            command.BookingId,
-            cancellationToken);
+        /*
+         * StartPayment changes state associated with a booking:
+         *
+         * - reads booking status / expiration
+         * - reads or creates Payment
+         * - attaches provider payment intent
+         *
+         * These operations must be serialized for the same booking.
+         *
+         * Without the booking-level lock, two concurrent requests can
+         * both observe payment == null and both attempt to insert a
+         * Payment. The unique database constraint protects the data,
+         * but the second request then fails with DbUpdateException.
+         */
+        return await _bookingConcurrencyManager
+            .ExecuteWithBookingLockAsync(
+                command.BookingId,
+                async ct =>
+                {
+                    return await StartPaymentLockedAsync(
+                        command.BookingId,
+                        userId,
+                        ct);
+                },
+                cancellationToken);
+    }
+
+    private async Task<StartPaymentResult>
+        StartPaymentLockedAsync(
+            int bookingId,
+            string userId,
+            CancellationToken cancellationToken)
+    {
+        /*
+         * Important:
+         *
+         * The booking must be loaded AFTER the lock has been acquired.
+         *
+         * Loading it before acquiring the lock could leave us making
+         * decisions from stale state while another operation modifies
+         * the booking.
+         */
+        var booking =
+            await _bookingRepository.GetByIdAsync(
+                bookingId,
+                cancellationToken);
 
         if (booking is null)
         {
@@ -74,7 +122,7 @@ public sealed class StartPaymentCommandHandler
                 false,
                 null,
                 null,
-              [BookingErrors.NotFound]);
+                [BookingErrors.NotFound]);
         }
 
         if (booking.UserId != userId)
@@ -83,10 +131,13 @@ public sealed class StartPaymentCommandHandler
                 false,
                 null,
                 null,
-               [BookingErrors.AccessDenied]);
+                [BookingErrors.AccessDenied]);
         }
 
-        var now = _timeProvider.GetUtcNow().UtcDateTime;
+        var now =
+            _timeProvider
+                .GetUtcNow()
+                .UtcDateTime;
 
         if (booking.Status != BookingStatus.PendingPayment)
         {
@@ -94,7 +145,7 @@ public sealed class StartPaymentCommandHandler
                 false,
                 null,
                 null,
-               [BookingErrors.NotPendingPayment]);
+                [BookingErrors.NotPendingPayment]);
         }
 
         if (booking.ExpiresAt is null ||
@@ -107,20 +158,30 @@ public sealed class StartPaymentCommandHandler
                 [BookingErrors.PaymentHoldExpired]);
         }
 
-        var payment = await _paymentRepository.GetByBookingIdAsync(
-            booking.Id,
-            cancellationToken);
+        var payment =
+            await _paymentRepository.GetByBookingIdAsync(
+                booking.Id,
+                cancellationToken);
 
         if (payment is null)
         {
-            payment = new Payment(
-                booking.Id,
-                booking.TotalAmount,
-                Currency,
-                now);
+            payment =
+                new Payment(
+                    booking.Id,
+                    booking.TotalAmount,
+                    Currency,
+                    now);
 
-            _paymentRepository.Add(payment);
+            _paymentRepository.Add(
+                payment);
 
+            /*
+             * Save here so Payment.Id exists before creating
+             * the provider payment intent.
+             *
+             * The payment ID is also part of the request sent
+             * to the payment gateway.
+             */
             await _paymentRepository.SaveChangesAsync(
                 cancellationToken);
         }
@@ -131,9 +192,15 @@ public sealed class StartPaymentCommandHandler
                 false,
                 null,
                 null,
-               [PaymentErrors.NotPending]);
+                [PaymentErrors.NotPending]);
         }
 
+        /*
+         * Idempotent application behavior:
+         *
+         * If this Payment already has a provider intent, reuse it
+         * rather than creating another one.
+         */
         if (payment.ProviderPaymentIntentId is not null)
         {
             var existingPaymentIntent =
@@ -145,7 +212,7 @@ public sealed class StartPaymentCommandHandler
                 true,
                 payment.Id,
                 existingPaymentIntent.ClientSecret,
-                Array.Empty<ApplicationError>());
+                []);
         }
 
         var paymentIntent =
@@ -156,9 +223,10 @@ public sealed class StartPaymentCommandHandler
                     payment.Id,
                     booking.Id),
                 cancellationToken);
+
         payment.AttachProviderPaymentIntent(
-              paymentIntent.ProviderPaymentIntentId,
-              now);
+            paymentIntent.ProviderPaymentIntentId,
+            now);
 
         await _paymentRepository.SaveChangesAsync(
             cancellationToken);
@@ -167,7 +235,7 @@ public sealed class StartPaymentCommandHandler
             true,
             payment.Id,
             paymentIntent.ClientSecret,
-            Array.Empty<ApplicationError>());
+            []);
     }
 }
 

@@ -7,6 +7,7 @@ using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Bookings;
 using HotelBooking.Application.Bookings.GetBookingConfirmation;
 using HotelBooking.Application.Bookings.GetHotelBookings;
+using HotelBooking.Application.Bookings.GetMyBookings;
 using HotelBooking.Application.Cities;
 using HotelBooking.Application.Cities.GetAdminCities;
 using HotelBooking.Application.Cities.GetTrendingDestinations;
@@ -189,7 +190,7 @@ public static class DependencyInjection
         services.AddScoped<IRecentlyVisitedHotelsQuery, RecentlyVisitedHotelsQuery>();
         services.AddScoped<IBookingConfirmationQuery, BookingConfirmationQuery>();
         services.AddScoped<ITrendingDestinationsQuery,TrendingDestinationsQuery>();
-        services.AddScoped< IBookingConfirmationPdfGenerator,BookingConfirmationPdfGenerator>();
+        services.AddScoped<IBookingConfirmationPdfGenerator,BookingConfirmationPdfGenerator>();
 
 
         services
@@ -217,6 +218,7 @@ public static class DependencyInjection
         services.AddScoped<IGetMyReviewsQuery, GetMyReviewsQuery>();
         services.AddScoped<IHotelReviewsQuery, HotelReviewsQuery>();
         services.AddScoped< IHotelBookingsQuery,HotelBookingsQuery>();
+        services.AddScoped<IMyBookingsQuery, MyBookingsQuery>();
 
         return services;
     } 
