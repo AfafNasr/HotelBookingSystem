@@ -27,6 +27,18 @@ public sealed class CityRepository : ICityRepository
                 cancellationToken);
     }
 
+    public Task<bool> HasHotelsAsync(
+    int cityId,
+    CancellationToken cancellationToken)
+    {
+        return _dbContext.Hotels
+            .AnyAsync(
+                hotel =>
+                    hotel.CityId == cityId &&
+                    !hotel.IsDeleted,
+                cancellationToken);
+    }
+
     public void Add(City city)
     {
         _dbContext.Cities.Add(city);

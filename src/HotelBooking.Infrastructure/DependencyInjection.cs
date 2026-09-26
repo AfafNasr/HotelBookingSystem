@@ -166,7 +166,7 @@ public static class DependencyInjection
         services.AddScoped<ICountryRepository, CountryRepository>();
         services.AddScoped<IHotelRepository, HotelRepository>();
         services.AddScoped<IAmenityRepository, AmenityRepository>();
-        services.AddScoped< IHotelAmenityRepository, HotelAmenityRepository>();
+        services.AddScoped<IHotelAmenityRepository, HotelAmenityRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();
         services.AddScoped<IHotelImageRepository, HotelImageRepository>();
         services.AddScoped<IRoomImageRepository, RoomImageRepository>();
@@ -213,7 +213,7 @@ public static class DependencyInjection
         services.AddScoped<IAdminRoomsQuery, AdminRoomsQuery>();
         services.AddScoped<IAdminHotelByIdQuery, AdminHotelByIdQuery>();
         services.AddScoped<IGetMyReviewsQuery, GetMyReviewsQuery>();
-        services.AddScoped< IBookingConfirmationQuery,  BookingConfirmationQuery>();
+  
 
         return services;
     } 
