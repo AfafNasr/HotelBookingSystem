@@ -103,3 +103,8 @@ public sealed class CreateDealCommandHandler
             Array.Empty<ApplicationError>());
     }
 }
+
+public sealed record CreateDealResult(
+    bool Succeeded,
+    int? DealId,
+    IReadOnlyCollection<ApplicationError> Errors);

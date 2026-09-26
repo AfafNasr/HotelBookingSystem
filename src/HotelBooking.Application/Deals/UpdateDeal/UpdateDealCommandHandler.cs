@@ -105,3 +105,7 @@ public sealed class UpdateDealCommandHandler
             []);
     }
 }
+
+public sealed record UpdateDealResult(
+    bool Succeeded,
+    IReadOnlyCollection<ApplicationError> Errors);

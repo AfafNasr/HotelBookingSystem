@@ -77,3 +77,7 @@ public sealed class DeleteDealCommandHandler
             []);
     }
 }
+
+public sealed record DeleteDealResult(
+    bool Succeeded,
+    IReadOnlyCollection<ApplicationError> Errors);
