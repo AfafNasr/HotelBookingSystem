@@ -1,4 +1,6 @@
-﻿namespace HotelBooking.Application.Amenities.DeleteAmenity;
+﻿using HotelBooking.Application.Common.Errors;
+
+namespace HotelBooking.Application.Amenities.DeleteAmenity;
 
 public sealed class DeleteAmenityCommandHandler
 {
@@ -47,3 +49,7 @@ public sealed class DeleteAmenityCommandHandler
             []);
     }
 }
+
+public sealed record DeleteAmenityResult(
+    bool Succeeded,
+    IReadOnlyCollection<ApplicationError> Errors);

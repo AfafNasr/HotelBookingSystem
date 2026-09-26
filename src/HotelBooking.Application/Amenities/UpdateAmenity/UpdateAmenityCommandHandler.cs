@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using HotelBooking.Application.Common.Errors;
 using HotelBooking.Application.Common.Extensions;
 
 namespace HotelBooking.Application.Amenities.UpdateAmenity;
@@ -72,3 +73,7 @@ public sealed class UpdateAmenityCommandHandler
             []);
     }
 }
+
+public sealed record UpdateAmenityResult(
+    bool Succeeded,
+    IReadOnlyCollection<ApplicationError> Errors);
