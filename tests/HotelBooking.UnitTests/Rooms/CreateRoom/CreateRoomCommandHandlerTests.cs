@@ -75,7 +75,7 @@ public sealed class CreateRoomCommandHandlerTests
 
         var error = Assert.Single(result.Errors);
 
-        Assert.Equal("HotelNotFound", error.Code);
+        Assert.Equal("Hotel.NotFound", error.Code);
     }
 
     [Fact]
@@ -112,7 +112,7 @@ public sealed class CreateRoomCommandHandlerTests
 
         var error = Assert.Single(result.Errors);
 
-        Assert.Equal("HotelOwnershipRequired", error.Code);
+        Assert.Equal("Hotel.ManagementForbidden", error.Code);
 
         _roomRepository.Verify(
             repository => repository.Add(It.IsAny<Room>()),
@@ -268,7 +268,7 @@ public sealed class CreateRoomCommandHandlerTests
 
         var error = Assert.Single(result.Errors);
 
-        Assert.Equal("RoomNumberAlreadyExists", error.Code);
+        Assert.Equal("Room.NumberAlreadyExists", error.Code);
 
         _roomRepository.Verify(
             repository => repository.Add(It.IsAny<Room>()),
@@ -314,3 +314,4 @@ public sealed class CreateRoomCommandHandlerTests
             Times.Never);
     }
 }
+

@@ -94,7 +94,7 @@ public sealed class UpdateHotelCommandHandlerTests
 
         var error = Assert.Single(result.Errors);
 
-        Assert.Equal("HotelNotFound", error.Code);
+        Assert.Equal("Hotel.NotFound", error.Code);
         Assert.Equal(ErrorType.NotFound, error.Type);
 
         _cityRepositoryMock.Verify(
@@ -377,3 +377,4 @@ public sealed class UpdateHotelCommandHandlerTests
             DateTime.UtcNow);
     }
 }
+
