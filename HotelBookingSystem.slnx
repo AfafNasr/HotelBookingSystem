@@ -9,4 +9,7 @@
     <Project Path="tests/HotelBooking.IntegrationTests/HotelBooking.IntegrationTests.csproj" />
     <Project Path="tests/HotelBooking.UnitTests/HotelBooking.UnitTests.csproj" />
   </Folder>
+  <Folder Name="/tests/performance/">
+    <File Path="performance/hotel-search.js" />
+  </Folder>
 </Solution>

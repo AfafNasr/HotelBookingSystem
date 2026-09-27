@@ -7,12 +7,13 @@ using HotelBooking.Application.Common.Security;
 using HotelBooking.Infrastructure;
 using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Infrastructure.Persistence;
+using HotelBooking.Infrastructure.Persistence.Seed;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using QuestPDF.Infrastructure;
-using System.Threading.RateLimiting;
 using Serilog;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -143,21 +144,41 @@ var app = builder.Build();
 // Initialize the default Identity roles at application startup.
 if (!app.Environment.IsEnvironment("Testing"))
 {
-    await using (var scope = app.Services.CreateAsyncScope())
+    await using var scope =
+        app.Services.CreateAsyncScope();
+
+    var dbContext =
+        scope.ServiceProvider
+            .GetRequiredService<ApplicationDbContext>();
+
+    await dbContext.Database.MigrateAsync();
+
+    var identityInitializer =
+        scope.ServiceProvider
+            .GetRequiredService<IdentityInitializer>();
+
+    await identityInitializer.InitializeAsync();
+
+    var shouldSeedPerformanceData =
+        args.Contains(
+            "--seed-performance-data",
+            StringComparer.OrdinalIgnoreCase);
+
+    if (shouldSeedPerformanceData)
     {
-        var dbContext =
-       scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        if (!app.Environment.IsDevelopment())
+        {
+            throw new InvalidOperationException(
+                "Performance data can only be seeded in the Development environment.");
+        }
 
+        var performanceDataSeeder =
+            scope.ServiceProvider
+                .GetRequiredService<PerformanceDataSeeder>();
 
+        await performanceDataSeeder.SeedAsync();
 
-        await dbContext.Database.MigrateAsync();
-        var identityInitializer =
-            scope.ServiceProvider.GetRequiredService<IdentityInitializer>();
-       
-
-        await identityInitializer.InitializeAsync();
-        
-
+        return;
     }
 }
 

@@ -41,6 +41,7 @@ using HotelBooking.Infrastructure.Payments.Stripe;
 using HotelBooking.Infrastructure.Persistence;
 using HotelBooking.Infrastructure.Persistence.Queries;
 using HotelBooking.Infrastructure.Persistence.Repositories;
+using HotelBooking.Infrastructure.Persistence.Seed;
 using HotelBooking.Infrastructure.Storage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -66,6 +67,7 @@ public static class DependencyInjection
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(connectionString));
+
 
         services
     .AddHealthChecks()
@@ -224,6 +226,9 @@ public static class DependencyInjection
         services.AddScoped<IHotelReviewsQuery, HotelReviewsQuery>();
         services.AddScoped< IHotelBookingsQuery,HotelBookingsQuery>();
         services.AddScoped<IMyBookingsQuery, MyBookingsQuery>();
+
+
+        services.AddScoped<PerformanceDataSeeder>();
 
         return services;
     } 
