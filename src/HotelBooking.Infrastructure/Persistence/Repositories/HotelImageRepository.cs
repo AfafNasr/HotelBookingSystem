@@ -20,6 +20,23 @@ public sealed class HotelImageRepository
         _dbContext.HotelImages.Add(hotelImage);
     }
 
+    public Task<HotelImage?> GetByIdAsync(
+    int imageId,
+    CancellationToken cancellationToken)
+    {
+        return _dbContext.HotelImages
+            .SingleOrDefaultAsync(
+                image => image.Id == imageId,
+                cancellationToken);
+    }
+
+    public void Remove(
+       HotelImage hotelImage)
+    {
+        _dbContext.HotelImages.Remove(
+            hotelImage);
+    }
+
     public async Task<int> GetNextDisplayOrderAsync(
     int hotelId,
     CancellationToken cancellationToken)

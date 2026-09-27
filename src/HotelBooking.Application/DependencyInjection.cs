@@ -27,12 +27,14 @@ using HotelBooking.Application.HotelAmenities.DeleteHotelAmenity;
 using HotelBooking.Application.Hotels.CompleteHotelProfile;
 using HotelBooking.Application.Hotels.CreateHotel;
 using HotelBooking.Application.Hotels.DeleteHotel;
+using HotelBooking.Application.Hotels.DeleteHotelImage;
 using HotelBooking.Application.Hotels.GetAdminHotelById;
 using HotelBooking.Application.Hotels.GetAdminHotels;
 using HotelBooking.Application.Hotels.GetHotelDetails;
 using HotelBooking.Application.Hotels.GetRecentlyVisitedHotels;
 using HotelBooking.Application.Hotels.SearchHotels;
 using HotelBooking.Application.Hotels.UpdateHotel;
+using HotelBooking.Application.Hotels.UpdateHotelImage;
 using HotelBooking.Application.Hotels.UploadHotelImage;
 using HotelBooking.Application.Payments.HandleStripeWebhook;
 using HotelBooking.Application.Payments.StartPayment;
@@ -115,6 +117,8 @@ public static class DependencyInjection
         services.AddScoped<GetMyReviewsQueryHandler>();
         services.AddScoped<CancelBookingCommandHandler>();
         services.AddScoped<UpdateBookingCommandHandler>();
+        services.AddScoped<UpdateHotelImageCommandHandler>();
+        services.AddScoped<DeleteHotelImageCommandHandler>();
 
 
         return services;
