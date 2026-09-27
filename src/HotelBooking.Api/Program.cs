@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using QuestPDF.Infrastructure;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +46,60 @@ builder.Services.AddOutputCache(options =>
             policy.Expire(
                 TimeSpan.FromMinutes(
                     trendingCacheExpirationMinutes)));
+});
+
+var loginPermitLimit =
+    builder.Configuration.GetValue<int>(
+        "RateLimiting:Login:PermitLimit");
+
+var loginWindowSeconds =
+    builder.Configuration.GetValue<int>(
+        "RateLimiting:Login:WindowSeconds");
+
+if (loginPermitLimit <= 0)
+{
+    throw new InvalidOperationException(
+        "Login rate limit permit count must be greater than zero.");
+}
+
+if (loginWindowSeconds <= 0)
+{
+    throw new InvalidOperationException(
+        "Login rate limit window must be greater than zero.");
+}
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode =
+        StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy(
+        "Login",
+        httpContext =>
+        {
+            var clientIp =
+                httpContext.Connection.RemoteIpAddress?
+                    .ToString()
+                ?? "unknown";
+
+            return RateLimitPartition
+                .GetFixedWindowLimiter(
+                    partitionKey: clientIp,
+                    factory: _ =>
+                        new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit =
+                                loginPermitLimit,
+
+                            Window =
+                                TimeSpan.FromSeconds(
+                                    loginWindowSeconds),
+
+                            QueueLimit = 0,
+
+                            AutoReplenishment = true
+                        });
+        });
 });
 
 
@@ -108,6 +163,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseRateLimiter();
 
 app.UseOutputCache();
 
