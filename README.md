@@ -67,3 +67,57 @@ failure rate < 1%
 
 Both thresholds passed.
 
+## Available Rooms
+
+The available rooms endpoint was tested against the seeded performance dataset.
+
+| Load | p95 | Average | Failures |
+|---|---:|---:|---:|
+| 10 VUs | 18.38 ms | 9.76 ms | 0% |
+
+The query already performed well, so no optimization was introduced.
+
+## Hotel Details
+
+The hotel details endpoint was tested against the seeded performance dataset.
+
+| Load | p95 | Average | Failures |
+|---|---:|---:|---:|
+| 10 VUs | 18.99 ms | 15.81 ms | 0% |
+
+Although the query performs multiple database round-trips, measured performance was already strong, so no optimization was introduced.
+
+## Featured Deals
+
+### Problem
+
+The original query evaluated room data multiple times per hotel:
+
+- one `EXISTS` check
+- one `MIN(PricePerNight)` for the original price
+- another `MIN(PricePerNight)` for the discounted price
+
+This caused repeated reads against the `Room` table.
+
+### Optimization
+
+Room prices are now grouped once by `HotelId`, and the minimum price is calculated a single time and reused.
+
+### Results
+
+| Load | Before p95 | After p95 | Failures |
+|---|---:|---:|---:|
+| 10 VUs | 271.01 ms | 25.88 ms | 0% |
+
+The p95 latency improved by approximately **90%**.
+
+## Hotel Bookings
+
+The hotel bookings endpoint was tested against the seeded performance dataset.
+
+| Load | p95 | Average | Failures |
+|---|---:|---:|---:|
+| 10 VUs | 20.63 ms | 11.49 ms | 0% |
+
+The paginated query already performed well, so no optimization was introduced.
+

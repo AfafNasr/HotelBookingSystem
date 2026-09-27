@@ -17,46 +17,52 @@ public sealed class FeaturedDealsQuery : IFeaturedDealsQuery
         int limit,
         CancellationToken cancellationToken)
     {
-        return await _dbContext.Deals
+        var roomPriceQuery = _dbContext.Room
             .AsNoTracking()
-            .Where(deal =>
+            .Where(room => !room.IsDeleted)
+            .GroupBy(room => room.HotelId)
+            .Select(group => new
+            {
+                HotelId = group.Key,
+                MinPrice = group.Min(
+                    room => room.PricePerNight)
+            });
+
+        var query =
+            from deal in _dbContext.Deals.AsNoTracking()
+            join roomPrice in roomPriceQuery
+                on deal.HotelId equals roomPrice.HotelId
+            where
                 deal.StartDate <= today &&
                 deal.EndDate >= today &&
-                !deal.Hotel.IsDeleted &&
-                _dbContext.Room.Any(room =>
-                    room.HotelId == deal.HotelId &&
-                    !room.IsDeleted))
-            .OrderByDescending(deal => deal.CreatedAt)
-            .ThenByDescending(deal => deal.DiscountPercentage)
-            .ThenByDescending(deal => deal.Id)
-            .Take(limit)
-            .Select(deal => new FeaturedDealItem(
+                !deal.Hotel.IsDeleted
+            orderby
+                deal.CreatedAt descending,
+                deal.DiscountPercentage descending,
+                deal.Id descending
+            select new FeaturedDealItem(
                 deal.HotelId,
                 deal.Hotel.Name,
                 deal.Hotel.City.Name,
                 deal.Hotel.Address,
                 deal.Hotel.StarRating,
                 deal.DiscountPercentage,
-
-                _dbContext.Room
-                    .Where(room =>
-                        room.HotelId == deal.HotelId &&
-                        !room.IsDeleted)
-                    .Min(room => room.PricePerNight),
-
-                _dbContext.Room
-                    .Where(room =>
-                        room.HotelId == deal.HotelId &&
-                        !room.IsDeleted)
-                    .Min(room => room.PricePerNight)
-                    * (1 - deal.DiscountPercentage / 100m),
-
+                roomPrice.MinPrice,
+                roomPrice.MinPrice *
+                    (1 - deal.DiscountPercentage / 100m),
                 _dbContext.HotelImages
-                    .Where(image => image.HotelId == deal.HotelId)
-                    .OrderByDescending(image => image.IsPrimary)
-                    .ThenBy(image => image.DisplayOrder)
-                    .Select(image => image.StorageKey)
-                    .FirstOrDefault()))
+                    .Where(image =>
+                        image.HotelId == deal.HotelId)
+                    .OrderByDescending(image =>
+                        image.IsPrimary)
+                    .ThenBy(image =>
+                        image.DisplayOrder)
+                    .Select(image =>
+                        image.StorageKey)
+                    .FirstOrDefault());
+
+        return await query
+            .Take(limit)
             .ToListAsync(cancellationToken);
     }
 }

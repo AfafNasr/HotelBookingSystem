@@ -132,6 +132,7 @@ public static class DependencyInjection
         services.AddScoped<UpdateUserCommandHandler>();
         services.AddScoped<DeactivateUserCommandHandler>();
         services.AddScoped<ActivateUserCommandHandler>();
+        services.AddScoped<GetRoomByIdQueryHandler>();
 
         return services;
     }
