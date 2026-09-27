@@ -69,7 +69,9 @@ public static class RolePermissions
                     DealPermissions.Delete,
                     BookingPermissions.ViewHotelBookings,
                     HotelPermissions.UpdateImage,
-                    HotelPermissions.DeleteImage
+                    HotelPermissions.DeleteImage,
+                    RoomPermissions.UpdateImage,
+                    RoomPermissions.DeleteImage,
 
 
 

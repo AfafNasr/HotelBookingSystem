@@ -29,4 +29,16 @@ public sealed class RoomImage
         DisplayOrder = displayOrder;
         IsPrimary = isPrimary;
     }
+
+    public void ReplaceStorageKey(string storageKey)
+    {
+        if (string.IsNullOrWhiteSpace(storageKey))
+        {
+            throw new ArgumentException(
+                "Storage key is required.",
+                nameof(storageKey));
+        }
+
+        StorageKey = storageKey.Trim();
+    }
 }

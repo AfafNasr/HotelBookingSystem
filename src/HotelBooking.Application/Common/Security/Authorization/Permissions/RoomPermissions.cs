@@ -8,6 +8,8 @@ public static class RoomPermissions
     public const string UploadImage = "Rooms.UploadImage";
     public const string View = "Rooms.View";
     public const string GetAdminRooms = "Rooms.GetAdminRooms";
+    public const string UpdateImage ="Rooms.UpdateImage";
+    public const string DeleteImage ="Rooms.DeleteImage";
 
     public static readonly IReadOnlyCollection<string> All =
     [
@@ -16,7 +18,9 @@ public static class RoomPermissions
         Delete,
         UploadImage,
         View,
-        GetAdminRooms
+        GetAdminRooms,
+        UpdateImage,
+        DeleteImage
     ];
 
 }

@@ -45,11 +45,13 @@ using HotelBooking.Application.Reviews.GetMyReviews;
 using HotelBooking.Application.Reviews.UpdateReview;
 using HotelBooking.Application.Rooms.CreateRoom;
 using HotelBooking.Application.Rooms.DeleteRoom;
+using HotelBooking.Application.Rooms.DeleteRoomImage;
 using HotelBooking.Application.Rooms.GetAdminRooms;
 using HotelBooking.Application.Rooms.GetAvailableRooms;
 using HotelBooking.Application.Rooms.GetHotelRooms;
 using HotelBooking.Application.Rooms.GetRoomById;
 using HotelBooking.Application.Rooms.UpdateRoom;
+using HotelBooking.Application.Rooms.UpdateRoomImage;
 using HotelBooking.Application.Rooms.UploadRoomImage;
 using HotelBooking.Application.Users.PromoteToHotelOwner;
 using Microsoft.Extensions.DependencyInjection;
@@ -119,7 +121,8 @@ public static class DependencyInjection
         services.AddScoped<UpdateBookingCommandHandler>();
         services.AddScoped<UpdateHotelImageCommandHandler>();
         services.AddScoped<DeleteHotelImageCommandHandler>();
-
+        services.AddScoped<UpdateRoomImageCommandHandler>();
+        services.AddScoped<DeleteRoomImageCommandHandler>();
 
         return services;
     }

@@ -18,6 +18,23 @@ public sealed class RoomImageRepository : IRoomImageRepository
         _dbContext.RoomImages.Add(roomImage);
     }
 
+    public Task<RoomImage?> GetByIdAsync(
+    int imageId,
+    CancellationToken cancellationToken)
+    {
+        return _dbContext.RoomImages
+            .SingleOrDefaultAsync(
+                image => image.Id == imageId,
+                cancellationToken);
+    }
+
+    public void Remove(RoomImage roomImage)
+    {
+        _dbContext.RoomImages.Remove(roomImage);
+    }
+
+
+
     public async Task<int> GetNextDisplayOrderAsync(
         int roomId,
         CancellationToken cancellationToken)

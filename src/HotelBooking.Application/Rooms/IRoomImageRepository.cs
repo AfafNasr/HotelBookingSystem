@@ -6,6 +6,13 @@ public interface IRoomImageRepository
 {
     void Add(RoomImage roomImage);
 
+    Task<RoomImage?> GetByIdAsync(
+       int imageId,
+       CancellationToken cancellationToken);
+
+    void Remove(RoomImage roomImage);
+
+
     Task<int> GetNextDisplayOrderAsync(
         int roomId,
         CancellationToken cancellationToken);
