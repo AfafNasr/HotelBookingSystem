@@ -1,4 +1,5 @@
-﻿using HotelBooking.Infrastructure.Identity;
+﻿using HotelBooking.Infrastructure.BackgroundJobs;
+using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -50,70 +51,103 @@ public sealed class CustomWebApplicationFactory
     {
         builder.UseEnvironment("Testing");
 
-        builder.ConfigureAppConfiguration((_, configuration) =>
-        {
-            configuration.AddInMemoryCollection(
-                new Dictionary<string, string?>
-                {
-                    ["ConnectionStrings:DefaultConnection"] =
-                        _connectionString,
+        builder.ConfigureAppConfiguration(
+            (_, configuration) =>
+            {
+                configuration.AddInMemoryCollection(
+                    new Dictionary<string, string?>
+                    {
+                        ["ConnectionStrings:DefaultConnection"] =
+                            _connectionString,
 
-                    ["InitialAdmin:Username"] =
-                        "integration-admin",
+                        ["InitialAdmin:Username"] =
+                            "integration-admin",
 
-                    ["InitialAdmin:Email"] =
-                        "integration-admin@test.local",
+                        ["InitialAdmin:Email"] =
+                            "integration-admin@test.local",
 
-                    ["InitialAdmin:Password"] =
-                        "IntegrationAdmin123!",
+                        ["InitialAdmin:Password"] =
+                            "IntegrationAdmin123!",
 
-                    ["Jwt:Issuer"] =
-                        "HotelBooking.Api.Tests",
+                        ["Jwt:Issuer"] =
+                            "HotelBooking.Api.Tests",
 
-                    ["Jwt:Audience"] =
-                        "HotelBooking.Api.Tests",
+                        ["Jwt:Audience"] =
+                            "HotelBooking.Api.Tests",
 
-                    ["Jwt:ExpirationMinutes"] =
-                        "60",
+                        ["Jwt:ExpirationMinutes"] =
+                            "60",
 
-                    ["Jwt:Key"] =
-                        "integration-test-signing-key-at-least-32-bytes-long",
+                        ["Jwt:Key"] =
+                            "integration-test-signing-key-at-least-32-bytes-long",
 
-                    ["Email:Host"] =
-                        "localhost",
+                        ["Email:Host"] =
+                            "localhost",
 
-                    ["Email:Port"] =
-                        "1025",
+                        ["Email:Port"] =
+                            "1025",
 
-                    ["Email:Username"] =
-                        "integration-test",
+                        ["Email:Username"] =
+                            "integration-test",
 
-                    ["Email:Password"] =
-                        "integration-test",
+                        ["Email:Password"] =
+                            "integration-test",
 
-                    ["Email:FromEmail"] =
-                        "integration-test@example.com",
+                        ["Email:FromEmail"] =
+                            "integration-test@example.com",
 
-                    ["Booking:PaymentHoldDurationMinutes"] =
-                        "15" ,
-                    ["Caching:TrendingDestinationsExpirationMinutes"] = "5",
-                });
-        });
+                        ["Booking:PaymentHoldDurationMinutes"] =
+                            "15",
+
+                        ["Caching:TrendingDestinationsExpirationMinutes"] =
+                            "5",
+
+                        ["RateLimiting:Login:PermitLimit"] =
+                            "5",
+
+                        ["RateLimiting:Login:WindowSeconds"] =
+                            "60",
+
+                        ["Geoapify:BaseUrl"] =
+                            "https://api.geoapify.com/",
+
+                        ["Geoapify:ApiKey"] =
+                            "integration-test-api-key"
+                    });
+            });
 
         builder.ConfigureServices(services =>
         {
             /*
-             * Important:
+             * Disable the booking expiration background worker.
              *
-             * The production Infrastructure project already registered
-             * ApplicationDbContext using the normal application connection
-             * string.
+             * Integration tests explicitly control their data and timing.
+             * Running this worker during tests can introduce race conditions
+             * and can keep accessing the test database while the host is
+             * shutting down.
+             */
+            var bookingWorkerDescriptor =
+                services.SingleOrDefault(
+                    descriptor =>
+                        descriptor.ServiceType ==
+                            typeof(IHostedService) &&
+                        descriptor.ImplementationType ==
+                            typeof(BookingExpirationWorker));
+
+            if (bookingWorkerDescriptor is not null)
+            {
+                services.Remove(
+                    bookingWorkerDescriptor);
+            }
+
+            /*
+             * The production Infrastructure project already registers
+             * ApplicationDbContext using the normal application database.
              *
-             * For integration tests we explicitly replace that registration
-             * so every WebApplicationFactory gets its own isolated SQL Server
+             * For integration tests we replace that registration so every
+             * CustomWebApplicationFactory receives an isolated SQL Server
              * database.
              */
-
             services.RemoveAll<
                 DbContextOptions<ApplicationDbContext>>();
 
@@ -162,5 +196,67 @@ public sealed class CustomWebApplicationFactory
 
         await identityInitializer
             .InitializeAsync();
+    }
+
+    protected override void Dispose(
+        bool disposing)
+    {
+        /*
+         * Dispose the web host first.
+         *
+         * This closes DbContext / SQL connections before we attempt
+         * to drop the isolated test database.
+         */
+        base.Dispose(disposing);
+
+        if (!disposing)
+        {
+            return;
+        }
+
+        DeleteDatabase();
+    }
+
+    private void DeleteDatabase()
+    {
+        /*
+         * We cannot connect to the database that we are about to drop,
+         * so connect to SQL Server's master database instead.
+         */
+        var connectionStringBuilder =
+            new SqlConnectionStringBuilder(
+                _connectionString)
+            {
+                InitialCatalog = "master"
+            };
+
+        using var connection =
+            new SqlConnection(
+                connectionStringBuilder.ConnectionString);
+
+        connection.Open();
+
+        using var command =
+            connection.CreateCommand();
+
+        /*
+         * _databaseName is generated internally from a GUID,
+         * so it is not user-controlled input.
+         *
+         * SINGLE_USER WITH ROLLBACK IMMEDIATE ensures any remaining
+         * test connections are terminated before DROP DATABASE.
+         */
+        command.CommandText = $"""
+            IF DB_ID(N'{_databaseName}') IS NOT NULL
+            BEGIN
+                ALTER DATABASE [{_databaseName}]
+                    SET SINGLE_USER
+                    WITH ROLLBACK IMMEDIATE;
+
+                DROP DATABASE [{_databaseName}];
+            END
+            """;
+
+        command.ExecuteNonQuery();
     }
 }

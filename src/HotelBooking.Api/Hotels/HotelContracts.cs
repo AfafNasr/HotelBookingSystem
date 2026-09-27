@@ -108,3 +108,10 @@ public sealed record CompleteHotelProfileRequest(
 
 public sealed record AddHotelAmenityRequest(
     int AmenityId);
+
+public sealed record NearbyAttractionResponse(
+    string Name,
+    string? Address,
+    decimal Latitude,
+    decimal Longitude,
+    int? DistanceMeters);

@@ -2,6 +2,7 @@
 using HotelBooking.Application.Bookings.GetHotelBookings;
 using HotelBooking.Application.Common.Security.Authorization.Permissions;
 using HotelBooking.Application.Hotels.GetHotelDetails;
+using HotelBooking.Application.Hotels.GetNearbyAttractions;
 using HotelBooking.Application.Hotels.SearchHotels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,15 +17,18 @@ public sealed class HotelsController : ControllerBase
     private readonly SearchHotelsQueryHandler _searchHandler;
     private readonly GetHotelBookingsQueryHandler _getHotelBookingsHandler;
     private readonly GetHotelDetailsQueryHandler _detailsHandler;
+    private readonly GetNearbyAttractionsQueryHandler _nearbyAttractionsHandler;
 
     public HotelsController(
-        SearchHotelsQueryHandler searchHandler,
-        GetHotelDetailsQueryHandler detailsHandler,
-        GetHotelBookingsQueryHandler getHotelBookingsHandler)
+    SearchHotelsQueryHandler searchHandler,
+    GetHotelDetailsQueryHandler detailsHandler,
+    GetHotelBookingsQueryHandler getHotelBookingsHandler,
+    GetNearbyAttractionsQueryHandler nearbyAttractionsHandler)
     {
         _searchHandler = searchHandler;
         _detailsHandler = detailsHandler;
         _getHotelBookingsHandler = getHotelBookingsHandler;
+        _nearbyAttractionsHandler = nearbyAttractionsHandler;
     }
 
     [HttpGet("search")]
@@ -163,6 +167,43 @@ public sealed class HotelsController : ControllerBase
             result.PageSize,
             result.HasNextPage
         });
+    }
+
+    [HttpGet("{hotelId:int}/nearby-attractions")]
+    public async Task<IActionResult> GetNearbyAttractions(
+    int hotelId,
+    [FromQuery] int radiusMeters = 3000,
+    [FromQuery] int limit = 10,
+    CancellationToken cancellationToken = default)
+    {
+        var query = new GetNearbyAttractionsQuery(
+            hotelId,
+            radiusMeters,
+            limit);
+
+        var result =
+            await _nearbyAttractionsHandler.HandleAsync(
+                query,
+                cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return ErrorResponseFactory.Create(
+                this,
+                result.Errors);
+        }
+
+        var response = result.Attractions
+            .Select(attraction =>
+                new NearbyAttractionResponse(
+                    attraction.Name,
+                    attraction.Address,
+                    attraction.Latitude,
+                    attraction.Longitude,
+                    attraction.DistanceMeters))
+            .ToArray();
+
+        return Ok(response);
     }
 
 }

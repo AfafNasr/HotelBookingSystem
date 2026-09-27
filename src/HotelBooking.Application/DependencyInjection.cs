@@ -31,6 +31,7 @@ using HotelBooking.Application.Hotels.DeleteHotelImage;
 using HotelBooking.Application.Hotels.GetAdminHotelById;
 using HotelBooking.Application.Hotels.GetAdminHotels;
 using HotelBooking.Application.Hotels.GetHotelDetails;
+using HotelBooking.Application.Hotels.GetNearbyAttractions;
 using HotelBooking.Application.Hotels.GetRecentlyVisitedHotels;
 using HotelBooking.Application.Hotels.SearchHotels;
 using HotelBooking.Application.Hotels.UpdateHotel;
@@ -133,6 +134,7 @@ public static class DependencyInjection
         services.AddScoped<DeactivateUserCommandHandler>();
         services.AddScoped<ActivateUserCommandHandler>();
         services.AddScoped<GetRoomByIdQueryHandler>();
+        services.AddScoped<GetNearbyAttractionsQueryHandler>();
 
         return services;
     }

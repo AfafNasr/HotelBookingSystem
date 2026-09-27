@@ -21,6 +21,7 @@ using HotelBooking.Application.Hotels;
 using HotelBooking.Application.Hotels.GetAdminHotelById;
 using HotelBooking.Application.Hotels.GetAdminHotels;
 using HotelBooking.Application.Hotels.GetHotelDetails;
+using HotelBooking.Application.Hotels.GetNearbyAttractions;
 using HotelBooking.Application.Hotels.GetRecentlyVisitedHotels;
 using HotelBooking.Application.Hotels.SearchHotels;
 using HotelBooking.Application.Payments;
@@ -36,6 +37,7 @@ using HotelBooking.Infrastructure.Authentication;
 using HotelBooking.Infrastructure.BackgroundJobs;
 using HotelBooking.Infrastructure.Documents;
 using HotelBooking.Infrastructure.Emails;
+using HotelBooking.Infrastructure.Hotels;
 using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Infrastructure.Payments.Stripe;
 using HotelBooking.Infrastructure.Persistence;
@@ -215,7 +217,30 @@ public static class DependencyInjection
         "Email:FromEmail is required.")
     .ValidateOnStart();
 
-       
+        services
+     .AddOptions<GeoapifyOptions>()
+     .Bind(configuration.GetSection(GeoapifyOptions.SectionName))
+     .Validate(
+         options => !string.IsNullOrWhiteSpace(options.BaseUrl),
+         "Geoapify:BaseUrl is required.")
+     .Validate(
+         options => !string.IsNullOrWhiteSpace(options.ApiKey),
+         "Geoapify:ApiKey is required.")
+     .ValidateOnStart();
+
+        services.AddHttpClient<
+            INearbyAttractionsService,
+            GeoapifyNearbyAttractionsService>(
+            (serviceProvider, client) =>
+            {
+                var options = serviceProvider
+                    .GetRequiredService<IOptions<GeoapifyOptions>>()
+                    .Value;
+
+                client.BaseAddress = new Uri(options.BaseUrl);
+                client.Timeout = TimeSpan.FromSeconds(5);
+            });
+
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IHotelRoomsQuery, HotelRoomsQuery>();
         services.AddScoped<IAdminCitiesQuery, AdminCitiesQuery>();

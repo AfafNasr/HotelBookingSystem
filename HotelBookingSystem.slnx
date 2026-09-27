@@ -12,6 +12,7 @@
   <Folder Name="/tests/performance/">
     <File Path="performance/available-rooms.js" />
     <File Path="performance/featured-deals.js" />
+    <File Path="performance/hotel-bookings.js" />
     <File Path="performance/hotel-details.js" />
     <File Path="performance/hotel-search.js" />
     <File Path="README.md" />
