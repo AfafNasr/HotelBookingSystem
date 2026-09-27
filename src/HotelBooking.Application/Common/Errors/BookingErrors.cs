@@ -56,4 +56,10 @@ public static class BookingErrors
         "Booking.PaymentAccessDenied",
         "You are not allowed to pay for this booking.",
         ErrorType.Authorization);
+
+    public static readonly ApplicationError CannotCancel =
+    new(
+        "Booking.CannotCancel",
+        "Only a pending payment booking can be cancelled.",
+        ErrorType.Conflict);
 }

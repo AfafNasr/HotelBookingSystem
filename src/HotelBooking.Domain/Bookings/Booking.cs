@@ -137,4 +137,22 @@ public sealed class Booking
         ExpiresAt = null;
         UpdatedAt = confirmedAt;
     }
+
+    public void Cancel(DateTime cancelledAt)
+    {
+        if (Status == BookingStatus.Cancelled)
+        {
+            return;
+        }
+
+        if (Status != BookingStatus.PendingPayment)
+        {
+            throw new InvalidOperationException(
+                "Only a pending payment booking can be cancelled.");
+        }
+
+        Status = BookingStatus.Cancelled;
+        ExpiresAt = null;
+        UpdatedAt = cancelledAt;
+    }
 }

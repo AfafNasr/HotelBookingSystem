@@ -4,6 +4,7 @@ using HotelBooking.Application.Amenities.DeleteAmenity;
 using HotelBooking.Application.Amenities.UpdateAmenity;
 using HotelBooking.Application.Authentication.Login;
 using HotelBooking.Application.Authentication.Register;
+using HotelBooking.Application.Bookings.CancelBooking;
 using HotelBooking.Application.Bookings.CreateBooking;
 using HotelBooking.Application.Bookings.Expiration;
 using HotelBooking.Application.Bookings.GetBookingConfirmation;
@@ -111,6 +112,7 @@ public static class DependencyInjection
         services.AddScoped<GetHotelReviewsQueryHandler>();
         services.AddScoped<GetHotelBookingsQueryHandler>();
         services.AddScoped<GetMyReviewsQueryHandler>();
+        services.AddScoped<CancelBookingCommandHandler>();
 
 
         return services;

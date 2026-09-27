@@ -7,6 +7,7 @@ public static class BookingPermissions
     public const string ViewConfirmation = "Bookings.ViewConfirmation";
     public const string ViewBooking = "Bookings.ViewBooking";
     public const string ViewHotelBookings ="Bookings.ViewHotelBookings";
+    public const string Cancel = "Bookings.Cancel";
 
     public static readonly IReadOnlyCollection<string> All =
     [
@@ -14,6 +15,7 @@ public static class BookingPermissions
         StartPayment,
         ViewConfirmation,
         ViewBooking,
-        ViewHotelBookings
+        ViewHotelBookings,
+        Cancel
     ];
 }

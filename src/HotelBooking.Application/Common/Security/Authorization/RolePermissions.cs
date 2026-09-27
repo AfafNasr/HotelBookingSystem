@@ -1,4 +1,5 @@
 ﻿using HotelBooking.Application.Common.Security.Authorization.Permissions;
+using System.Threading.Channels;
 
 namespace HotelBooking.Application.Common.Security.Authorization;
 
@@ -19,13 +20,13 @@ public static class RolePermissions
                     CityPermissions.Create,
                     CityPermissions.Update,
                     CityPermissions.Delete,
-                     CityPermissions.View,
+                    CityPermissions.View,
 
                     RoomPermissions.Create,
                     RoomPermissions.Update,
                     RoomPermissions.Delete,
-                     RoomPermissions.View,
-                     RoomPermissions.GetAdminRooms,
+                    RoomPermissions.View,
+                    RoomPermissions.GetAdminRooms,
 
                     UserPermissions.PromoteToHotelOwner ,
 
@@ -43,10 +44,11 @@ public static class RolePermissions
                     ReviewPermissions.Create,
                     UserPermissions.ViewRecentlyVisited,
                     BookingPermissions.ViewConfirmation,
-                     ReviewPermissions.View,
-                      ReviewPermissions.Update,
-                       ReviewPermissions.Delete,
-                    BookingPermissions.ViewBooking
+                    ReviewPermissions.View,
+                    ReviewPermissions.Update,
+                    ReviewPermissions.Delete,
+                    BookingPermissions.ViewBooking,
+                    BookingPermissions.Cancel
 
                 },
 
