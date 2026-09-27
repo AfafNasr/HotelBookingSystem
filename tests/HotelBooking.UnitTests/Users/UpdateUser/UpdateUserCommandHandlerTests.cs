@@ -1,6 +1,7 @@
 ﻿using HotelBooking.Application.Authentication;
 using HotelBooking.Application.Common.Errors;
 using HotelBooking.Application.Users.UpdateUser;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace HotelBooking.UnitTests.Users.UpdateUser;
@@ -326,6 +327,7 @@ public sealed class UpdateUserCommandHandlerTests
     {
         return new UpdateUserCommandHandler(
             _validator,
-            _identityService.Object);
+            _identityService.Object,
+              NullLogger<UpdateUserCommandHandler>.Instance);
     }
 }

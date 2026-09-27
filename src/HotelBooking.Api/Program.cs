@@ -12,9 +12,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using QuestPDF.Infrastructure;
 using System.Threading.RateLimiting;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .WriteTo.Console();
+});
 
 // Add services to the container.
 
@@ -159,6 +168,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseExceptionHandler();
+app.UseSerilogRequestLogging();
+
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
@@ -169,6 +180,7 @@ app.UseRateLimiter();
 app.UseOutputCache();
 
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 app.Run();
 

@@ -2,6 +2,7 @@
 using HotelBooking.Application.Authentication;
 using HotelBooking.Application.Common.Errors;
 using HotelBooking.Application.Common.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace HotelBooking.Application.Users.CreateUser;
 
@@ -9,13 +10,16 @@ public sealed class CreateUserCommandHandler
 {
     private readonly IValidator<CreateUserCommand> _validator;
     private readonly IIdentityService _identityService;
+    private readonly ILogger<CreateUserCommandHandler> _logger;
 
     public CreateUserCommandHandler(
         IValidator<CreateUserCommand> validator,
-        IIdentityService identityService)
+        IIdentityService identityService,
+         ILogger<CreateUserCommandHandler> logger)
     {
         _validator = validator;
         _identityService = identityService;
+        _logger = logger;
     }
 
     public async Task<CreateUserResult> HandleAsync(
@@ -41,6 +45,15 @@ public sealed class CreateUserCommandHandler
                 command.Email,
                 command.Password,
                 cancellationToken);
+
+
+        if (result.Succeeded &&
+            result.UserId is not null)
+        {
+            UserLog.UserCreated(
+                _logger,
+                result.UserId);
+        }
 
         return new CreateUserResult(
             result.Succeeded,

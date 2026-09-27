@@ -1,6 +1,8 @@
 ﻿using HotelBooking.Application.Authentication;
 using HotelBooking.Application.Common.Errors;
 using HotelBooking.Application.Users.ActivateUser;
+using HotelBooking.Application.Users.CreateUser;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace HotelBooking.UnitTests.Users.ActivateUser;
@@ -171,7 +173,8 @@ public sealed class ActivateUserCommandHandlerTests
     private ActivateUserCommandHandler CreateHandler()
     {
         return new ActivateUserCommandHandler(
-            _validator,
-            _identityService.Object);
+    _validator,
+    _identityService.Object,
+    NullLogger<ActivateUserCommandHandler>.Instance);
     }
 }

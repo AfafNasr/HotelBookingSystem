@@ -2,6 +2,7 @@
 using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Common.Errors;
 using HotelBooking.Application.Users.CreateUser;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace HotelBooking.UnitTests.Users.CreateUser;
@@ -287,6 +288,7 @@ public sealed class CreateUserCommandHandlerTests
     {
         return new CreateUserCommandHandler(
             _validator,
-            _identityService.Object);
+            _identityService.Object,
+            NullLogger<CreateUserCommandHandler>.Instance);
     }
 }

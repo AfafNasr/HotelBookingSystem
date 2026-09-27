@@ -2,6 +2,7 @@
 using HotelBooking.Application.Common.Errors;
 using HotelBooking.Application.Common.Security;
 using HotelBooking.Application.Users.DeactivateUser;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace HotelBooking.UnitTests.Users.DeactivateUser;
@@ -26,6 +27,7 @@ public sealed class DeactivateUserCommandHandlerTests
             30,
             0,
             TimeSpan.Zero);
+
 
     [Fact]
     public async Task HandleAsync_WhenCommandIsValid_ShouldDeactivateUser()
@@ -255,14 +257,12 @@ public sealed class DeactivateUserCommandHandlerTests
             capturedDeactivatedAt);
     }
 
-    private DeactivateUserCommandHandler CreateHandler()
-    {
-        return new DeactivateUserCommandHandler(
+    private DeactivateUserCommandHandler CreateHandler() => new DeactivateUserCommandHandler(
             _validator,
             _identityService.Object,
             _currentUserService.Object,
-            new TestTimeProvider(_now));
-    }
+            new TestTimeProvider(_now),
+            NullLogger<DeactivateUserCommandHandler>.Instance);
 
     private sealed class TestTimeProvider
         : TimeProvider

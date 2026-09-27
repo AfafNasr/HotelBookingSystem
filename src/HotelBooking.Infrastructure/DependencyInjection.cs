@@ -68,6 +68,11 @@ public static class DependencyInjection
             options.UseSqlServer(connectionString));
 
         services
+    .AddHealthChecks()
+    .AddDbContextCheck<ApplicationDbContext>(
+        name: "database");
+
+        services
              .AddIdentityCore<IdentityUser>(options =>
              {
                 options.User.RequireUniqueEmail = true;
