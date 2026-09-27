@@ -51,3 +51,9 @@ public sealed record GetMyBookingResponse(
     BookingStatus Status,
     string? ConfirmationNumber,
     DateTime CreatedAt);
+
+public sealed record UpdateBookingRequest(
+    string GuestFullName,
+    string GuestEmail,
+    string GuestPhoneNumber,
+    string? SpecialRequests);

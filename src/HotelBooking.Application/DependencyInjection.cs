@@ -11,6 +11,7 @@ using HotelBooking.Application.Bookings.GetBookingConfirmation;
 using HotelBooking.Application.Bookings.GetHotelBookings;
 using HotelBooking.Application.Bookings.GetMyBookings;
 using HotelBooking.Application.Bookings.Pricing;
+using HotelBooking.Application.Bookings.UpdateBooking;
 using HotelBooking.Application.Cities.CreateCity;
 using HotelBooking.Application.Cities.DeleteCity;
 using HotelBooking.Application.Cities.GetAdminCities;
@@ -113,6 +114,7 @@ public static class DependencyInjection
         services.AddScoped<GetHotelBookingsQueryHandler>();
         services.AddScoped<GetMyReviewsQueryHandler>();
         services.AddScoped<CancelBookingCommandHandler>();
+        services.AddScoped<UpdateBookingCommandHandler>();
 
 
         return services;

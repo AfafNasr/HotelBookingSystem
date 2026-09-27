@@ -62,4 +62,10 @@ public static class BookingErrors
         "Booking.CannotCancel",
         "Only a pending payment booking can be cancelled.",
         ErrorType.Conflict);
+
+    public static readonly ApplicationError CannotUpdate =
+    new(
+        "Booking.CannotUpdate",
+        "Only a pending payment booking can be updated.",
+        ErrorType.Conflict);
 }

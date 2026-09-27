@@ -155,4 +155,28 @@ public sealed class Booking
         ExpiresAt = null;
         UpdatedAt = cancelledAt;
     }
+
+    public void UpdateGuestDetails(
+    string guestFullName,
+    string guestEmail,
+    string guestPhoneNumber,
+    string? specialRequests,
+    DateTime updatedAt)
+    {
+        if (Status != BookingStatus.PendingPayment)
+        {
+            throw new InvalidOperationException(
+                "Only a pending payment booking can be updated.");
+        }
+
+        GuestFullName = guestFullName.Trim();
+        GuestEmail = guestEmail.Trim();
+        GuestPhoneNumber = guestPhoneNumber.Trim();
+
+        SpecialRequests = string.IsNullOrWhiteSpace(specialRequests)
+            ? null
+            : specialRequests.Trim();
+
+        UpdatedAt = updatedAt;
+    }
 }
