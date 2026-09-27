@@ -95,7 +95,8 @@ public sealed class CustomWebApplicationFactory
                         "integration-test@example.com",
 
                     ["Booking:PaymentHoldDurationMinutes"] =
-                        "15"
+                        "15" ,
+                    ["Caching:TrendingDestinationsExpirationMinutes"] = "5",
                 });
         });
 

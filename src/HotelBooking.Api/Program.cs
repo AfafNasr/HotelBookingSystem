@@ -25,6 +25,29 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
+
+
+var trendingCacheExpirationMinutes =
+    builder.Configuration.GetValue<int>(
+        "Caching:TrendingDestinationsExpirationMinutes");
+
+if (trendingCacheExpirationMinutes <= 0)
+{
+    throw new InvalidOperationException(
+        "Trending destinations cache expiration must be greater than zero.");
+}
+
+builder.Services.AddOutputCache(options =>
+{
+    options.AddPolicy(
+        "TrendingDestinations",
+        policy =>
+            policy.Expire(
+                TimeSpan.FromMinutes(
+                    trendingCacheExpirationMinutes)));
+});
+
+
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddPermissionAuthorization();
@@ -85,6 +108,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseOutputCache();
 
 app.MapControllers();
 

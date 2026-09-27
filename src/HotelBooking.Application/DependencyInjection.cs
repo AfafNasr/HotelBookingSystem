@@ -109,7 +109,6 @@ public static class DependencyInjection
         services.AddScoped<GetAdminRoomsQueryHandler>();
         services.AddScoped<DeleteHotelCommandHandler>();
         services.AddScoped<GetAdminHotelByIdQueryHandler>();
-        services.AddScoped<CreateReviewCommandHandler>();
         services.AddScoped<UpdateReviewCommandHandler>();
         services.AddScoped<DeleteReviewCommandHandler>();
         services.AddScoped<UpdateAmenityCommandHandler>();

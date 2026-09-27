@@ -5,6 +5,7 @@ using HotelBooking.Application.Common.Security;
 using HotelBooking.Application.Common.Security.Authorization.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace HotelBooking.Api.Cities;
 
@@ -24,18 +25,22 @@ public sealed class CitiesController : ControllerBase
     }
 
     [HttpGet("trending")]
+    [OutputCache(PolicyName = "TrendingDestinations")]
     public async Task<IActionResult> GetTrending(
-        CancellationToken cancellationToken)
+    CancellationToken cancellationToken)
     {
-        var result = await _trendingHandler.HandleAsync(
-            cancellationToken);
+        var result =
+            await _trendingHandler.HandleAsync(
+                cancellationToken);
 
-        var response = result.Destinations
-            .Select(destination => new TrendingDestinationResponse(
-                destination.CityId,
-                destination.CityName,
-                destination.ThumbnailStorageKey))
-            .ToArray();
+        var response =
+            result.Destinations
+                .Select(destination =>
+                    new TrendingDestinationResponse(
+                        destination.CityId,
+                        destination.CityName,
+                        destination.ThumbnailStorageKey))
+                .ToArray();
 
         return Ok(response);
     }
