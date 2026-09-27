@@ -1,4 +1,5 @@
 ﻿using HotelBooking.Application.Authentication;
+using HotelBooking.Application.Common.Errors;
 
 namespace HotelBooking.Application.Users.PromoteToHotelOwner;
 
@@ -21,3 +22,7 @@ public sealed class PromoteToHotelOwnerCommandHandler
              cancellationToken);
     }
 }
+
+public sealed record PromoteToHotelOwnerResult(
+    bool Succeeded,
+    IReadOnlyCollection<ApplicationError> Errors);

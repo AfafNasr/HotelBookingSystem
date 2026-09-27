@@ -1,10 +1,16 @@
-﻿using HotelBooking.Application.Common.Security;
+﻿using HotelBooking.Application.Authentication;
+using HotelBooking.Application.Authentication.Register;
+using HotelBooking.Application.Common.Errors;
+using HotelBooking.Application.Common.Security;
+using HotelBooking.Application.Users.ActivateUser;
+using HotelBooking.Application.Users.DeactivateUser;
+using HotelBooking.Application.Users.GetAllUsers;
+using HotelBooking.Application.Users.PromoteToHotelOwner;
+using HotelBooking.Application.Users.UpdateUser;
 using HotelBooking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
-using HotelBooking.Application.Authentication.Register;
-using HotelBooking.Application.Users.PromoteToHotelOwner;
-using HotelBooking.Application.Authentication;
-using HotelBooking.Application.Common.Errors;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace HotelBooking.Infrastructure.Identity;
 
@@ -84,6 +90,70 @@ public sealed class IdentityService : IIdentityService
             _ => ErrorType.Validation
         };
     }
+
+    public async Task<IReadOnlyCollection<AdminUserItem>> GetAllUsersAsync(
+    CancellationToken cancellationToken)
+    {
+        var users =
+            await _dbContext.Users
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .OrderBy(user => user.UserName)
+                .Select(user => new
+                {
+                    user.Id,
+                    user.UserName,
+                    user.Email,
+
+                    DeactivatedAt =
+                        EF.Property<DateTime?>(
+                            user,
+                            "DeactivatedAt")
+                })
+                .ToListAsync(cancellationToken);
+
+        var userRoles =
+            await (
+                from userRole in _dbContext.UserRoles
+                join role in _dbContext.Roles
+                    on userRole.RoleId equals role.Id
+                select new
+                {
+                    userRole.UserId,
+                    RoleName = role.Name
+                })
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+        var rolesByUserId =
+            userRoles
+                .GroupBy(item => item.UserId)
+                .ToDictionary(
+                    group => group.Key,
+                    group =>
+                        (IReadOnlyCollection<string>)group
+                            .Where(item =>
+                                !string.IsNullOrWhiteSpace(
+                                    item.RoleName))
+                            .Select(item => item.RoleName!)
+                            .ToArray());
+
+        return users
+            .Select(user =>
+                new AdminUserItem(
+                    user.Id,
+                    user.UserName ?? string.Empty,
+                    user.Email ?? string.Empty,
+                    rolesByUserId.TryGetValue(
+                        user.Id,
+                        out var roles)
+                        ? roles
+                        : Array.Empty<string>(),
+                    user.DeactivatedAt is null,
+                    user.DeactivatedAt))
+            .ToArray();
+    }
+
     public async Task<AuthenticatedUser?> AuthenticateAsync(
     string username,
     string password)
@@ -191,6 +261,152 @@ public sealed class IdentityService : IIdentityService
         }
 
         return await _userManager.IsInRoleAsync(user, role);
+    }
+
+    public async Task<UpdateUserResult> UpdateUserAsync(
+    string userId,
+    string userName,
+    string email,
+    CancellationToken cancellationToken)
+    {
+        var user =
+            await _userManager.FindByIdAsync(userId);
+
+        if (user is null)
+        {
+            return new UpdateUserResult(
+                false,
+                [
+                    new ApplicationError(
+                    "User.NotFound",
+                    "The specified user was not found.",
+                    ErrorType.NotFound)
+                ]);
+        }
+
+        user.UserName =
+            userName.Trim();
+
+        user.Email =
+            email.Trim();
+
+        var result =
+            await _userManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+        {
+            var errors =
+                result.Errors
+                    .Select(error =>
+                        new ApplicationError(
+                            error.Code,
+                            error.Description,
+                            GetErrorType(error.Code)))
+                    .ToArray();
+
+            return new UpdateUserResult(
+                false,
+                errors);
+        }
+
+        return new UpdateUserResult(
+            true,
+            []);
+    }
+
+    public async Task<DeactivateUserResult> DeactivateUserAsync(
+     string userId,
+     DateTime deactivatedAt,
+     CancellationToken cancellationToken)
+    {
+        var user =
+            await _dbContext.Users
+                .IgnoreQueryFilters()
+                .SingleOrDefaultAsync(
+                    user => user.Id == userId,
+                    cancellationToken);
+
+        if (user is null)
+        {
+            return new DeactivateUserResult(
+                false,
+                [
+                    new ApplicationError(
+                    "User.NotFound",
+                    "The specified user was not found.",
+                    ErrorType.NotFound)
+                ]);
+        }
+
+        var deactivatedAtProperty =
+            _dbContext.Entry(user)
+                .Property<DateTime?>(
+                    "DeactivatedAt");
+
+        if (deactivatedAtProperty.CurrentValue is not null)
+        {
+            // Already inactive - idempotent success.
+            return new DeactivateUserResult(
+                true,
+                []);
+        }
+
+        deactivatedAtProperty.CurrentValue =
+            deactivatedAt;
+
+        await _dbContext.SaveChangesAsync(
+            cancellationToken);
+
+        return new DeactivateUserResult(
+            true,
+            []);
+    }
+
+    public async Task<ActivateUserResult> ActivateUserAsync(
+    string userId,
+    CancellationToken cancellationToken)
+    {
+        var user =
+            await _dbContext.Users
+                .IgnoreQueryFilters()
+                .SingleOrDefaultAsync(
+                    user => user.Id == userId,
+                    cancellationToken);
+
+        if (user is null)
+        {
+            return new ActivateUserResult(
+                false,
+                [
+                    new ApplicationError(
+                    "User.NotFound",
+                    "The specified user was not found.",
+                    ErrorType.NotFound)
+                ]);
+        }
+
+        var deactivatedAtProperty =
+            _dbContext.Entry(user)
+                .Property<DateTime?>(
+                    "DeactivatedAt");
+
+        if (deactivatedAtProperty.CurrentValue is null)
+        {
+            // Already active - idempotent success.
+            return new ActivateUserResult(
+                true,
+                []);
+        }
+
+        deactivatedAtProperty.CurrentValue =
+            null;
+
+        await _dbContext.SaveChangesAsync(
+            cancellationToken);
+
+        return new ActivateUserResult(
+            true,
+            []);
     }
 
 }

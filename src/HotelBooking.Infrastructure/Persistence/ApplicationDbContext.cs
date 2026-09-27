@@ -47,9 +47,21 @@ public class ApplicationDbContext : IdentityDbContext
 
         builder.ApplyConfigurationsFromAssembly(
     typeof(ApplicationDbContext).Assembly);
+        var userBuilder =
+            builder.Entity<IdentityUser>();
 
-        builder.Entity<IdentityUser>()
+        userBuilder
             .HasIndex(user => user.NormalizedEmail)
             .IsUnique();
+
+        userBuilder
+            .Property<DateTime?>("DeactivatedAt");
+
+        userBuilder
+            .HasQueryFilter(
+                user =>
+                    EF.Property<DateTime?>(
+                        user,
+                        "DeactivatedAt") == null);
     }
 }

@@ -34,7 +34,14 @@ public static class RolePermissions
                     AmenityPermissions.Update,
                     AmenityPermissions.Delete,
 
-                    BookingPermissions.ViewHotelBookings
+                    BookingPermissions.ViewHotelBookings,
+
+                    UserPermissions.View,
+                    UserPermissions.Create,
+                    UserPermissions.Update,
+
+                    UserPermissions.Deactivate,
+                    UserPermissions.Activate,
                 },
 
                 [Roles.Customer] = new HashSet<string>()
