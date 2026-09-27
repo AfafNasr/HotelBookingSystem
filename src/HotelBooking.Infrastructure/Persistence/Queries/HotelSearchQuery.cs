@@ -209,6 +209,8 @@ public sealed class HotelSearchQuery : IHotelSearchQuery
                         .Select(image =>
                             image.StorageKey)
                         .FirstOrDefault()))
+
+
             .ToListAsync(
                 cancellationToken);
 
@@ -220,6 +222,7 @@ public sealed class HotelSearchQuery : IHotelSearchQuery
             items.RemoveAt(
                 items.Count - 1);
         }
+
 
         return new SearchHotelsPage(
             items,
