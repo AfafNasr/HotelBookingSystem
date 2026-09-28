@@ -8,6 +8,8 @@ using HotelBooking.Application.Bookings;
 using HotelBooking.Application.Bookings.GetBookingConfirmation;
 using HotelBooking.Application.Bookings.GetHotelBookings;
 using HotelBooking.Application.Bookings.GetMyBookings;
+using HotelBooking.Application.Carts;
+using HotelBooking.Application.Carts.GetCart;
 using HotelBooking.Application.Cities;
 using HotelBooking.Application.Cities.GetAdminCities;
 using HotelBooking.Application.Cities.GetTrendingDestinations;
@@ -254,6 +256,9 @@ public static class DependencyInjection
 
 
         services.AddScoped<PerformanceDataSeeder>();
+
+        services.AddScoped<ICartRepository, CartRepository>();
+        services.AddScoped<ICartQuery, CartQuery>();
 
         return services;
     } 

@@ -4,7 +4,7 @@ public static class UserPermissions
 {
     public const string PromoteToHotelOwner ="Users.PromoteToHotelOwner";
     public const string ViewRecentlyVisited = "Hotels.ViewRecentlyVisited";
-
+    public const string CartManage = "CartPermissions.Manage";
     public const string View = "Users.View";
     public const string Create = "Users.Create";
     public const string Update = "Users.Update";
@@ -19,6 +19,7 @@ public static class UserPermissions
         Create,
         Update,
         Deactivate,
-        Activate
+        Activate,
+        CartManage
     ];
 }

@@ -12,6 +12,9 @@ using HotelBooking.Application.Bookings.GetHotelBookings;
 using HotelBooking.Application.Bookings.GetMyBookings;
 using HotelBooking.Application.Bookings.Pricing;
 using HotelBooking.Application.Bookings.UpdateBooking;
+using HotelBooking.Application.Carts.AddToCart;
+using HotelBooking.Application.Carts.GetCart;
+using HotelBooking.Application.Carts.RemoveCartItem;
 using HotelBooking.Application.Cities.CreateCity;
 using HotelBooking.Application.Cities.DeleteCity;
 using HotelBooking.Application.Cities.GetAdminCities;
@@ -135,6 +138,9 @@ public static class DependencyInjection
         services.AddScoped<ActivateUserCommandHandler>();
         services.AddScoped<GetRoomByIdQueryHandler>();
         services.AddScoped<GetNearbyAttractionsQueryHandler>();
+        services.AddScoped<AddToCartCommandHandler>();
+        services.AddScoped<RemoveCartItemCommandHandler>();
+        services.AddScoped<GetCartQueryHandler>();
 
         return services;
     }

@@ -1,14 +1,15 @@
 ﻿using HotelBooking.Domain.Amenities;
 using HotelBooking.Domain.Bookings;
+using HotelBooking.Domain.Carts;
 using HotelBooking.Domain.Cities;
 using HotelBooking.Domain.Deals;
 using HotelBooking.Domain.Hotels;
 using HotelBooking.Domain.Payments;
+using HotelBooking.Domain.Reviews;
 using HotelBooking.Domain.Rooms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using HotelBooking.Domain.Reviews;
 
 namespace HotelBooking.Infrastructure.Persistence;
 
@@ -34,6 +35,12 @@ public class ApplicationDbContext : IdentityDbContext
 
     public DbSet<RecentlyVisitedHotel> RecentlyVisitedHotels
     => Set<RecentlyVisitedHotel>();
+
+    public DbSet<Cart> Carts =>
+    Set<Cart>();
+
+    public DbSet<CartItem> CartItems =>
+        Set<CartItem>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options)
