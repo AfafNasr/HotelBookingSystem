@@ -1,0 +1,83 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: hotelbooking-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${SQL_SA_PASSWORD}
+
+    ports:
+      - "14330:1433"
+
+    volumes:
+      - hotelbooking-sql-data:/var/opt/mssql
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q \"SELECT 1\" || exit 1"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+
+  api:
+    container_name: hotelbooking-api
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+
+      ConnectionStrings__DefaultConnection: >-
+        Server=sqlserver,1433;
+        Database=HotelBooking;
+        User Id=sa;
+        Password=${SQL_SA_PASSWORD};
+        TrustServerCertificate=True;
+
+      InitialAdmin__Username: ${INITIAL_ADMIN_USERNAME}
+      InitialAdmin__Email: ${INITIAL_ADMIN_EMAIL}
+      InitialAdmin__Password: ${INITIAL_ADMIN_PASSWORD}
+
+      Jwt__Issuer: HotelBooking.Api
+      Jwt__Audience: HotelBooking.Api
+      Jwt__ExpirationMinutes: "60"
+      Jwt__Key: ${JWT_KEY}
+
+      Email__Host: ${EMAIL_HOST}
+      Email__Port: ${EMAIL_PORT}
+      Email__Username: ${EMAIL_USERNAME}
+      Email__Password: ${EMAIL_PASSWORD}
+      Email__FromEmail: ${EMAIL_FROM_EMAIL}
+
+      Geoapify__BaseUrl: https://api.geoapify.com/
+      Geoapify__ApiKey: ${GEOAPIFY_API_KEY}
+
+      Stripe__SecretKey: ${STRIPE_SECRET_KEY}
+      Stripe__WebhookSecret: ${STRIPE_WEBHOOK_SECRET}
+
+      AzureStorage__AccountName: ${AZURE_STORAGE_ACCOUNT_NAME}
+
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID}
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
+      AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET}
+
+    restart: unless-stopped
+
+
+volumes:
+  hotelbooking-sql-data:
