@@ -362,4 +362,86 @@ public sealed class UserActivationIntegrationTests
                 "Bearer",
                 loginResult.AccessToken);
     }
+
+    [Fact]
+    public async Task DeactivateUser_WhenCustomerAlreadyHasAccessToken_ShouldRejectExistingToken()
+    {
+        // Arrange
+        await using var factory =
+            new CustomWebApplicationFactory();
+
+        using var adminClient =
+            factory.CreateClient();
+
+        using var customerClient =
+            factory.CreateClient();
+
+        var unique =
+            Guid.NewGuid().ToString("N");
+
+        var admin =
+            await CreateUserAsync(
+                factory,
+                $"admin-{unique}",
+                $"admin-{unique}@test.com",
+                Roles.Admin);
+
+        var customer =
+            await CreateUserAsync(
+                factory,
+                $"customer-{unique}",
+                $"customer-{unique}@test.com",
+                Roles.Customer);
+
+        /*
+         * Both users authenticate before the customer
+         * account is deactivated.
+         */
+        await AuthenticateAsync(
+            adminClient,
+            admin.UserName!,
+            Password);
+
+        await AuthenticateAsync(
+            customerClient,
+            customer.UserName!,
+            Password);
+
+        /*
+         * Verify that the customer's current JWT works
+         * before deactivation.
+         */
+        var beforeDeactivation =
+            await customerClient.GetAsync(
+                "/api/bookings");
+
+        Assert.NotEqual(
+            HttpStatusCode.Unauthorized,
+            beforeDeactivation.StatusCode);
+
+        // Act
+        var deactivateResponse =
+            await adminClient.PostAsync(
+                $"/api/admin/users/{customer.Id}/deactivate",
+                content: null);
+
+        // Assert
+        Assert.Equal(
+            HttpStatusCode.NoContent,
+            deactivateResponse.StatusCode);
+
+        /*
+         * Do NOT login again.
+         *
+         * customerClient still contains the JWT issued
+         * before the account was deactivated.
+         */
+        var responseUsingExistingToken =
+            await customerClient.GetAsync(
+                "/api/bookings");
+
+        Assert.Equal(
+            HttpStatusCode.Unauthorized,
+            responseUsingExistingToken.StatusCode);
+    }
 }

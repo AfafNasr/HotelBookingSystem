@@ -1,5 +1,6 @@
 ﻿using HotelBooking.Api.Common;
 using HotelBooking.Application.Common.Security.Authorization.Permissions;
+using HotelBooking.Application.Common.Storage;
 using HotelBooking.Application.Deals.CreateDeal;
 using HotelBooking.Application.Deals.DeleteDeal;
 using HotelBooking.Application.Deals.GetFeaturedDeals;
@@ -16,18 +17,20 @@ public sealed class DealsController : ControllerBase
     private readonly GetFeaturedDealsQueryHandler _featuredHandler;
     private readonly UpdateDealCommandHandler _updateHandler;
     private readonly DeleteDealCommandHandler _deleteHandler;
-
+    private readonly IImageUrlProvider _imageUrlProvider;
 
     public DealsController(
-    CreateDealCommandHandler createHandler,
-    UpdateDealCommandHandler updateHandler,
-    DeleteDealCommandHandler deleteHandler,
-    GetFeaturedDealsQueryHandler featuredHandler)
+     CreateDealCommandHandler createHandler,
+     UpdateDealCommandHandler updateHandler,
+     DeleteDealCommandHandler deleteHandler,
+     GetFeaturedDealsQueryHandler featuredHandler,
+     IImageUrlProvider imageUrlProvider)
     {
         _createHandler = createHandler;
         _updateHandler = updateHandler;
         _deleteHandler = deleteHandler;
         _featuredHandler = featuredHandler;
+        _imageUrlProvider = imageUrlProvider;
     }
 
     [HttpPost("api/hotels/{hotelId:int}/deals")]
@@ -77,7 +80,11 @@ public sealed class DealsController : ControllerBase
                     deal.DiscountPercentage,
                     deal.OriginalPricePerNight,
                     deal.DiscountedPricePerNight,
-                    deal.ThumbnailStorageKey))
+deal.ThumbnailStorageKey is null
+    ? null
+    : _imageUrlProvider.GetUrl(
+        ImageContainer.HotelImages,
+        deal.ThumbnailStorageKey)))
                 .ToArray());
 
         return Ok(response);
@@ -153,7 +160,7 @@ public sealed record FeaturedDealResponse(
     decimal DiscountPercentage,
     decimal OriginalPricePerNight,
     decimal DiscountedPricePerNight,
-    string? ThumbnailStorageKey);
+    string? ThumbnailUrl);
 
 public sealed record UpdateDealRequest(
     decimal DiscountPercentage,

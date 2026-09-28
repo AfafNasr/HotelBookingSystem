@@ -138,6 +138,10 @@ builder.Services.AddSingleton(
             .GetRequiredService<IOptions<BookingOptions>>()
             .Value);
 
+var openApiEnabled =
+    builder.Configuration.GetValue<bool>(
+        "OpenApi:Enabled");
+
 var app = builder.Build();
 
 
@@ -183,7 +187,7 @@ if (!app.Environment.IsEnvironment("Testing"))
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (openApiEnabled)
 {
     app.MapOpenApi();
 

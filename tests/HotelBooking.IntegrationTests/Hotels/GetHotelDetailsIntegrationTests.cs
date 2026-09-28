@@ -694,6 +694,63 @@ public sealed class GetHotelDetailsIntegrationTests
         await dbContext.SaveChangesAsync();
     }
 
+    [Fact]
+    public async Task GetHotelDetails_WhenRequestedRoomsCannotAccommodateGuests_ShouldExcludeRoomType()
+    {
+        await using var factory =
+            new CustomWebApplicationFactory();
+
+        var owner =
+            await CreateUserAsync(factory);
+
+        var setup =
+            await CreateHotelAsync(
+                factory,
+                owner.Id);
+
+        await AddRoomAsync(
+            factory,
+            setup.HotelId,
+            "STD-401",
+            RoomType.Standard,
+            adultsCapacity: 2,
+            childrenCapacity: 0,
+            pricePerNight: 100m);
+
+        await AddRoomAsync(
+            factory,
+            setup.HotelId,
+            "STD-402",
+            RoomType.Standard,
+            adultsCapacity: 2,
+            childrenCapacity: 0,
+            pricePerNight: 100m);
+
+        var checkIn =
+            DateOnly.FromDateTime(
+                DateTime.UtcNow.AddDays(10));
+
+        var result =
+            await ExecuteHandlerAsync(
+                factory,
+                new GetHotelDetailsQuery(
+                    setup.HotelId,
+                    checkIn,
+                    checkIn.AddDays(2),
+                    Adults: 4,
+                    Children: 0,
+                    Rooms: 1));
+
+        Assert.True(result.Succeeded);
+        Assert.NotNull(result.Hotel);
+
+        Assert.DoesNotContain(
+            result.Hotel!.AvailableRooms,
+            room =>
+                room.RoomType ==
+                RoomType.Standard);
+    }
+
     // ============================================================
     // Identity setup
     // ============================================================

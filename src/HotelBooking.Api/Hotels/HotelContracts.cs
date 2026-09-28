@@ -59,7 +59,7 @@ public sealed record SearchHotelResponse(
     int StarRating,
     string? Description,
     decimal StartingPricePerNight,
-    string? ThumbnailStorageKey);
+    string? ThumbnailUrl);
 
 // Public hotel details
 
@@ -83,8 +83,8 @@ public sealed record GetHotelDetailsResponse(
     decimal? AverageGuestRating,
     int ReviewCount,
     IReadOnlyCollection<HotelReviewResponse> RecentReviews,
+    IReadOnlyCollection<HotelImageResponse> Images,
     IReadOnlyCollection<AvailableRoomResponse> AvailableRooms);
-
 public sealed record HotelReviewResponse(
     int Rating,
     string? Comment,
@@ -92,7 +92,10 @@ public sealed record HotelReviewResponse(
 
 public sealed record AvailableRoomResponse(
     RoomType RoomType,
-    int AvailableCount);
+    int AvailableCount,
+    int AdultsCapacity,
+    int ChildrenCapacity,
+    decimal LowestPricePerNight);
 
 public sealed record UploadHotelImageRequest(
     IFormFile File);
@@ -115,3 +118,9 @@ public sealed record NearbyAttractionResponse(
     decimal Latitude,
     decimal Longitude,
     int? DistanceMeters);
+
+public sealed record HotelImageResponse(
+    int Id,
+    string Url,
+    int DisplayOrder,
+    bool IsPrimary);

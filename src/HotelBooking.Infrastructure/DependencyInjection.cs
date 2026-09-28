@@ -124,37 +124,117 @@ public static class DependencyInjection
 
         services.AddSingleton<ITokenService, JwtTokenService>();
 
-        services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+
+    services
+    .AddAuthentication(
+        JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         var jwtOptions = configuration
-            .GetRequiredSection(JwtOptions.SectionName)
+            .GetRequiredSection(
+                JwtOptions.SectionName)
             .Get<JwtOptions>()
             ?? throw new InvalidOperationException(
                 "JWT configuration is missing.");
 
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = jwtOptions.Issuer,
+        options.TokenValidationParameters =
+     new TokenValidationParameters
+     {
+         ValidateIssuer = true,
+         ValidIssuer = jwtOptions.Issuer,
 
-            ValidateAudience = true,
-            ValidAudience = jwtOptions.Audience,
+         ValidateAudience = true,
+         ValidAudience = jwtOptions.Audience,
 
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtOptions.Key)),
+         ValidateIssuerSigningKey = true,
+         IssuerSigningKey =
+             new SymmetricSecurityKey(
+                 Encoding.UTF8.GetBytes(
+                     jwtOptions.Key)),
 
-            ValidateLifetime = true,
+         ValidateLifetime = true,
 
-            NameClaimType = ClaimTypes.Name,
-            RoleClaimType = ClaimTypes.Role
-        };
+         ClockSkew = TimeSpan.Zero,
+
+         NameClaimType = ClaimTypes.Name,
+         RoleClaimType = ClaimTypes.Role
+     };
+
+        options.Events =
+            new JwtBearerEvents
+            {
+                OnTokenValidated =
+                    async context =>
+                    {
+                        var userId =
+                            context.Principal?
+                                .FindFirstValue(
+                                    ClaimTypes.NameIdentifier);
+
+                        if (string.IsNullOrWhiteSpace(
+                                userId))
+                        {
+                            context.Fail(
+                                "The access token does not contain a valid user identifier.");
+
+                            return;
+                        }
+
+                        var dbContext =
+                            context.HttpContext
+                                .RequestServices
+                                .GetRequiredService<
+                                    ApplicationDbContext>();
+
+                        /*
+                         * ApplicationDbContext has a global query
+                         * filter on IdentityUser:
+                         *
+                         * DeactivatedAt == null
+                         *
+                         * Therefore this query succeeds only when
+                         * the user both exists and is currently active.
+                         */
+                        var userIsActive =
+                            await dbContext.Users
+                                .AsNoTracking()
+                                .AnyAsync(
+                                    user =>
+                                        user.Id ==
+                                        userId,
+                                    context.HttpContext
+                                        .RequestAborted);
+
+                        if (!userIsActive)
+                        {
+                            context.Fail(
+                                "The user account is inactive.");
+                        }
+                    }
+            };
     });
 
-        services.Configure<AzureStorageOptions>(
-    configuration.GetSection(AzureStorageOptions.SectionName));
+        services
+     .AddOptions<AzureStorageOptions>()
+     .Bind(
+         configuration.GetSection(
+             AzureStorageOptions.SectionName))
+     .Validate(
+         options =>
+             !string.IsNullOrWhiteSpace(
+                 options.AccountName),
+         "AzureStorage:AccountName is required.")
+     .Validate(
+         options =>
+             !string.IsNullOrWhiteSpace(
+                 options.HotelImagesContainer),
+         "AzureStorage:HotelImagesContainer is required.")
+     .Validate(
+         options =>
+             !string.IsNullOrWhiteSpace(
+                 options.RoomImagesContainer),
+         "AzureStorage:RoomImagesContainer is required.")
+     .ValidateOnStart();
 
         services.AddSingleton(sp =>
         {
@@ -170,8 +250,22 @@ public static class DependencyInjection
                 new DefaultAzureCredential());
         });
 
-        services.Configure<StripeOptions>(
-    configuration.GetSection(StripeOptions.SectionName));
+        services
+      .AddOptions<StripeOptions>()
+      .Bind(
+          configuration.GetSection(
+              StripeOptions.SectionName))
+      .Validate(
+          options =>
+              !string.IsNullOrWhiteSpace(
+                  options.SecretKey),
+          "Stripe:SecretKey is required.")
+      .Validate(
+          options =>
+              !string.IsNullOrWhiteSpace(
+                  options.WebhookSecret),
+          "Stripe:WebhookSecret is required.")
+      .ValidateOnStart();
 
         services.AddScoped<
             IImageStorageService,
@@ -259,6 +353,7 @@ public static class DependencyInjection
 
         services.AddScoped<ICartRepository, CartRepository>();
         services.AddScoped<ICartQuery, CartQuery>();
+        services.AddScoped<IImageUrlProvider,AzureBlobImageUrlProvider>();
 
         return services;
     } 

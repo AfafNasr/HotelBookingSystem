@@ -1,6 +1,7 @@
 ﻿using HotelBooking.Api.Common;
 using HotelBooking.Application.Bookings.GetHotelBookings;
 using HotelBooking.Application.Common.Security.Authorization.Permissions;
+using HotelBooking.Application.Common.Storage;
 using HotelBooking.Application.Hotels.GetHotelDetails;
 using HotelBooking.Application.Hotels.GetNearbyAttractions;
 using HotelBooking.Application.Hotels.SearchHotels;
@@ -18,17 +19,20 @@ public sealed class HotelsController : ControllerBase
     private readonly GetHotelBookingsQueryHandler _getHotelBookingsHandler;
     private readonly GetHotelDetailsQueryHandler _detailsHandler;
     private readonly GetNearbyAttractionsQueryHandler _nearbyAttractionsHandler;
+    private readonly IImageUrlProvider _imageUrlProvider;
 
     public HotelsController(
-    SearchHotelsQueryHandler searchHandler,
-    GetHotelDetailsQueryHandler detailsHandler,
-    GetHotelBookingsQueryHandler getHotelBookingsHandler,
-    GetNearbyAttractionsQueryHandler nearbyAttractionsHandler)
+        SearchHotelsQueryHandler searchHandler,
+        GetHotelDetailsQueryHandler detailsHandler,
+        GetHotelBookingsQueryHandler getHotelBookingsHandler,
+        GetNearbyAttractionsQueryHandler nearbyAttractionsHandler,
+        IImageUrlProvider imageUrlProvider)
     {
         _searchHandler = searchHandler;
         _detailsHandler = detailsHandler;
         _getHotelBookingsHandler = getHotelBookingsHandler;
         _nearbyAttractionsHandler = nearbyAttractionsHandler;
+        _imageUrlProvider = imageUrlProvider;
     }
 
     [HttpGet("search")]
@@ -72,7 +76,11 @@ public sealed class HotelsController : ControllerBase
                     hotel.StarRating,
                     hotel.Description,
                     hotel.StartingPricePerNight,
-                    hotel.ThumbnailStorageKey))
+                    hotel.ThumbnailStorageKey is null
+                          ? null
+                          : _imageUrlProvider.GetUrl(
+                           ImageContainer.HotelImages,
+                           hotel.ThumbnailStorageKey)))
                 .ToArray(),
             result.Page,
             result.PageSize,
@@ -109,29 +117,45 @@ public sealed class HotelsController : ControllerBase
 
         var hotel = result.Hotel!;
 
-        var response = new GetHotelDetailsResponse(
-            hotel.Id,
-            hotel.Name,
-            hotel.CityName,
-            hotel.StarRating,
-            hotel.Category,
-            hotel.Description,
-            hotel.Address,
-            hotel.Latitude,
-            hotel.Longitude,
-            hotel.AverageGuestRating,
-            hotel.ReviewCount,
-            hotel.RecentReviews
-                .Select(review => new HotelReviewResponse(
+        var response =
+    new GetHotelDetailsResponse(
+        hotel.Id,
+        hotel.Name,
+        hotel.CityName,
+        hotel.StarRating,
+        hotel.Category,
+        hotel.Description,
+        hotel.Address,
+        hotel.Latitude,
+        hotel.Longitude,
+        hotel.AverageGuestRating,
+        hotel.ReviewCount,
+        hotel.RecentReviews
+            .Select(review =>
+                new HotelReviewResponse(
                     review.Rating,
                     review.Comment,
                     review.CreatedAt))
-                .ToArray(),
-            hotel.AvailableRooms
-                .Select(room => new AvailableRoomResponse(
+            .ToArray(),
+        hotel.Images
+            .Select(image =>
+                new HotelImageResponse(
+                    image.Id,
+                    _imageUrlProvider.GetUrl(
+                        ImageContainer.HotelImages,
+                        image.StorageKey),
+                    image.DisplayOrder,
+                    image.IsPrimary))
+            .ToArray(),
+        hotel.AvailableRooms
+            .Select(room =>
+                new AvailableRoomResponse(
                     room.RoomType,
-                    room.AvailableCount))
-                .ToArray());
+                    room.AvailableCount,
+                    room.AdultsCapacity,
+                    room.ChildrenCapacity,
+                    room.LowestPricePerNight))
+            .ToArray());
 
         return Ok(response);
     }

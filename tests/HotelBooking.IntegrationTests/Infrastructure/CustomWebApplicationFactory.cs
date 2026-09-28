@@ -112,7 +112,12 @@ public sealed class CustomWebApplicationFactory
                             "https://api.geoapify.com/",
 
                         ["Geoapify:ApiKey"] =
-                            "integration-test-api-key"
+                            "integration-test-api-key",
+                        ["Stripe:SecretKey"] =
+                              "sk_test_integration",
+
+                         ["Stripe:WebhookSecret"] =
+                                 "whsec_integration",
                     });
             });
 

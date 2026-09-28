@@ -16,6 +16,7 @@ public sealed record HotelDetails(
     decimal? AverageGuestRating,
     int ReviewCount,
     IReadOnlyCollection<HotelDetailsReview> RecentReviews,
+    IReadOnlyCollection<HotelImageSummary> Images,
     IReadOnlyCollection<AvailableRoomSummary> AvailableRooms);
 
 public sealed record HotelDetailsReview(
@@ -25,4 +26,13 @@ public sealed record HotelDetailsReview(
 
 public sealed record AvailableRoomSummary(
     RoomType RoomType,
-    int AvailableCount);
+    int AvailableCount,
+    int AdultsCapacity,
+    int ChildrenCapacity,
+    decimal LowestPricePerNight);
+
+public sealed record HotelImageSummary(
+    int Id,
+    string StorageKey,
+    int DisplayOrder,
+    bool IsPrimary);

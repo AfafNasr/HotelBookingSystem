@@ -35,6 +35,6 @@ public sealed record GetAvailableRoomsResponse(
     IReadOnlyCollection<AvailableRoomImageResponse> Images);
 
 public sealed record AvailableRoomImageResponse(
-    string StorageKey,
+    string Url,
     int DisplayOrder,
     bool IsPrimary);
