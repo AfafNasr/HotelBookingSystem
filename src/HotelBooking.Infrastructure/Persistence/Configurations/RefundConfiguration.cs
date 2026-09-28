@@ -8,7 +8,14 @@ public sealed class RefundConfiguration : IEntityTypeConfiguration<Refund>
 {
     public void Configure(EntityTypeBuilder<Refund> builder)
     {
-        builder.ToTable("Refunds");
+        builder.ToTable(
+    "Refunds",
+    table =>
+    {
+        table.HasCheckConstraint(
+            "CK_Refunds_Amount",
+            "[Amount] > 0");
+    });
 
         builder.HasKey(refund => refund.Id);
 
@@ -43,8 +50,6 @@ public sealed class RefundConfiguration : IEntityTypeConfiguration<Refund>
             .IsUnique()
             .HasFilter("[ProviderRefundId] IS NOT NULL");
 
-        builder.HasCheckConstraint(
-            "CK_Refunds_Amount",
-            "[Amount] > 0");
+
     }
 }

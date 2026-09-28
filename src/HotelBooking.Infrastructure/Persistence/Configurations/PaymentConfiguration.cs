@@ -9,7 +9,14 @@ public sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
 {
     public void Configure(EntityTypeBuilder<Payment> builder)
     {
-        builder.ToTable("Payments");
+        builder.ToTable(
+     "Payments",
+     table =>
+     {
+         table.HasCheckConstraint(
+             "CK_Payments_Amount",
+             "[Amount] > 0");
+     });
 
         builder.HasKey(payment => payment.Id);
 
@@ -44,8 +51,5 @@ public sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
             .IsUnique()
             .HasFilter("[ProviderPaymentIntentId] IS NOT NULL");
 
-        builder.HasCheckConstraint(
-            "CK_Payments_Amount",
-            "[Amount] > 0");
     }
 }

@@ -333,16 +333,32 @@ public sealed class GetNearbyAttractionsQueryHandlerTests
             attractions,
             result.Attractions);
 
+
+
         _hotelRepository.Verify(
             repository => repository.GetByIdAsync(
                 hotelId,
                 It.IsAny<CancellationToken>()),
             Times.Once);
 
+
+
+        Assert.True(
+     hotel.Latitude.HasValue);
+
+        Assert.True(
+            hotel.Longitude.HasValue);
+
+        var latitude =
+            hotel.Latitude.GetValueOrDefault();
+
+        var longitude =
+            hotel.Longitude.GetValueOrDefault();
+
         _nearbyAttractionsService.Verify(
             service => service.GetAsync(
-                hotel.Latitude.Value,
-                hotel.Longitude.Value,
+                latitude,
+                longitude,
                 radiusMeters,
                 limit,
                 It.IsAny<CancellationToken>()),

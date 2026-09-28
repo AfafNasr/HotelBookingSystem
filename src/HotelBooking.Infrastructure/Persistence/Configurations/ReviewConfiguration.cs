@@ -9,7 +9,14 @@ public sealed class ReviewConfiguration : IEntityTypeConfiguration<Review>
 {
     public void Configure(EntityTypeBuilder<Review> builder)
     {
-        builder.ToTable("Reviews");
+        builder.ToTable(
+     "Reviews",
+     table =>
+     {
+         table.HasCheckConstraint(
+             "CK_Reviews_Rating",
+             "[Rating] BETWEEN 1 AND 5");
+     });
 
         builder.HasKey(review => review.Id);
 
@@ -32,8 +39,5 @@ public sealed class ReviewConfiguration : IEntityTypeConfiguration<Review>
         builder.HasIndex(review => review.BookingId)
             .IsUnique();
 
-        builder.HasCheckConstraint(
-            "CK_Reviews_Rating",
-            "[Rating] BETWEEN 1 AND 5");
     }
 }

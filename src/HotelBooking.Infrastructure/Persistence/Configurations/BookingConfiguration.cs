@@ -9,7 +9,18 @@ public sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
 {
     public void Configure(EntityTypeBuilder<Booking> builder)
     {
-        builder.ToTable("Bookings");
+        builder.ToTable(
+    "Bookings",
+    table =>
+    {
+        table.HasCheckConstraint(
+            "CK_Bookings_DateRange",
+            "[CheckOutDate] > [CheckInDate]");
+
+        table.HasCheckConstraint(
+            "CK_Bookings_TotalAmount",
+            "[TotalAmount] > 0");
+    });
 
         builder.HasKey(booking => booking.Id);
 
@@ -75,12 +86,6 @@ public sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
             booking.ExpiresAt
         });
 
-        builder.HasCheckConstraint(
-            "CK_Bookings_DateRange",
-            "[CheckOutDate] > [CheckInDate]");
 
-        builder.HasCheckConstraint(
-            "CK_Bookings_TotalAmount",
-            "[TotalAmount] > 0");
     }
 }
