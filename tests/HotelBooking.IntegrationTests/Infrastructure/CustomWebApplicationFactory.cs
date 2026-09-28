@@ -145,6 +145,20 @@ public sealed class CustomWebApplicationFactory
                     bookingWorkerDescriptor);
             }
 
+            var outboxWorkerDescriptor =
+    services.SingleOrDefault(
+        descriptor =>
+            descriptor.ServiceType ==
+                typeof(IHostedService) &&
+            descriptor.ImplementationType ==
+                typeof(OutboxProcessorWorker));
+
+            if (outboxWorkerDescriptor is not null)
+            {
+                services.Remove(
+                    outboxWorkerDescriptor);
+            }
+
             /*
              * The production Infrastructure project already registers
              * ApplicationDbContext using the normal application database.

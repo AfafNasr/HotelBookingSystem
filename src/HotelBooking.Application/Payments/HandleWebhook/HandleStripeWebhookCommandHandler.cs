@@ -1,7 +1,7 @@
 ﻿using HotelBooking.Application.Bookings;
 using HotelBooking.Application.Common.Errors;
+using HotelBooking.Application.Common.Outbox;
 using HotelBooking.Domain.Bookings;
-using HotelBooking.Domain.Payments;
 using Microsoft.Extensions.Logging;
 
 namespace HotelBooking.Application.Payments.HandleStripeWebhook;
@@ -15,24 +15,24 @@ public sealed class HandleStripeWebhookCommandHandler
     private readonly IBookingRepository _bookingRepository;
     private readonly IBookingConcurrencyManager _bookingConcurrencyManager;
     private readonly LatePaymentRefundService _latePaymentRefundService;
-    private readonly BookingConfirmationNotifier _bookingConfirmationNotifier;
+    private readonly IOutboxWriter _outboxWriter;
     private readonly ILogger<HandleStripeWebhookCommandHandler> _logger;
     private readonly TimeProvider _timeProvider;
 
     public HandleStripeWebhookCommandHandler(
-        IPaymentRepository paymentRepository,
-        IBookingRepository bookingRepository,
-        IBookingConcurrencyManager bookingConcurrencyManager,
-        LatePaymentRefundService latePaymentRefundService,
-        BookingConfirmationNotifier bookingConfirmationNotifier,
-        ILogger<HandleStripeWebhookCommandHandler> logger,
-        TimeProvider timeProvider)
+    IPaymentRepository paymentRepository,
+    IBookingRepository bookingRepository,
+    IBookingConcurrencyManager bookingConcurrencyManager,
+    LatePaymentRefundService latePaymentRefundService,
+    IOutboxWriter outboxWriter,
+    ILogger<HandleStripeWebhookCommandHandler> logger,
+    TimeProvider timeProvider)
     {
         _paymentRepository = paymentRepository;
         _bookingRepository = bookingRepository;
         _bookingConcurrencyManager = bookingConcurrencyManager;
         _latePaymentRefundService = latePaymentRefundService;
-        _bookingConfirmationNotifier = bookingConfirmationNotifier;
+        _outboxWriter = outboxWriter;
         _logger = logger;
         _timeProvider = timeProvider;
     }
@@ -123,7 +123,7 @@ public sealed class HandleStripeWebhookCommandHandler
                     command.ProviderPaymentIntentId,
                     cancellationToken);
         }
-
+        return Success();
         /*
          * Only the transition from PendingPayment -> Confirmed sends
          * the confirmation email.
@@ -131,16 +131,7 @@ public sealed class HandleStripeWebhookCommandHandler
          * A duplicate Stripe webhook for an already-confirmed booking
          * must not send another confirmation email.
          */
-        if (outcome ==
-            PaymentProcessingOutcome.Confirmed)
-        {
-            await _bookingConfirmationNotifier
-                .TrySendAsync(
-                    bookingId.Value,
-                    cancellationToken);
-        }
 
-        return Success();
     }
 
     private async Task<PaymentProcessingOutcome>
@@ -177,24 +168,14 @@ public sealed class HandleStripeWebhookCommandHandler
         }
 
         var now =
-            _timeProvider
-                .GetUtcNow()
-                .UtcDateTime;
+    _timeProvider
+        .GetUtcNow()
+        .UtcDateTime;
 
-        /*
-         * MarkSucceeded is intentionally idempotent.
-         *
-         * Stripe may deliver the same succeeded webhook more than once.
-         */
         payment.MarkSucceeded(now);
 
-        /*
-         * Duplicate succeeded webhook.
-         *
-         * The booking has already been confirmed, so no new confirmation
-         * number and no duplicate email should be generated.
-         */
-        if (booking.Status == BookingStatus.Confirmed)
+        if (booking.Status ==
+            BookingStatus.Confirmed)
         {
             await _paymentRepository.SaveChangesAsync(
                 cancellationToken);
@@ -208,7 +189,8 @@ public sealed class HandleStripeWebhookCommandHandler
         }
 
         var holdIsActive =
-            booking.Status == BookingStatus.PendingPayment &&
+            booking.Status ==
+                BookingStatus.PendingPayment &&
             booking.ExpiresAt is not null &&
             booking.ExpiresAt > now;
 
@@ -221,11 +203,10 @@ public sealed class HandleStripeWebhookCommandHandler
                 confirmationNumber,
                 now);
 
-            /*
-             * Payment and booking are tracked by the same DbContext,
-             * so one SaveChanges persists both transitions inside the
-             * surrounding booking transaction.
-             */
+            _outboxWriter.EnqueueBookingConfirmation(
+                booking.Id,
+                now);
+
             await _paymentRepository.SaveChangesAsync(
                 cancellationToken);
 

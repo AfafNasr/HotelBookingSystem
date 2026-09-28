@@ -13,6 +13,7 @@ using HotelBooking.Application.Carts.GetCart;
 using HotelBooking.Application.Cities;
 using HotelBooking.Application.Cities.GetAdminCities;
 using HotelBooking.Application.Cities.GetTrendingDestinations;
+using HotelBooking.Application.Common.Outbox;
 using HotelBooking.Application.Common.Storage;
 using HotelBooking.Application.Countries;
 using HotelBooking.Application.Deals;
@@ -43,6 +44,7 @@ using HotelBooking.Infrastructure.Hotels;
 using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Infrastructure.Payments.Stripe;
 using HotelBooking.Infrastructure.Persistence;
+using HotelBooking.Infrastructure.Persistence.Outbox;
 using HotelBooking.Infrastructure.Persistence.Queries;
 using HotelBooking.Infrastructure.Persistence.Repositories;
 using HotelBooking.Infrastructure.Persistence.Seed;
@@ -354,6 +356,16 @@ public static class DependencyInjection
         services.AddScoped<ICartRepository, CartRepository>();
         services.AddScoped<ICartQuery, CartQuery>();
         services.AddScoped<IImageUrlProvider,AzureBlobImageUrlProvider>();
+
+        services.AddScoped<
+    IOutboxWriter,
+    OutboxWriter>();
+
+        services.AddScoped<
+            OutboxProcessor>();
+
+        services.AddHostedService<
+            OutboxProcessorWorker>();
 
         return services;
     } 

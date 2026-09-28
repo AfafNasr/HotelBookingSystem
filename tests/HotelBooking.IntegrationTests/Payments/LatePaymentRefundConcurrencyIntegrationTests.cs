@@ -211,8 +211,16 @@ public sealed class LatePaymentRefundConcurrencyIntegrationTests
          * Late payment is refunded, not confirmed,
          * so no booking confirmation email should be sent.
          */
+        var outboxMessages =
+           await dbContext.OutboxMessages
+               .AsNoTracking()
+               .Where(message =>
+                   message.DeduplicationKey ==
+                   $"booking-confirmation:{setup.BookingId}")
+               .ToListAsync();
+
         Assert.Empty(
-            emailSender.SentMessages);
+            outboxMessages);
     }
 
     private static async Task<HandleStripeWebhookResult>

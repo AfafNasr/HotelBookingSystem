@@ -7,6 +7,7 @@ using HotelBooking.Domain.Hotels;
 using HotelBooking.Domain.Payments;
 using HotelBooking.Domain.Reviews;
 using HotelBooking.Domain.Rooms;
+using HotelBooking.Infrastructure.Persistence.Outbox;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +42,9 @@ public class ApplicationDbContext : IdentityDbContext
 
     public DbSet<CartItem> CartItems =>
         Set<CartItem>();
+
+    public DbSet<OutboxMessage> OutboxMessages =>
+    Set<OutboxMessage>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options)

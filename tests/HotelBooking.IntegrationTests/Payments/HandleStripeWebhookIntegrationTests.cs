@@ -114,19 +114,29 @@ public sealed class HandleStripeWebhookIntegrationTests
         Assert.Null(
             booking.ExpiresAt);
 
-        Assert.Single(
-            emailSender.SentMessages);
+        var outboxMessages =
+     await dbContext.OutboxMessages
+         .AsNoTracking()
+         .Where(message =>
+             message.DeduplicationKey ==
+             $"booking-confirmation:{setup.BookingId}")
+         .ToListAsync();
 
-        var email =
-            emailSender.SentMessages.Single();
+        Assert.Single(
+            outboxMessages);
+
+        var outboxMessage =
+            outboxMessages.Single();
+
+        Assert.Null(
+            outboxMessage.ProcessedAt);
+
+        Assert.Null(
+            outboxMessage.FailedAt);
 
         Assert.Equal(
-            "payment.guest@test.com",
-            email.To);
-
-        Assert.Contains(
-            booking.ConfirmationNumber!,
-            email.Subject);
+            0,
+            outboxMessage.AttemptCount);
 
         Assert.Equal(
             0,
@@ -247,8 +257,22 @@ public sealed class HandleStripeWebhookIntegrationTests
             firstConfirmationNumber,
             bookingAfterSecondEvent.ConfirmationNumber);
 
+        var outboxMessages =
+     await verificationDbContext.OutboxMessages
+         .AsNoTracking()
+         .Where(message =>
+             message.DeduplicationKey ==
+             $"booking-confirmation:{setup.BookingId}")
+         .ToListAsync();
+
         Assert.Single(
-            emailSender.SentMessages);
+            outboxMessages);
+
+        var outboxMessage =
+            outboxMessages.Single();
+
+        Assert.Null(
+            outboxMessage.FailedAt);
 
         Assert.Equal(
             0,

@@ -142,7 +142,7 @@ public static class DependencyInjection
         services.AddScoped<RemoveCartItemCommandHandler>();
         services.AddScoped<GetCartQueryHandler>();
         services.AddScoped<LatePaymentRefundService>();
-        services.AddScoped<BookingConfirmationNotifier>();
+
 
         return services;
     }
