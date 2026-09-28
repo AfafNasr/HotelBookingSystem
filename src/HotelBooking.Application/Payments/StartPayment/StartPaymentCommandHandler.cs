@@ -69,48 +69,144 @@ public sealed class StartPaymentCommandHandler
                 [AuthenticationErrors.Required]);
         }
 
-        /*
-         * StartPayment changes state associated with a booking:
-         *
-         * - reads booking status / expiration
-         * - reads or creates Payment
-         * - attaches provider payment intent
-         *
-         * These operations must be serialized for the same booking.
-         *
-         * Without the booking-level lock, two concurrent requests can
-         * both observe payment == null and both attempt to insert a
-         * Payment. The unique database constraint protects the data,
-         * but the second request then fails with DbUpdateException.
-         */
+        var preparation =
+           await _bookingConcurrencyManager
+               .ExecuteWithBookingLockAsync(
+                   command.BookingId,
+                   ct => PreparePaymentAsync(
+                       command.BookingId,
+                       userId,
+                       ct),
+                   cancellationToken);
+
+        if (!preparation.Succeeded)
+        {
+            return new StartPaymentResult(
+                false,
+                null,
+                null,
+                preparation.Errors);
+        }
+
+        CreatePaymentIntentResult paymentIntent;
+
+        if (preparation.ProviderPaymentIntentId is not null)
+        {
+            paymentIntent =
+                await _paymentGateway.GetPaymentIntentAsync(
+                    preparation.ProviderPaymentIntentId,
+                    cancellationToken);
+        }
+        else
+        {
+            paymentIntent =
+                await _paymentGateway.CreatePaymentIntentAsync(
+                    new CreatePaymentIntentRequest(
+                        preparation.Amount,
+                        preparation.Currency!,
+                        preparation.PaymentId!.Value,
+                        command.BookingId),
+                    cancellationToken);
+        }
+
         return await _bookingConcurrencyManager
             .ExecuteWithBookingLockAsync(
                 command.BookingId,
-                async ct =>
-                {
-                    return await StartPaymentLockedAsync(
-                        command.BookingId,
-                        userId,
-                        ct);
-                },
+                ct => FinalizePaymentAsync(
+                    command.BookingId,
+                    userId,
+                    preparation.PaymentId!.Value,
+                    paymentIntent,
+                    ct),
                 cancellationToken);
     }
 
-    private async Task<StartPaymentResult>
-        StartPaymentLockedAsync(
-            int bookingId,
-            string userId,
-            CancellationToken cancellationToken)
+    
+    private async Task<PaymentPreparationResult> PreparePaymentAsync(
+    int bookingId,
+    string userId,
+    CancellationToken cancellationToken)
     {
-        /*
-         * Important:
-         *
-         * The booking must be loaded AFTER the lock has been acquired.
-         *
-         * Loading it before acquiring the lock could leave us making
-         * decisions from stale state while another operation modifies
-         * the booking.
-         */
+        var booking =
+            await _bookingRepository.GetByIdAsync(
+                bookingId,
+                cancellationToken);
+
+        if (booking is null)
+        {
+            return PaymentPreparationResult.Failure(
+                BookingErrors.NotFound);
+        }
+
+        if (booking.UserId != userId)
+        {
+            return PaymentPreparationResult.Failure(
+                BookingErrors.AccessDenied);
+        }
+
+        var now =
+            _timeProvider
+                .GetUtcNow()
+                .UtcDateTime;
+
+        if (booking.Status != BookingStatus.PendingPayment)
+        {
+            return PaymentPreparationResult.Failure(
+                BookingErrors.NotPendingPayment);
+        }
+
+        if (booking.ExpiresAt is null ||
+            booking.ExpiresAt <= now)
+        {
+            return PaymentPreparationResult.Failure(
+                BookingErrors.PaymentHoldExpired);
+        }
+
+        var payment =
+            await _paymentRepository.GetByBookingIdAsync(
+                booking.Id,
+                cancellationToken);
+
+        if (payment is null)
+        {
+            payment =
+                new Payment(
+                    booking.Id,
+                    booking.TotalAmount,
+                    Currency,
+                    now);
+
+            _paymentRepository.Add(payment);
+
+            /*
+             * This SaveChanges runs inside the short booking transaction.
+             * When ExecuteWithBookingLockAsync returns, that transaction
+             * commits, so Payment.Id becomes durable before Stripe is called.
+             */
+            await _paymentRepository.SaveChangesAsync(
+                cancellationToken);
+        }
+
+        if (payment.Status != PaymentStatus.Pending)
+        {
+            return PaymentPreparationResult.Failure(
+                PaymentErrors.NotPending);
+        }
+
+        return PaymentPreparationResult.Success(
+            payment.Id,
+            payment.Amount,
+            payment.Currency,
+            payment.ProviderPaymentIntentId);
+    }
+
+    private async Task<StartPaymentResult> FinalizePaymentAsync(
+    int bookingId,
+    string userId,
+    int paymentId,
+    CreatePaymentIntentResult paymentIntent,
+    CancellationToken cancellationToken)
+    {
         var booking =
             await _bookingRepository.GetByIdAsync(
                 bookingId,
@@ -134,11 +230,52 @@ public sealed class StartPaymentCommandHandler
                 [BookingErrors.AccessDenied]);
         }
 
+        var payment =
+            await _paymentRepository.GetByBookingIdAsync(
+                bookingId,
+                cancellationToken);
+
+        if (payment is null ||
+            payment.Id != paymentId)
+        {
+            throw new InvalidOperationException(
+                "The payment disappeared while finalizing the Stripe payment intent.");
+        }
+
         var now =
             _timeProvider
                 .GetUtcNow()
                 .UtcDateTime;
 
+        /*
+         * Persist the Stripe intent even if the booking expired while the
+         * external Stripe request was running.
+         *
+         * This keeps the provider intent associated with the local Payment,
+         * so a later Stripe webhook can still reconcile or refund it.
+         */
+        if (payment.ProviderPaymentIntentId is null)
+        {
+            payment.AttachProviderPaymentIntent(
+                paymentIntent.ProviderPaymentIntentId,
+                now);
+
+            await _paymentRepository.SaveChangesAsync(
+                cancellationToken);
+        }
+        else if (!string.Equals(
+                     payment.ProviderPaymentIntentId,
+                     paymentIntent.ProviderPaymentIntentId,
+                     StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                "The payment is already associated with a different Stripe payment intent.");
+        }
+
+        /*
+         * State may have changed while we were outside the SQL transaction,
+         * so validate the booking again before returning the client secret.
+         */
         if (booking.Status != BookingStatus.PendingPayment)
         {
             return new StartPaymentResult(
@@ -158,34 +295,6 @@ public sealed class StartPaymentCommandHandler
                 [BookingErrors.PaymentHoldExpired]);
         }
 
-        var payment =
-            await _paymentRepository.GetByBookingIdAsync(
-                booking.Id,
-                cancellationToken);
-
-        if (payment is null)
-        {
-            payment =
-                new Payment(
-                    booking.Id,
-                    booking.TotalAmount,
-                    Currency,
-                    now);
-
-            _paymentRepository.Add(
-                payment);
-
-            /*
-             * Save here so Payment.Id exists before creating
-             * the provider payment intent.
-             *
-             * The payment ID is also part of the request sent
-             * to the payment gateway.
-             */
-            await _paymentRepository.SaveChangesAsync(
-                cancellationToken);
-        }
-
         if (payment.Status != PaymentStatus.Pending)
         {
             return new StartPaymentResult(
@@ -195,47 +304,47 @@ public sealed class StartPaymentCommandHandler
                 [PaymentErrors.NotPending]);
         }
 
-        /*
-         * Idempotent application behavior:
-         *
-         * If this Payment already has a provider intent, reuse it
-         * rather than creating another one.
-         */
-        if (payment.ProviderPaymentIntentId is not null)
-        {
-            var existingPaymentIntent =
-                await _paymentGateway.GetPaymentIntentAsync(
-                    payment.ProviderPaymentIntentId,
-                    cancellationToken);
-
-            return new StartPaymentResult(
-                true,
-                payment.Id,
-                existingPaymentIntent.ClientSecret,
-                []);
-        }
-
-        var paymentIntent =
-            await _paymentGateway.CreatePaymentIntentAsync(
-                new CreatePaymentIntentRequest(
-                    payment.Amount,
-                    payment.Currency,
-                    payment.Id,
-                    booking.Id),
-                cancellationToken);
-
-        payment.AttachProviderPaymentIntent(
-            paymentIntent.ProviderPaymentIntentId,
-            now);
-
-        await _paymentRepository.SaveChangesAsync(
-            cancellationToken);
-
         return new StartPaymentResult(
             true,
             payment.Id,
             paymentIntent.ClientSecret,
             []);
+    }
+
+    private sealed record PaymentPreparationResult(
+    bool Succeeded,
+    int? PaymentId,
+    decimal Amount,
+    string? Currency,
+    string? ProviderPaymentIntentId,
+    IReadOnlyCollection<ApplicationError> Errors)
+    {
+        public static PaymentPreparationResult Success(
+            int paymentId,
+            decimal amount,
+            string currency,
+            string? providerPaymentIntentId)
+        {
+            return new PaymentPreparationResult(
+                true,
+                paymentId,
+                amount,
+                currency,
+                providerPaymentIntentId,
+                []);
+        }
+
+        public static PaymentPreparationResult Failure(
+            ApplicationError error)
+        {
+            return new PaymentPreparationResult(
+                false,
+                null,
+                0,
+                null,
+                null,
+                [error]);
+        }
     }
 }
 
@@ -247,3 +356,6 @@ public sealed record StartPaymentResult(
     int? PaymentId,
     string? ClientSecret,
     IReadOnlyCollection<ApplicationError> Errors);
+
+
+

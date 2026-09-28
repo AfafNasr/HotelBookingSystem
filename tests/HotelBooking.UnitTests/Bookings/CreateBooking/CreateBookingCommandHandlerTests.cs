@@ -23,8 +23,6 @@ public sealed class CreateBookingCommandHandlerTests
     private readonly Mock<ICurrentUserService> _currentUserService = new();
     private readonly Mock<IBookingConcurrencyManager> _concurrencyManager = new();
     private readonly Mock<ILogger<CreateBookingCommandHandler>> _logger = new();
-
-    private readonly CreateBookingCommandValidator _validator = new();
     private readonly BookingPricingCalculator _pricingCalculator = new();
 
     private readonly BookingOptions _bookingOptions = new()
@@ -33,6 +31,13 @@ public sealed class CreateBookingCommandHandlerTests
     };
 
     private readonly TimeProvider _timeProvider = TimeProvider.System;
+
+    private readonly CreateBookingCommandValidator _validator;
+
+    public CreateBookingCommandHandlerTests()
+    {
+        _validator = new CreateBookingCommandValidator(_timeProvider);
+    }
 
     private CreateBookingCommandHandler CreateHandler()
     {
@@ -754,4 +759,5 @@ public sealed class CreateBookingCommandHandlerTests
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
+
 }

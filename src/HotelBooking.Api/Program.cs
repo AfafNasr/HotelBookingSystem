@@ -186,6 +186,13 @@ if (!app.Environment.IsEnvironment("Testing"))
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint(
+            "/openapi/v1.json",
+            "HotelBooking API v1");
+    });
 }
 
 app.UseExceptionHandler();

@@ -141,6 +141,8 @@ public static class DependencyInjection
         services.AddScoped<AddToCartCommandHandler>();
         services.AddScoped<RemoveCartItemCommandHandler>();
         services.AddScoped<GetCartQueryHandler>();
+        services.AddScoped<LatePaymentRefundService>();
+        services.AddScoped<BookingConfirmationNotifier>();
 
         return services;
     }

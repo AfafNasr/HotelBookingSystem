@@ -5,7 +5,11 @@ namespace HotelBooking.UnitTests.Bookings.CreateBooking;
 
 public sealed class CreateBookingCommandValidatorTests
 {
-    private readonly CreateBookingCommandValidator _validator = new();
+    private static readonly DateTimeOffset FixedUtcNow =
+    new(2026, 10, 1, 12, 0, 0, TimeSpan.Zero);
+
+    private readonly CreateBookingCommandValidator _validator =
+        new(new FixedTimeProvider(FixedUtcNow));
 
     private static CreateBookingCommand CreateValidCommand()
     {
@@ -18,6 +22,36 @@ public sealed class CreateBookingCommandValidatorTests
             GuestEmail: "test@example.com",
             GuestPhoneNumber: "+970599123456",
             SpecialRequests: "Late check-in.");
+    }
+
+    [Fact]
+    public void Validate_ShouldHaveError_WhenCheckInDateIsInThePast()
+    {
+        var command = CreateValidCommand() with
+        {
+            CheckInDate = new DateOnly(2026, 9, 30),
+            CheckOutDate = new DateOnly(2026, 10, 2)
+        };
+
+        var result = _validator.TestValidate(command);
+
+        result.ShouldHaveValidationErrorFor(
+            x => x.CheckInDate);
+    }
+
+    [Fact]
+    public void Validate_ShouldNotHaveError_WhenCheckInDateIsToday()
+    {
+        var command = CreateValidCommand() with
+        {
+            CheckInDate = new DateOnly(2026, 10, 1),
+            CheckOutDate = new DateOnly(2026, 10, 2)
+        };
+
+        var result = _validator.TestValidate(command);
+
+        result.ShouldNotHaveValidationErrorFor(
+            x => x.CheckInDate);
     }
 
     [Fact]
@@ -227,5 +261,20 @@ public sealed class CreateBookingCommandValidatorTests
         var result = _validator.TestValidate(command);
 
         result.ShouldNotHaveValidationErrorFor(x => x.SpecialRequests);
+    }
+
+    private sealed class FixedTimeProvider : TimeProvider
+    {
+        private readonly DateTimeOffset _utcNow;
+
+        public FixedTimeProvider(DateTimeOffset utcNow)
+        {
+            _utcNow = utcNow;
+        }
+
+        public override DateTimeOffset GetUtcNow()
+        {
+            return _utcNow;
+        }
     }
 }

@@ -417,6 +417,199 @@ public sealed class SearchHotelsIntegrationTests
             secondPage.Hotels.Single().HotelId);
     }
 
+    [Fact]
+    public async Task SearchHotels_WhenRequestedRoomCountCannotAccommodateGuests_ShouldExcludeHotel()
+    {
+        await using var factory =
+            new CustomWebApplicationFactory();
+
+        var owner =
+            await CreateUserAsync(factory);
+
+        var city =
+            await CreateCityAsync(
+                factory,
+                $"CapacityCity-{Guid.NewGuid():N}"[..19]);
+
+        var hotel =
+            await CreateHotelAsync(
+                factory,
+                city.Id,
+                owner.Id,
+                "Capacity Hotel",
+                starRating: 4);
+
+        await AddRoomAsync(
+            factory,
+            hotel.Id,
+            "CAP-101",
+            pricePerNight: 100m,
+            adultsCapacity: 2,
+            childrenCapacity: 0);
+
+        await AddRoomAsync(
+            factory,
+            hotel.Id,
+            "CAP-102",
+            pricePerNight: 100m,
+            adultsCapacity: 2,
+            childrenCapacity: 0);
+
+        var checkInDate =
+            DateOnly.FromDateTime(
+                DateTime.UtcNow.AddDays(10));
+
+        var query =
+            new SearchHotelsQuery(
+                city.Name,
+                checkInDate,
+                checkInDate.AddDays(2),
+                Adults: 4,
+                Children: 0,
+                Rooms: 1);
+
+        var result =
+            await ExecuteSearchAsync(
+                factory,
+                query);
+
+        Assert.True(result.Succeeded);
+        Assert.Empty(result.Errors);
+
+        Assert.DoesNotContain(
+            result.Hotels,
+            item =>
+                item.HotelId == hotel.Id);
+    }
+
+    [Fact]
+    public async Task SearchHotels_WhenRequestedRoomsTogetherCanAccommodateGuests_ShouldReturnHotel()
+    {
+        await using var factory =
+            new CustomWebApplicationFactory();
+
+        var owner =
+            await CreateUserAsync(factory);
+
+        var city =
+            await CreateCityAsync(
+                factory,
+                $"CapacityOk-{Guid.NewGuid():N}"[..18]);
+
+        var hotel =
+            await CreateHotelAsync(
+                factory,
+                city.Id,
+                owner.Id,
+                "Capacity Match Hotel",
+                starRating: 4);
+
+        await AddRoomAsync(
+            factory,
+            hotel.Id,
+            "OK-101",
+            pricePerNight: 100m,
+            adultsCapacity: 3,
+            childrenCapacity: 1);
+
+        await AddRoomAsync(
+            factory,
+            hotel.Id,
+            "OK-102",
+            pricePerNight: 110m,
+            adultsCapacity: 1,
+            childrenCapacity: 2);
+
+        var checkInDate =
+            DateOnly.FromDateTime(
+                DateTime.UtcNow.AddDays(10));
+
+        var query =
+            new SearchHotelsQuery(
+                city.Name,
+                checkInDate,
+                checkInDate.AddDays(2),
+                Adults: 4,
+                Children: 3,
+                Rooms: 2);
+
+        var result =
+            await ExecuteSearchAsync(
+                factory,
+                query);
+
+        Assert.True(result.Succeeded);
+        Assert.Empty(result.Errors);
+
+        Assert.Contains(
+            result.Hotels,
+            item =>
+                item.HotelId == hotel.Id);
+    }
+
+    [Fact]
+    public async Task SearchHotels_WhenRequestedRoomsCannotAccommodateChildren_ShouldExcludeHotel()
+    {
+        await using var factory =
+            new CustomWebApplicationFactory();
+
+        var owner =
+            await CreateUserAsync(factory);
+
+        var city =
+            await CreateCityAsync(
+                factory,
+                $"ChildCap-{Guid.NewGuid():N}"[..17]);
+
+        var hotel =
+            await CreateHotelAsync(
+                factory,
+                city.Id,
+                owner.Id,
+                "Children Capacity Hotel",
+                starRating: 4);
+
+        await AddRoomAsync(
+            factory,
+            hotel.Id,
+            "CHILD-101",
+            pricePerNight: 100m,
+            adultsCapacity: 4,
+            childrenCapacity: 1);
+
+        await AddRoomAsync(
+            factory,
+            hotel.Id,
+            "CHILD-102",
+            pricePerNight: 100m,
+            adultsCapacity: 4,
+            childrenCapacity: 1);
+
+        var checkInDate =
+            DateOnly.FromDateTime(
+                DateTime.UtcNow.AddDays(10));
+
+        var query =
+            new SearchHotelsQuery(
+                city.Name,
+                checkInDate,
+                checkInDate.AddDays(2),
+                Adults: 2,
+                Children: 3,
+                Rooms: 1);
+
+        var result =
+            await ExecuteSearchAsync(
+                factory,
+                query);
+
+        Assert.True(result.Succeeded);
+
+        Assert.DoesNotContain(
+            result.Hotels,
+            item =>
+                item.HotelId == hotel.Id);
+    }
     // ============================================================
     // Execute real application handler
     // ============================================================

@@ -1,9 +1,4 @@
-﻿using HotelBooking.Api.Common;
-using HotelBooking.Application.Cities.DeleteCity;
-using HotelBooking.Application.Cities.GetTrendingDestinations;
-using HotelBooking.Application.Common.Security;
-using HotelBooking.Application.Common.Security.Authorization.Permissions;
-using Microsoft.AspNetCore.Authorization;
+﻿using HotelBooking.Application.Cities.GetTrendingDestinations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 
@@ -14,14 +9,12 @@ namespace HotelBooking.Api.Cities;
 public sealed class CitiesController : ControllerBase
 {
     private readonly GetTrendingDestinationsQueryHandler _trendingHandler;
-    private readonly DeleteCityCommandHandler _deleteCityCommandHandler;
 
     public CitiesController(
-        GetTrendingDestinationsQueryHandler trendingHandler,
-        DeleteCityCommandHandler deleteCityCommandHandler)
+        GetTrendingDestinationsQueryHandler trendingHandler)
     {
         _trendingHandler = trendingHandler;
-        _deleteCityCommandHandler = deleteCityCommandHandler;
+
     }
 
     [HttpGet("trending")]
@@ -45,22 +38,4 @@ public sealed class CitiesController : ControllerBase
         return Ok(response);
     }
 
-    [HttpDelete("{cityId:int}")]
-    [Authorize(Policy = CityPermissions.Delete)]
-    public async Task<IActionResult> Delete(
-    int cityId,
-    CancellationToken cancellationToken)
-    {
-        var result = await _deleteCityCommandHandler.HandleAsync(
-            new DeleteCityCommand(cityId),
-            cancellationToken);
-        if (!result.Succeeded)
-        {
-            return ErrorResponseFactory.Create(
-                this,
-                result.Errors);
-        }
-
-        return NoContent();
-    }
 }

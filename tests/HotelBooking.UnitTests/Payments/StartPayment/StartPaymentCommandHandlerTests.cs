@@ -16,7 +16,8 @@ public sealed class StartPaymentCommandHandlerTests
     private readonly Mock<IPaymentRepository> _paymentRepository = new();
     private readonly Mock<IPaymentGateway> _paymentGateway = new();
     private readonly Mock<ICurrentUserService> _currentUserService = new();
-    private readonly Mock<IBookingConcurrencyManager>  _bookingConcurrencyManager = new();
+    private readonly IBookingConcurrencyManager _bookingConcurrencyManager =
+    new PassThroughBookingConcurrencyManager();
 
     private readonly StartPaymentCommandValidator _validator = new();
 
@@ -45,23 +46,6 @@ public sealed class StartPaymentCommandHandlerTests
          * operation immediately, so each unit test stays focused on the
          * StartPayment business rules.
          */
-        _bookingConcurrencyManager
-            .Setup(manager =>
-                manager.ExecuteWithBookingLockAsync(
-                    It.IsAny<int>(),
-                    It.IsAny<
-                        Func<
-                            CancellationToken,
-                            Task<StartPaymentResult>>>(),
-                    It.IsAny<CancellationToken>()))
-            .Returns(
-                (
-                    int _,
-                    Func<
-                        CancellationToken,
-                        Task<StartPaymentResult>> operation,
-                    CancellationToken cancellationToken) =>
-                        operation(cancellationToken));
 
         return new StartPaymentCommandHandler(
             _validator,
@@ -69,7 +53,7 @@ public sealed class StartPaymentCommandHandlerTests
             _paymentRepository.Object,
             _paymentGateway.Object,
             _currentUserService.Object,
-            _bookingConcurrencyManager.Object,
+            _bookingConcurrencyManager,
             timeProvider);
     }
 
@@ -562,6 +546,8 @@ public sealed class StartPaymentCommandHandlerTests
         Assert.True(
             booking.Id > 0);
 
+       
+
         _currentUserService
             .Setup(service => service.UserId)
             .Returns("user-1");
@@ -572,13 +558,17 @@ public sealed class StartPaymentCommandHandlerTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(booking);
 
+        Payment? createdPayment = null;
+
         _paymentRepository
-            .Setup(repository => repository.GetByBookingIdAsync(
+        .SetupSequence(repository =>
+            repository.GetByBookingIdAsync(
                 booking.Id,
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Payment?)null);
+        .ReturnsAsync((Payment?)null)
+        .ReturnsAsync(() => createdPayment);
 
-        Payment? createdPayment = null;
+       
 
         _paymentRepository
             .Setup(repository => repository.Add(
@@ -776,6 +766,26 @@ public sealed class StartPaymentCommandHandlerTests
         public override DateTimeOffset GetUtcNow()
         {
             return _utcNow;
+        }
+    }
+
+    private sealed class PassThroughBookingConcurrencyManager
+    : IBookingConcurrencyManager
+    {
+        public Task<T> ExecuteWithRoomLocksAsync<T>(
+            IReadOnlyCollection<int> roomIds,
+            Func<CancellationToken, Task<T>> operation,
+            CancellationToken cancellationToken)
+        {
+            return operation(cancellationToken);
+        }
+
+        public Task<T> ExecuteWithBookingLockAsync<T>(
+            int bookingId,
+            Func<CancellationToken, Task<T>> operation,
+            CancellationToken cancellationToken)
+        {
+            return operation(cancellationToken);
         }
     }
 }

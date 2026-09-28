@@ -186,8 +186,8 @@ public sealed class LatePaymentRefundConcurrencyIntegrationTests
             refund.Status);
 
         Assert.Equal(
-            $"{gateway.ProviderRefundId}_1",
-            refund.ProviderRefundId);
+     $"{gateway.ProviderRefundId}_{refund.Id}",
+     refund.ProviderRefundId);
 
         Assert.Equal(
             payment.Amount,
@@ -204,8 +204,8 @@ public sealed class LatePaymentRefundConcurrencyIntegrationTests
          * to the payment provider to refund the same payment.
          */
         Assert.Equal(
-            1,
-            gateway.CreateRefundCallCount);
+     1,
+     gateway.CreatedRefundCount);
 
         /*
          * Late payment is refunded, not confirmed,
@@ -419,8 +419,13 @@ public sealed class LatePaymentRefundConcurrencyIntegrationTests
     }
 
     private sealed class ConcurrentRefundPaymentGateway
-        : IPaymentGateway
+     : IPaymentGateway
     {
+        private readonly object _sync = new();
+
+        private readonly Dictionary<int, CreateRefundResult>
+            _refundsByRefundId = [];
+
         private int _createRefundCallCount;
 
         public string ProviderPaymentIntentId { get; } =
@@ -432,6 +437,17 @@ public sealed class LatePaymentRefundConcurrencyIntegrationTests
         public int CreateRefundCallCount =>
             Volatile.Read(
                 ref _createRefundCallCount);
+
+        public int CreatedRefundCount
+        {
+            get
+            {
+                lock (_sync)
+                {
+                    return _refundsByRefundId.Count;
+                }
+            }
+        }
 
         public Task<CreatePaymentIntentResult>
             CreatePaymentIntentAsync(
@@ -456,13 +472,28 @@ public sealed class LatePaymentRefundConcurrencyIntegrationTests
                 CreateRefundRequest request,
                 CancellationToken cancellationToken)
         {
-            var callNumber =
-                Interlocked.Increment(
-                    ref _createRefundCallCount);
+            Interlocked.Increment(
+                ref _createRefundCallCount);
 
-            return Task.FromResult(
-                new CreateRefundResult(
-                    $"{ProviderRefundId}_{callNumber}"));
+            lock (_sync)
+            {
+                if (_refundsByRefundId.TryGetValue(
+                        request.RefundId,
+                        out var existing))
+                {
+                    return Task.FromResult(existing);
+                }
+
+                var created =
+                    new CreateRefundResult(
+                        $"{ProviderRefundId}_{request.RefundId}");
+
+                _refundsByRefundId.Add(
+                    request.RefundId,
+                    created);
+
+                return Task.FromResult(created);
+            }
         }
     }
 

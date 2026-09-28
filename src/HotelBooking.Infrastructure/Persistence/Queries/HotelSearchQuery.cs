@@ -151,6 +151,47 @@ public sealed class HotelSearchQuery : IHotelSearchQuery
                         query.MaxPrice.Value);
         }
 
+        var candidateHotelIdsQuery =
+    hotelsWithAvailabilityQuery
+        .Select(item => item.Hotel.Id);
+
+        var candidateRoomCapacities =
+            await availableRoomsQuery
+                .Where(room =>
+                    candidateHotelIdsQuery.Contains(
+                        room.HotelId))
+                .Select(room =>
+                    new AvailableRoomCapacity(
+                        room.HotelId,
+                        room.AdultsCapacity,
+                        room.ChildrenCapacity))
+                .ToListAsync(cancellationToken);
+
+        var eligibleHotelIds =
+            candidateRoomCapacities
+                .GroupBy(room => room.HotelId)
+                .Where(group =>
+                    CanAccommodateGuests(
+                        group,
+                        query.Rooms,
+                        query.Adults,
+                        query.Children))
+                .Select(group => group.Key)
+                .ToHashSet();
+
+        if (eligibleHotelIds.Count == 0)
+        {
+            return new SearchHotelsPage(
+                [],
+                false);
+        }
+
+        hotelsWithAvailabilityQuery =
+            hotelsWithAvailabilityQuery
+                .Where(item =>
+                    eligibleHotelIds.Contains(
+                        item.Hotel.Id));
+
         var orderedHotelsQuery =
             query.SortBy switch
             {
@@ -228,4 +269,82 @@ public sealed class HotelSearchQuery : IHotelSearchQuery
             items,
             hasNextPage);
     }
+
+    private static bool CanAccommodateGuests(
+    IEnumerable<AvailableRoomCapacity> rooms,
+    int requestedRooms,
+    int requestedAdults,
+    int requestedChildren)
+    {
+        /*
+         * State:
+         *
+         * (number of rooms selected,
+         *  adults capacity reached,
+         *  children capacity reached)
+         *
+         * Capacities are capped at the requested values because
+         * anything above the requirement is equivalent for this check.
+         */
+        var states =
+            new HashSet<CapacityState>
+            {
+            new(
+                Rooms: 0,
+                Adults: 0,
+                Children: 0)
+            };
+
+        foreach (var room in rooms)
+        {
+            var statesBeforeRoom =
+                states.ToArray();
+
+            foreach (var state in statesBeforeRoom)
+            {
+                if (state.Rooms >= requestedRooms)
+                {
+                    continue;
+                }
+
+                var nextState =
+                    new CapacityState(
+                        Rooms:
+                            state.Rooms + 1,
+
+                        Adults:
+                            Math.Min(
+                                requestedAdults,
+                                state.Adults +
+                                room.AdultsCapacity),
+
+                        Children:
+                            Math.Min(
+                                requestedChildren,
+                                state.Children +
+                                room.ChildrenCapacity));
+
+                if (nextState.Rooms == requestedRooms &&
+                    nextState.Adults >= requestedAdults &&
+                    nextState.Children >= requestedChildren)
+                {
+                    return true;
+                }
+
+                states.Add(nextState);
+            }
+        }
+
+        return false;
+    }
+
+    private sealed record AvailableRoomCapacity(
+    int HotelId,
+    int AdultsCapacity,
+    int ChildrenCapacity);
+
+    private readonly record struct CapacityState(
+        int Rooms,
+        int Adults,
+        int Children);
 }

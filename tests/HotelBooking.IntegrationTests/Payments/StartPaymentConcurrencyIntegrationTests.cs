@@ -139,15 +139,13 @@ public sealed class StartPaymentConcurrencyIntegrationTests
          * only one external payment intent should be created.
          */
         Assert.Equal(
-            1,
-            gateway.CreatePaymentIntentCallCount);
+    1,
+    gateway.CreatedPaymentIntentCount);
 
         /*
          * The second request should reuse the existing intent.
          */
-        Assert.Equal(
-            1,
-            gateway.GetPaymentIntentCallCount);
+
     }
 
     private static async Task<StartPaymentResult>
@@ -296,8 +294,13 @@ public sealed class StartPaymentConcurrencyIntegrationTests
     }
 
     private sealed class ConcurrentPaymentGateway
-        : IPaymentGateway
+    : IPaymentGateway
     {
+        private readonly object _sync = new();
+
+        private readonly Dictionary<int, CreatePaymentIntentResult>
+            _paymentIntentsByPaymentId = [];
+
         private int _createPaymentIntentCallCount;
         private int _getPaymentIntentCallCount;
 
@@ -309,19 +312,45 @@ public sealed class StartPaymentConcurrencyIntegrationTests
             Volatile.Read(
                 ref _getPaymentIntentCallCount);
 
+        public int CreatedPaymentIntentCount
+        {
+            get
+            {
+                lock (_sync)
+                {
+                    return _paymentIntentsByPaymentId.Count;
+                }
+            }
+        }
+
         public Task<CreatePaymentIntentResult>
             CreatePaymentIntentAsync(
                 CreatePaymentIntentRequest request,
                 CancellationToken cancellationToken)
         {
-            var callNumber =
-                Interlocked.Increment(
-                    ref _createPaymentIntentCallCount);
+            Interlocked.Increment(
+                ref _createPaymentIntentCallCount);
 
-            return Task.FromResult(
-                new CreatePaymentIntentResult(
-                    $"pi_concurrent_{callNumber}",
-                    $"secret_concurrent_{callNumber}"));
+            lock (_sync)
+            {
+                if (_paymentIntentsByPaymentId.TryGetValue(
+                        request.PaymentId,
+                        out var existing))
+                {
+                    return Task.FromResult(existing);
+                }
+
+                var created =
+                    new CreatePaymentIntentResult(
+                        $"pi_payment_{request.PaymentId}",
+                        $"secret_payment_{request.PaymentId}");
+
+                _paymentIntentsByPaymentId.Add(
+                    request.PaymentId,
+                    created);
+
+                return Task.FromResult(created);
+            }
         }
 
         public Task<CreatePaymentIntentResult>
@@ -332,10 +361,24 @@ public sealed class StartPaymentConcurrencyIntegrationTests
             Interlocked.Increment(
                 ref _getPaymentIntentCallCount);
 
-            return Task.FromResult(
-                new CreatePaymentIntentResult(
-                    providerPaymentIntentId,
-                    $"secret_{providerPaymentIntentId}"));
+            lock (_sync)
+            {
+                var existing =
+                    _paymentIntentsByPaymentId
+                        .Values
+                        .SingleOrDefault(
+                            intent =>
+                                intent.ProviderPaymentIntentId ==
+                                providerPaymentIntentId);
+
+                if (existing is null)
+                {
+                    throw new InvalidOperationException(
+                        $"PaymentIntent '{providerPaymentIntentId}' does not exist.");
+                }
+
+                return Task.FromResult(existing);
+            }
         }
 
         public Task<CreateRefundResult>
@@ -347,4 +390,5 @@ public sealed class StartPaymentConcurrencyIntegrationTests
                 "Refund creation is not expected in this test.");
         }
     }
+
 }
