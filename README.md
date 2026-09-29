@@ -14,10 +14,13 @@ The project is designed with a clear separation of responsibilities across the A
 - [Key Features](#key-features)
 - [Architecture](#architecture)
   - [Project Structure](#project-structure)
-  - [Request Flow](#request-flow)
 - [Technology Stack](#technology-stack)
 - [Database Design](#database-design)
 - [API Overview](#api-overview)
+     - [Authentication](#authentication)
+     - [Roles & Permissions](#roles--permissions)
+     - [API Documentation](#api-documentation)
+- [Booking & Payment Reliability](#booking--payment-reliability)    
 - [Testing & Performance](#testing--performance)
 - [Getting Started](#getting-started)
   - [Configuration](#configuration)
@@ -186,6 +189,9 @@ The project is built with the following technologies:
 | Testing | Unit and Integration Tests |
 | Containerization | Docker & Docker Compose |
 | CI/CD | GitHub Actions |
+| Validation | FluentValidation |
+| PDF Generation | QuestPDF |
+| Reliable Background Work | Outbox Pattern |
 ---
 ## Database Design
 
@@ -206,6 +212,28 @@ The schema is designed to maintain clear relationships between entities and supp
 The Hotel Booking System exposes RESTful API endpoints that cover the main workflows of the platform, including authentication, hotel discovery, room management, bookings, payments, user operations, and administrative functionality.
 
 The API is organized by business capability to keep the endpoints clear, maintainable, and easy to explore.
+
+### Authentication
+
+User accounts and credential management are handled using **ASP.NET Core Identity**, while authenticated API access is handled using **JWT Bearer tokens**.
+After a successful login, the client receives an access token that must be included in protected requests:
+
+```http
+Authorization: Bearer <access-token>
+```
+
+### Roles & Permissions
+
+The system defines three main roles with different capabilities:
+
+| Role | Main Capabilities |
+|---|---|
+| **Admin** | Manage hotels, cities, rooms, amenities, administrative hotel views, and promote users to hotel owners |
+| **Customer** | Create bookings, start payments, create reviews, view recently visited hotels, and access booking confirmations |
+| **HotelOwner** | Complete hotel profiles, manage amenities, manage rooms and room images, upload hotel images, and create deals |
+
+
+Some operations also apply resource-level ownership checks in addition to permission checks, ensuring that hotel owners can only modify resources that belong to their own hotels.
 
 ### API Documentation
 
@@ -237,6 +265,26 @@ A public Postman collection is available for exploring the API, testing requests
 - Payments
 - Hotel Owner Operations
 - Administration
+
+---
+## Booking & Payment Reliability
+
+Booking and payment workflows require stronger consistency guarantees than ordinary CRUD operations because multiple requests may attempt to modify the same booking or room availability at the same time.
+
+The system protects critical booking transitions using explicit database locking and controlled state changes to reduce the risk of double bookings and conflicting payment updates.
+
+Stripe payment completion is confirmed through validated webhooks rather than trusting the client to determine payment success.
+
+The payment workflow also handles important edge cases such as:
+
+- Concurrent booking and payment operations.
+- Duplicate or repeated payment events.
+- Payments received after a booking has expired or been cancelled.
+- Refund creation when a successful payment can no longer be applied to the booking.
+- Idempotent payment and refund operations.
+
+Booking confirmation emails are queued through the **Outbox Pattern** rather than being sent directly inside the payment transaction. This keeps external email delivery outside the critical request path while preserving reliable confirmation processing.
+
 
 ### Booking Confirmation Example
 
