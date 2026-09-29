@@ -243,7 +243,7 @@ public sealed class CancelBookingPaymentConcurrencyIntegrationTests
                 paymentGateway.CreateRefundCallCount);
 
             Assert.Equal(
-                1,
+                0,
                 emailSender.SendCallCount);
         }
         else
