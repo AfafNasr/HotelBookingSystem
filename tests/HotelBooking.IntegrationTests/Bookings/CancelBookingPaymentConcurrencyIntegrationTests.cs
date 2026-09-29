@@ -214,8 +214,8 @@ public sealed class CancelBookingPaymentConcurrencyIntegrationTests
                 paymentGateway.CreateRefundCallCount);
 
             Assert.Equal(
-                0,
-                emailSender.SendCallCount);
+      0,
+      emailSender.SendCallCount);
         }
         else if (booking.Status == BookingStatus.Confirmed)
         {
