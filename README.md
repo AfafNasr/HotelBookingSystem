@@ -226,6 +226,31 @@ A public Postman collection is available for exploring the API, testing requests
 [View Public Postman Collection](https://documenter.getpostman.com/view/43119323/2sBYB4L7Ao)
 
 ---
+### Main Endpoint Groups
+
+- Authentication
+- Users
+- Cities
+- Hotels
+- Rooms
+- Bookings
+- Payments
+- Hotel Owner Operations
+- Administration
+
+### Booking Confirmation Example
+
+After a successful booking and payment flow, the system generates a booking confirmation PDF and sends an email containing the payment status and invoice details.
+
+<p align="center">
+  <img src="docs/images/booking-email.png" alt="Booking confirmation email" width="700"/>
+</p>
+
+<p align="center">
+  <img src="docs/images/booking-invoice.png" alt="Generated booking invoice PDF" width="700"/>
+</p>
+
+---
 
 ## Testing & Performance
 
