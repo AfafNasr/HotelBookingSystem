@@ -31,65 +31,78 @@ public sealed class BookingConcurrencyManager
                 nameof(roomIds));
         }
 
-        await using var transaction =
-            await _dbContext.Database.BeginTransactionAsync(
-                cancellationToken);
+        var executionStrategy =
+            _dbContext.Database.CreateExecutionStrategy();
 
-        foreach (var roomId in orderedRoomIds)
+        return await executionStrategy.ExecuteAsync(async () =>
         {
-            var lockedRoom = await _dbContext.Room
-                .FromSqlInterpolated(
-                    $"""
-            SELECT *
-            FROM [Room] WITH (UPDLOCK, HOLDLOCK)
-            WHERE [Id] = {roomId}
-            """)
-                .AsNoTracking()
-                .SingleOrDefaultAsync(cancellationToken);
+            await using var transaction =
+                await _dbContext.Database.BeginTransactionAsync(
+                    cancellationToken);
 
-            if (lockedRoom is null)
+            foreach (var roomId in orderedRoomIds)
             {
-                throw new InvalidOperationException(
-                    $"Room {roomId} does not exist.");
+                var lockedRoom = await _dbContext.Room
+                    .FromSqlInterpolated(
+                        $"""
+                        SELECT *
+                        FROM [Room] WITH (UPDLOCK, HOLDLOCK)
+                        WHERE [Id] = {roomId}
+                        """)
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(cancellationToken);
+
+                if (lockedRoom is null)
+                {
+                    throw new InvalidOperationException(
+                        $"Room {roomId} does not exist.");
+                }
             }
-        }
 
-        var result = await operation(cancellationToken);
+            var result =
+                await operation(cancellationToken);
 
-        await transaction.CommitAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
 
-        return result;
+            return result;
+        });
     }
 
     public async Task<T> ExecuteWithBookingLockAsync<T>(
-    int bookingId,
-    Func<CancellationToken, Task<T>> operation,
-    CancellationToken cancellationToken)
+        int bookingId,
+        Func<CancellationToken, Task<T>> operation,
+        CancellationToken cancellationToken)
     {
         if (bookingId <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(bookingId));
         }
 
-        await using var transaction =
-            await _dbContext.Database.BeginTransactionAsync(
-                cancellationToken);
+        var executionStrategy =
+            _dbContext.Database.CreateExecutionStrategy();
 
-        await _dbContext.Bookings
-            .FromSqlInterpolated(
-                $"""
-            SELECT *
-            FROM [Bookings] WITH (UPDLOCK, HOLDLOCK)
-            WHERE [Id] = {bookingId}
-            """)
-            .AsNoTracking()
-            .SingleOrDefaultAsync(cancellationToken);
+        return await executionStrategy.ExecuteAsync(async () =>
+        {
+            await using var transaction =
+                await _dbContext.Database.BeginTransactionAsync(
+                    cancellationToken);
 
-        var result =
-            await operation(cancellationToken);
+            await _dbContext.Bookings
+                .FromSqlInterpolated(
+                    $"""
+                    SELECT *
+                    FROM [Bookings] WITH (UPDLOCK, HOLDLOCK)
+                    WHERE [Id] = {bookingId}
+                    """)
+                .AsNoTracking()
+                .SingleOrDefaultAsync(cancellationToken);
 
-        await transaction.CommitAsync(cancellationToken);
+            var result =
+                await operation(cancellationToken);
 
-        return result;
+            await transaction.CommitAsync(cancellationToken);
+
+            return result;
+        });
     }
 }

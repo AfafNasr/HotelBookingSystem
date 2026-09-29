@@ -28,43 +28,53 @@ public sealed class IdentityService : IIdentityService
     }
 
     public async Task<RegisterResult> CreateCustomerAsync(
-     string username,
-     string email,
-     string password,
-     CancellationToken cancellationToken)
+    string username,
+    string email,
+    string password,
+    CancellationToken cancellationToken)
     {
-        await using var transaction =
-            await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+        var executionStrategy =
+            _dbContext.Database.CreateExecutionStrategy();
 
-        var user = new IdentityUser
+        return await executionStrategy.ExecuteAsync(async () =>
         {
-            UserName = username,
-            Email = email
-        };
+            await using var transaction =
+                await _dbContext.Database.BeginTransactionAsync(
+                    cancellationToken);
 
-        var createResult = await _userManager.CreateAsync(user, password);
+            var user = new IdentityUser
+            {
+                UserName = username,
+                Email = email
+            };
 
-        if (!createResult.Succeeded)
-        {
-            return Failure(createResult);
-        }
+            var createResult =
+                await _userManager.CreateAsync(user, password);
 
-        var roleResult = await _userManager.AddToRoleAsync(
-            user,
-            Roles.Customer);
+            if (!createResult.Succeeded)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return Failure(createResult);
+            }
 
-        if (!roleResult.Succeeded)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            return Failure(roleResult);
-        }
+            var roleResult =
+                await _userManager.AddToRoleAsync(
+                    user,
+                    Roles.Customer);
 
-        await transaction.CommitAsync(cancellationToken);
+            if (!roleResult.Succeeded)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return Failure(roleResult);
+            }
 
-        return new RegisterResult(
-            true,
-            user.Id,
-            Array.Empty<ApplicationError>());
+            await transaction.CommitAsync(cancellationToken);
+
+            return new RegisterResult(
+                true,
+                user.Id,
+                Array.Empty<ApplicationError>());
+        });
     }
 
     private static RegisterResult Failure(IdentityResult result)
