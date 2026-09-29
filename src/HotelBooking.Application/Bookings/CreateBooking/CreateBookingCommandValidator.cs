@@ -5,7 +5,7 @@ namespace HotelBooking.Application.Bookings.CreateBooking;
 public sealed class CreateBookingCommandValidator
     : AbstractValidator<CreateBookingCommand>
 {
-    public CreateBookingCommandValidator()
+    public CreateBookingCommandValidator(TimeProvider timeProvider)
     {
         RuleFor(command => command.HotelId)
             .GreaterThan(0);
@@ -20,6 +20,13 @@ public sealed class CreateBookingCommandValidator
         RuleFor(command => command.RoomIds)
             .Must(roomIds => roomIds.Distinct().Count() == roomIds.Count)
             .WithMessage("The same room cannot be selected more than once.");
+
+        RuleFor(command => command.CheckInDate)
+    .Must(checkInDate =>
+        checkInDate >= DateOnly.FromDateTime(
+            timeProvider.GetUtcNow().UtcDateTime))
+    .WithMessage("Check-in date cannot be in the past.");
+
 
         RuleFor(command => command.CheckOutDate)
             .GreaterThan(command => command.CheckInDate)

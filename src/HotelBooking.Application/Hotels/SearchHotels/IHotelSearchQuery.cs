@@ -7,3 +7,7 @@ public interface IHotelSearchQuery
         DateTime now,
         CancellationToken cancellationToken);
 }
+
+public sealed record SearchHotelsPage(
+    IReadOnlyCollection<SearchHotelItem> Hotels,
+    bool HasNextPage);

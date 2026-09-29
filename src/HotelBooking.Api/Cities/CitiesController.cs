@@ -1,5 +1,6 @@
 ﻿using HotelBooking.Application.Cities.GetTrendingDestinations;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace HotelBooking.Api.Cities;
 
@@ -13,22 +14,28 @@ public sealed class CitiesController : ControllerBase
         GetTrendingDestinationsQueryHandler trendingHandler)
     {
         _trendingHandler = trendingHandler;
+
     }
 
     [HttpGet("trending")]
+    [OutputCache(PolicyName = "TrendingDestinations")]
     public async Task<IActionResult> GetTrending(
-        CancellationToken cancellationToken)
+    CancellationToken cancellationToken)
     {
-        var result = await _trendingHandler.HandleAsync(
-            cancellationToken);
+        var result =
+            await _trendingHandler.HandleAsync(
+                cancellationToken);
 
-        var response = result.Destinations
-            .Select(destination => new TrendingDestinationResponse(
-                destination.CityId,
-                destination.CityName,
-                destination.ThumbnailStorageKey))
-            .ToArray();
+        var response =
+            result.Destinations
+                .Select(destination =>
+                    new TrendingDestinationResponse(
+                        destination.CityId,
+                        destination.CityName,
+                        destination.ThumbnailStorageKey))
+                .ToArray();
 
         return Ok(response);
     }
+
 }

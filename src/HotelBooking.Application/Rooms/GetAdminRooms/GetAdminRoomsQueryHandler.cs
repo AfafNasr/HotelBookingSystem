@@ -48,3 +48,8 @@ public sealed class GetAdminRoomsQueryHandler
             Array.Empty<ApplicationError>());
     }
 }
+
+public sealed record GetAdminRoomsResult(
+    bool Succeeded,
+    IReadOnlyCollection<AdminRoom> Rooms,
+    IReadOnlyCollection<ApplicationError> Errors);

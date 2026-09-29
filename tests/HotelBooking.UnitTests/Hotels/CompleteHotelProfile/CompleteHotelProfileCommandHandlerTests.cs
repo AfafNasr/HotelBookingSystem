@@ -114,7 +114,7 @@ public sealed class CompleteHotelProfileCommandHandlerTests
         var error = Assert.Single(result.Errors);
 
         Assert.Equal(
-            "Hotel.Forbidden",
+            "Hotel.ManagementForbidden",
             error.Code);
 
         Assert.Equal(
@@ -336,3 +336,4 @@ public sealed class CompleteHotelProfileCommandHandlerTests
             DateTime.UtcNow);
     }
 }
+

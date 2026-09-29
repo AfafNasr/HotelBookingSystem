@@ -7,3 +7,8 @@ public interface ITrendingDestinationsQuery
         int limit,
         CancellationToken cancellationToken);
 }
+
+public sealed record TrendingDestination(
+    int CityId,
+    string CityName,
+    string? ThumbnailStorageKey);

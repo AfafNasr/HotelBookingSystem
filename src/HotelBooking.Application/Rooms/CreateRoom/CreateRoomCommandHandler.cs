@@ -105,3 +105,8 @@ public sealed class CreateRoomCommandHandler
             Array.Empty<ApplicationError>());
     }
 }
+
+public sealed record CreateRoomResult(
+    bool Succeeded,
+    int? RoomId,
+    IReadOnlyCollection<ApplicationError> Errors);

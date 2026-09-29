@@ -19,4 +19,10 @@ public static class HotelErrors
         "Hotel.ManagementForbidden",
         "You are not allowed to manage this hotel.",
         ErrorType.Authorization);
+
+    public static readonly ApplicationError CoordinatesNotConfigured =
+    new(
+        "Hotel.CoordinatesNotConfigured",
+        "The hotel location has not been configured.",
+        ErrorType.Conflict);
 }

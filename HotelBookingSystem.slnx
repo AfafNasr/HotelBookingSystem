@@ -1,4 +1,11 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".dockerignore" />
+    <File Path=".env" />
+    <File Path=".env.example" />
+    <File Path="docker-compose.yml" />
+    <File Path="Dockerfile" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/HotelBooking.Api/HotelBooking.Api.csproj" />
     <Project Path="src/HotelBooking.Application/HotelBooking.Application.csproj" />
@@ -8,5 +15,13 @@
   <Folder Name="/tests/">
     <Project Path="tests/HotelBooking.IntegrationTests/HotelBooking.IntegrationTests.csproj" />
     <Project Path="tests/HotelBooking.UnitTests/HotelBooking.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/tests/performance/">
+    <File Path="performance/available-rooms.js" />
+    <File Path="performance/featured-deals.js" />
+    <File Path="performance/hotel-bookings.js" />
+    <File Path="performance/hotel-details.js" />
+    <File Path="performance/hotel-search.js" />
+    <File Path="README.md" />
   </Folder>
 </Solution>

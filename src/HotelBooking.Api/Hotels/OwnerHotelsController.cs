@@ -1,6 +1,7 @@
 ﻿using HotelBooking.Api.Common;
-using HotelBooking.Application.HotelAmenities.AddHotelAmenity;
 using HotelBooking.Application.Common.Security.Authorization.Permissions;
+using HotelBooking.Application.HotelAmenities.AddHotelAmenity;
+using HotelBooking.Application.HotelAmenities.DeleteHotelAmenity;
 using HotelBooking.Application.Hotels.CompleteHotelProfile;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,13 +14,16 @@ public sealed class OwnerHotelsController : ControllerBase
 {
     private readonly CompleteHotelProfileCommandHandler _completeProfileHandler;
     private readonly AddHotelAmenityCommandHandler _addAmenityHandler;
+    private readonly DeleteHotelAmenityCommandHandler _deleteAmenityHandler;
 
     public OwnerHotelsController(
     CompleteHotelProfileCommandHandler completeProfileHandler,
-    AddHotelAmenityCommandHandler addAmenityHandler)
+    AddHotelAmenityCommandHandler addAmenityHandler,
+    DeleteHotelAmenityCommandHandler deleteAmenityHandler)
     {
         _completeProfileHandler = completeProfileHandler;
         _addAmenityHandler = addAmenityHandler;
+        _deleteAmenityHandler = deleteAmenityHandler;
     }
 
     [HttpPut("{hotelId:int}/profile")]
@@ -75,5 +79,29 @@ public sealed class OwnerHotelsController : ControllerBase
         return NoContent();
     }
 
+    [HttpDelete("{hotelId:int}/amenities/{amenityId:int}")]
+    [Authorize(Policy = HotelPermissions.DeleteAmenities)]
+    public async Task<IActionResult> DeleteAmenity(
+    int hotelId,
+    int amenityId,
+    CancellationToken cancellationToken)
+    {
+        var command = new DeleteHotelAmenityCommand(
+            hotelId,
+            amenityId);
+
+        var result = await _deleteAmenityHandler.HandleAsync(
+            command,
+            cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return ErrorResponseFactory.Create(
+                this,
+                result.Errors);
+        }
+
+        return NoContent();
+    }
 
 }

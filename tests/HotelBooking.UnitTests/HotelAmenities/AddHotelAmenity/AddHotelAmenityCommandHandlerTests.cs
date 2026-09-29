@@ -90,7 +90,7 @@ public sealed class AddHotelAmenityCommandHandlerTests
 
         var error = Assert.Single(result.Errors);
 
-        Assert.Equal("HotelNotFound", error.Code);
+        Assert.Equal("Hotel.NotFound", error.Code);
         Assert.Equal(ErrorType.NotFound, error.Type);
 
         _amenityRepositoryMock.Verify(
@@ -136,7 +136,7 @@ public sealed class AddHotelAmenityCommandHandlerTests
         var error = Assert.Single(result.Errors);
 
         Assert.Equal(
-            "HotelOwnershipRequired",
+            "Hotel.ManagementForbidden",
             error.Code);
 
         Assert.Equal(
@@ -200,7 +200,7 @@ public sealed class AddHotelAmenityCommandHandlerTests
         var error = Assert.Single(result.Errors);
 
         Assert.Equal(
-            "AmenityNotFound",
+            "Amenity.NotFound",
             error.Code);
 
         Assert.Equal(
@@ -263,7 +263,7 @@ public sealed class AddHotelAmenityCommandHandlerTests
         var error = Assert.Single(result.Errors);
 
         Assert.Equal(
-            "HotelAmenityAlreadyExists",
+            "HotelAmenity.AlreadyExists",
             error.Code);
 
         Assert.Equal(
@@ -362,3 +362,4 @@ public sealed class AddHotelAmenityCommandHandlerTests
             DateTime.UtcNow);
     }
 }
+

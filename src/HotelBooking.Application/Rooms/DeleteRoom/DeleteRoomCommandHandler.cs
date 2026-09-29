@@ -101,3 +101,7 @@ public sealed class DeleteRoomCommandHandler
             Array.Empty<ApplicationError>());
     }
 }
+
+public sealed record DeleteRoomResult(
+    bool Succeeded,
+    IReadOnlyCollection<ApplicationError> Errors);

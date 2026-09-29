@@ -18,6 +18,10 @@ public interface ICityRepository
     int excludedCityId,
     CancellationToken cancellationToken);
 
+    Task<bool> HasHotelsAsync(
+    int cityId,
+    CancellationToken cancellationToken);
+
     void Add(City city);
 
     Task<int> SaveChangesAsync(

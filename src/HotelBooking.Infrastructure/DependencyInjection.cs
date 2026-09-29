@@ -6,9 +6,14 @@ using HotelBooking.Application.Authentication;
 using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Bookings;
 using HotelBooking.Application.Bookings.GetBookingConfirmation;
+using HotelBooking.Application.Bookings.GetHotelBookings;
+using HotelBooking.Application.Bookings.GetMyBookings;
+using HotelBooking.Application.Carts;
+using HotelBooking.Application.Carts.GetCart;
 using HotelBooking.Application.Cities;
 using HotelBooking.Application.Cities.GetAdminCities;
 using HotelBooking.Application.Cities.GetTrendingDestinations;
+using HotelBooking.Application.Common.Outbox;
 using HotelBooking.Application.Common.Storage;
 using HotelBooking.Application.Countries;
 using HotelBooking.Application.Deals;
@@ -19,11 +24,14 @@ using HotelBooking.Application.Hotels;
 using HotelBooking.Application.Hotels.GetAdminHotelById;
 using HotelBooking.Application.Hotels.GetAdminHotels;
 using HotelBooking.Application.Hotels.GetHotelDetails;
+using HotelBooking.Application.Hotels.GetNearbyAttractions;
 using HotelBooking.Application.Hotels.GetRecentlyVisitedHotels;
 using HotelBooking.Application.Hotels.SearchHotels;
 using HotelBooking.Application.Payments;
 using HotelBooking.Application.Payments.Gateway;
 using HotelBooking.Application.Reviews;
+using HotelBooking.Application.Reviews.GetHotelReviews;
+using HotelBooking.Application.Reviews.GetMyReviews;
 using HotelBooking.Application.Rooms;
 using HotelBooking.Application.Rooms.GetAdminRooms;
 using HotelBooking.Application.Rooms.GetAvailableRooms;
@@ -32,11 +40,14 @@ using HotelBooking.Infrastructure.Authentication;
 using HotelBooking.Infrastructure.BackgroundJobs;
 using HotelBooking.Infrastructure.Documents;
 using HotelBooking.Infrastructure.Emails;
+using HotelBooking.Infrastructure.Hotels;
 using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Infrastructure.Payments.Stripe;
 using HotelBooking.Infrastructure.Persistence;
+using HotelBooking.Infrastructure.Persistence.Outbox;
 using HotelBooking.Infrastructure.Persistence.Queries;
 using HotelBooking.Infrastructure.Persistence.Repositories;
+using HotelBooking.Infrastructure.Persistence.Seed;
 using HotelBooking.Infrastructure.Storage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -62,6 +73,12 @@ public static class DependencyInjection
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(connectionString));
+
+
+        services
+    .AddHealthChecks()
+    .AddDbContextCheck<ApplicationDbContext>(
+        name: "database");
 
         services
              .AddIdentityCore<IdentityUser>(options =>
@@ -109,37 +126,117 @@ public static class DependencyInjection
 
         services.AddSingleton<ITokenService, JwtTokenService>();
 
-        services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+
+    services
+    .AddAuthentication(
+        JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         var jwtOptions = configuration
-            .GetRequiredSection(JwtOptions.SectionName)
+            .GetRequiredSection(
+                JwtOptions.SectionName)
             .Get<JwtOptions>()
             ?? throw new InvalidOperationException(
                 "JWT configuration is missing.");
 
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = jwtOptions.Issuer,
+        options.TokenValidationParameters =
+     new TokenValidationParameters
+     {
+         ValidateIssuer = true,
+         ValidIssuer = jwtOptions.Issuer,
 
-            ValidateAudience = true,
-            ValidAudience = jwtOptions.Audience,
+         ValidateAudience = true,
+         ValidAudience = jwtOptions.Audience,
 
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtOptions.Key)),
+         ValidateIssuerSigningKey = true,
+         IssuerSigningKey =
+             new SymmetricSecurityKey(
+                 Encoding.UTF8.GetBytes(
+                     jwtOptions.Key)),
 
-            ValidateLifetime = true,
+         ValidateLifetime = true,
 
-            NameClaimType = ClaimTypes.Name,
-            RoleClaimType = ClaimTypes.Role
-        };
+         ClockSkew = TimeSpan.Zero,
+
+         NameClaimType = ClaimTypes.Name,
+         RoleClaimType = ClaimTypes.Role
+     };
+
+        options.Events =
+            new JwtBearerEvents
+            {
+                OnTokenValidated =
+                    async context =>
+                    {
+                        var userId =
+                            context.Principal?
+                                .FindFirstValue(
+                                    ClaimTypes.NameIdentifier);
+
+                        if (string.IsNullOrWhiteSpace(
+                                userId))
+                        {
+                            context.Fail(
+                                "The access token does not contain a valid user identifier.");
+
+                            return;
+                        }
+
+                        var dbContext =
+                            context.HttpContext
+                                .RequestServices
+                                .GetRequiredService<
+                                    ApplicationDbContext>();
+
+                        /*
+                         * ApplicationDbContext has a global query
+                         * filter on IdentityUser:
+                         *
+                         * DeactivatedAt == null
+                         *
+                         * Therefore this query succeeds only when
+                         * the user both exists and is currently active.
+                         */
+                        var userIsActive =
+                            await dbContext.Users
+                                .AsNoTracking()
+                                .AnyAsync(
+                                    user =>
+                                        user.Id ==
+                                        userId,
+                                    context.HttpContext
+                                        .RequestAborted);
+
+                        if (!userIsActive)
+                        {
+                            context.Fail(
+                                "The user account is inactive.");
+                        }
+                    }
+            };
     });
 
-        services.Configure<AzureStorageOptions>(
-    configuration.GetSection(AzureStorageOptions.SectionName));
+        services
+     .AddOptions<AzureStorageOptions>()
+     .Bind(
+         configuration.GetSection(
+             AzureStorageOptions.SectionName))
+     .Validate(
+         options =>
+             !string.IsNullOrWhiteSpace(
+                 options.AccountName),
+         "AzureStorage:AccountName is required.")
+     .Validate(
+         options =>
+             !string.IsNullOrWhiteSpace(
+                 options.HotelImagesContainer),
+         "AzureStorage:HotelImagesContainer is required.")
+     .Validate(
+         options =>
+             !string.IsNullOrWhiteSpace(
+                 options.RoomImagesContainer),
+         "AzureStorage:RoomImagesContainer is required.")
+     .ValidateOnStart();
 
         services.AddSingleton(sp =>
         {
@@ -155,8 +252,22 @@ public static class DependencyInjection
                 new DefaultAzureCredential());
         });
 
-        services.Configure<StripeOptions>(
-    configuration.GetSection(StripeOptions.SectionName));
+        services
+      .AddOptions<StripeOptions>()
+      .Bind(
+          configuration.GetSection(
+              StripeOptions.SectionName))
+      .Validate(
+          options =>
+              !string.IsNullOrWhiteSpace(
+                  options.SecretKey),
+          "Stripe:SecretKey is required.")
+      .Validate(
+          options =>
+              !string.IsNullOrWhiteSpace(
+                  options.WebhookSecret),
+          "Stripe:WebhookSecret is required.")
+      .ValidateOnStart();
 
         services.AddScoped<
             IImageStorageService,
@@ -165,7 +276,7 @@ public static class DependencyInjection
         services.AddScoped<ICountryRepository, CountryRepository>();
         services.AddScoped<IHotelRepository, HotelRepository>();
         services.AddScoped<IAmenityRepository, AmenityRepository>();
-        services.AddScoped< IHotelAmenityRepository, HotelAmenityRepository>();
+        services.AddScoped<IHotelAmenityRepository, HotelAmenityRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();
         services.AddScoped<IHotelImageRepository, HotelImageRepository>();
         services.AddScoped<IRoomImageRepository, RoomImageRepository>();
@@ -186,7 +297,7 @@ public static class DependencyInjection
         services.AddScoped<IRecentlyVisitedHotelsQuery, RecentlyVisitedHotelsQuery>();
         services.AddScoped<IBookingConfirmationQuery, BookingConfirmationQuery>();
         services.AddScoped<ITrendingDestinationsQuery,TrendingDestinationsQuery>();
-        services.AddScoped< IBookingConfirmationPdfGenerator,BookingConfirmationPdfGenerator>();
+        services.AddScoped<IBookingConfirmationPdfGenerator,BookingConfirmationPdfGenerator>();
 
 
         services
@@ -204,13 +315,57 @@ public static class DependencyInjection
         "Email:FromEmail is required.")
     .ValidateOnStart();
 
-       
+        services
+     .AddOptions<GeoapifyOptions>()
+     .Bind(configuration.GetSection(GeoapifyOptions.SectionName))
+     .Validate(
+         options => !string.IsNullOrWhiteSpace(options.BaseUrl),
+         "Geoapify:BaseUrl is required.")
+     .Validate(
+         options => !string.IsNullOrWhiteSpace(options.ApiKey),
+         "Geoapify:ApiKey is required.")
+     .ValidateOnStart();
+
+        services.AddHttpClient<
+            INearbyAttractionsService,
+            GeoapifyNearbyAttractionsService>(
+            (serviceProvider, client) =>
+            {
+                var options = serviceProvider
+                    .GetRequiredService<IOptions<GeoapifyOptions>>()
+                    .Value;
+
+                client.BaseAddress = new Uri(options.BaseUrl);
+                client.Timeout = TimeSpan.FromSeconds(5);
+            });
+
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IHotelRoomsQuery, HotelRoomsQuery>();
         services.AddScoped<IAdminCitiesQuery, AdminCitiesQuery>();
         services.AddScoped<IAdminHotelsQuery, AdminHotelsQuery>();
         services.AddScoped<IAdminRoomsQuery, AdminRoomsQuery>();
         services.AddScoped<IAdminHotelByIdQuery, AdminHotelByIdQuery>();
+        services.AddScoped<IGetMyReviewsQuery, GetMyReviewsQuery>();
+        services.AddScoped<IHotelReviewsQuery, HotelReviewsQuery>();
+        services.AddScoped< IHotelBookingsQuery,HotelBookingsQuery>();
+        services.AddScoped<IMyBookingsQuery, MyBookingsQuery>();
+
+
+        services.AddScoped<PerformanceDataSeeder>();
+
+        services.AddScoped<ICartRepository, CartRepository>();
+        services.AddScoped<ICartQuery, CartQuery>();
+        services.AddScoped<IImageUrlProvider,AzureBlobImageUrlProvider>();
+
+        services.AddScoped<
+    IOutboxWriter,
+    OutboxWriter>();
+
+        services.AddScoped<
+            OutboxProcessor>();
+
+        services.AddHostedService<
+            OutboxProcessorWorker>();
 
         return services;
     } 

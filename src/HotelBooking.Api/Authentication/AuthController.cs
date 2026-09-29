@@ -1,7 +1,8 @@
-﻿using HotelBooking.Application.Authentication.Login;
+﻿using HotelBooking.Api.Common;
+using HotelBooking.Application.Authentication.Login;
 using HotelBooking.Application.Authentication.Register;
 using Microsoft.AspNetCore.Mvc;
-using HotelBooking.Api.Common;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace HotelBooking.Api.Authentication;
 
@@ -44,6 +45,7 @@ public sealed class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [EnableRateLimiting("Login")]
     public async Task<IActionResult> Login(
     LoginRequest request , CancellationToken cancellationToken)
     {

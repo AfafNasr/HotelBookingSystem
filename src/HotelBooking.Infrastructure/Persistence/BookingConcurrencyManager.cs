@@ -75,7 +75,7 @@ public sealed class BookingConcurrencyManager
             await _dbContext.Database.BeginTransactionAsync(
                 cancellationToken);
 
-        var lockedBooking = await _dbContext.Bookings
+        await _dbContext.Bookings
             .FromSqlInterpolated(
                 $"""
             SELECT *
@@ -85,13 +85,8 @@ public sealed class BookingConcurrencyManager
             .AsNoTracking()
             .SingleOrDefaultAsync(cancellationToken);
 
-        if (lockedBooking is null)
-        {
-            throw new InvalidOperationException(
-                $"Booking {bookingId} does not exist.");
-        }
-
-        var result = await operation(cancellationToken);
+        var result =
+            await operation(cancellationToken);
 
         await transaction.CommitAsync(cancellationToken);
 

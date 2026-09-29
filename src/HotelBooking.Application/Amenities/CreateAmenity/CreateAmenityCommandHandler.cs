@@ -49,13 +49,7 @@ public sealed class CreateAmenityCommandHandler
             return new CreateAmenityResult(
                 false,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "AmenityAlreadyExists",
-                        "An amenity with the specified name already exists.",
-                        ErrorType.Conflict)
-                });
+              [AmenityErrors.AlreadyExists]);
         }
         var now = _timeProvider.GetUtcNow().UtcDateTime;
 

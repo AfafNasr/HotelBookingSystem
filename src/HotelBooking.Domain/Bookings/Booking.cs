@@ -137,4 +137,46 @@ public sealed class Booking
         ExpiresAt = null;
         UpdatedAt = confirmedAt;
     }
+
+    public void Cancel(DateTime cancelledAt)
+    {
+        if (Status == BookingStatus.Cancelled)
+        {
+            return;
+        }
+
+        if (Status != BookingStatus.PendingPayment)
+        {
+            throw new InvalidOperationException(
+                "Only a pending payment booking can be cancelled.");
+        }
+
+        Status = BookingStatus.Cancelled;
+        ExpiresAt = null;
+        UpdatedAt = cancelledAt;
+    }
+
+    public void UpdateGuestDetails(
+    string guestFullName,
+    string guestEmail,
+    string guestPhoneNumber,
+    string? specialRequests,
+    DateTime updatedAt)
+    {
+        if (Status != BookingStatus.PendingPayment)
+        {
+            throw new InvalidOperationException(
+                "Only a pending payment booking can be updated.");
+        }
+
+        GuestFullName = guestFullName.Trim();
+        GuestEmail = guestEmail.Trim();
+        GuestPhoneNumber = guestPhoneNumber.Trim();
+
+        SpecialRequests = string.IsNullOrWhiteSpace(specialRequests)
+            ? null
+            : specialRequests.Trim();
+
+        UpdatedAt = updatedAt;
+    }
 }

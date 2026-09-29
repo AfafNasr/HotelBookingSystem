@@ -9,7 +9,18 @@ public sealed class DealConfiguration : IEntityTypeConfiguration<Deal>
 {
     public void Configure(EntityTypeBuilder<Deal> builder)
     {
-        builder.ToTable("Deals");
+        builder.ToTable(
+    "Deals",
+    table =>
+    {
+        table.HasCheckConstraint(
+            "CK_Deals_DiscountPercentage",
+            "[DiscountPercentage] > 0 AND [DiscountPercentage] < 100");
+
+        table.HasCheckConstraint(
+            "CK_Deals_DateRange",
+            "[EndDate] >= [StartDate]");
+    });
 
         builder.HasKey(deal => deal.Id);
 
@@ -33,14 +44,6 @@ public sealed class DealConfiguration : IEntityTypeConfiguration<Deal>
             .WithMany()
             .HasForeignKey(deal => deal.HotelId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasCheckConstraint(
-            "CK_Deals_DiscountPercentage",
-            "[DiscountPercentage] > 0 AND [DiscountPercentage] < 100");
-
-        builder.HasCheckConstraint(
-            "CK_Deals_DateRange",
-            "[EndDate] >= [StartDate]");
 
         builder.HasIndex(deal => new
         {

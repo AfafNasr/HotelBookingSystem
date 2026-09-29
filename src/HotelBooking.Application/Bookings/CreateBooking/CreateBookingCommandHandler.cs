@@ -206,3 +206,8 @@ public sealed class CreateBookingCommandHandler
 
     }
 }
+
+public sealed record CreateBookingResult(
+    bool Succeeded,
+    int? BookingId,
+    IReadOnlyCollection<ApplicationError> Errors);

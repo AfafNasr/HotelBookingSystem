@@ -1,6 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using HotelBooking.Application.Common.Storage;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace HotelBooking.Infrastructure.Storage;
@@ -10,13 +11,16 @@ public sealed class AzureBlobImageStorageService
 {
     private readonly BlobServiceClient _blobServiceClient;
     private readonly AzureStorageOptions _options;
+    private readonly ILogger<AzureBlobImageStorageService> _logger;
 
     public AzureBlobImageStorageService(
         BlobServiceClient blobServiceClient,
-        IOptions<AzureStorageOptions> options)
+        IOptions<AzureStorageOptions> options,
+        ILogger<AzureBlobImageStorageService> logger)
     {
         _blobServiceClient = blobServiceClient;
         _options = options.Value;
+        _logger = logger;
     }
     private BlobContainerClient GetContainerClient(
     ImageContainer container)
@@ -45,22 +49,37 @@ public sealed class AzureBlobImageStorageService
     string contentType,
     CancellationToken cancellationToken)
     {
-        var containerClient = GetContainerClient(container);
-
-        var blobClient = containerClient.GetBlobClient(storageKey);
-
-        var options = new BlobUploadOptions
+        try
         {
-            HttpHeaders = new BlobHttpHeaders
-            {
-                ContentType = contentType
-            }
-        };
+            var containerClient =
+                GetContainerClient(container);
 
-        await blobClient.UploadAsync(
-            content,
-            options,
-            cancellationToken);
+            var blobClient =
+                containerClient.GetBlobClient(storageKey);
+
+            var options = new BlobUploadOptions
+            {
+                HttpHeaders = new BlobHttpHeaders
+                {
+                    ContentType = contentType
+                }
+            };
+
+            await blobClient.UploadAsync(
+                content,
+                options,
+                cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "Failed to upload image to Azure Blob Storage. Container {Container}, StorageKey {StorageKey}.",
+                container,
+                storageKey);
+
+            throw;
+        }
     }
 
     public async Task DeleteAsync(

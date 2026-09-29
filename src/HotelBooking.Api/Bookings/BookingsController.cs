@@ -1,6 +1,9 @@
 ﻿using HotelBooking.Api.Common;
+using HotelBooking.Application.Bookings.CancelBooking;
 using HotelBooking.Application.Bookings.CreateBooking;
 using HotelBooking.Application.Bookings.GetBookingConfirmation;
+using HotelBooking.Application.Bookings.GetMyBookings;
+using HotelBooking.Application.Bookings.UpdateBooking;
 using HotelBooking.Application.Common.Security.Authorization.Permissions;
 using HotelBooking.Domain.Bookings;
 using Microsoft.AspNetCore.Authorization;
@@ -16,15 +19,24 @@ public sealed class BookingsController : ControllerBase
     private readonly CreateBookingCommandHandler _createHandler;
     private readonly GetBookingConfirmationQueryHandler _confirmationHandler;
     private readonly IBookingConfirmationPdfGenerator _pdfGenerator;
+    private readonly GetMyBookingsQueryHandler _myBookingsHandler;
+    private readonly CancelBookingCommandHandler _cancelHandler;
+    private readonly UpdateBookingCommandHandler _updateHandler;
 
     public BookingsController(
-        CreateBookingCommandHandler createHandler,
-        GetBookingConfirmationQueryHandler confirmationHandler,
-        IBookingConfirmationPdfGenerator pdfGenerator)
+    CreateBookingCommandHandler createHandler,
+    GetBookingConfirmationQueryHandler confirmationHandler,
+    GetMyBookingsQueryHandler myBookingsHandler,
+    IBookingConfirmationPdfGenerator pdfGenerator,
+    CancelBookingCommandHandler cancelHandler,
+    UpdateBookingCommandHandler updateHandler)
     {
         _createHandler = createHandler;
         _confirmationHandler = confirmationHandler;
+        _myBookingsHandler = myBookingsHandler;
         _pdfGenerator = pdfGenerator;
+        _cancelHandler = cancelHandler;
+        _updateHandler = updateHandler;
     }
 
     [HttpPost]
@@ -132,6 +144,87 @@ public sealed class BookingsController : ControllerBase
             pdf,
             "application/pdf",
             fileName);
+    }
+
+    [HttpGet]
+    [Authorize(Policy = BookingPermissions.ViewBooking)]
+    public async Task<IActionResult> GetMyBookings(
+    CancellationToken cancellationToken)
+    {
+        var result = await _myBookingsHandler.HandleAsync(
+            cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return ErrorResponseFactory.Create(
+                this,
+                result.Errors);
+        }
+
+        var response = result.Bookings
+            .Select(booking => new GetMyBookingResponse(
+                booking.BookingId,
+                booking.HotelName,
+                booking.CheckInDate,
+                booking.CheckOutDate,
+                booking.TotalAmount,
+                booking.Status,
+                booking.ConfirmationNumber,
+                booking.CreatedAt))
+            .ToArray();
+
+        return Ok(response);
+    }
+
+    [HttpPost("{bookingId:int}/cancel")]
+    [Authorize(Policy = BookingPermissions.Cancel)]
+    public async Task<IActionResult> Cancel(
+    int bookingId,
+    CancellationToken cancellationToken)
+    {
+        var result =
+            await _cancelHandler.HandleAsync(
+                new CancelBookingCommand(bookingId),
+                cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return ErrorResponseFactory.Create(
+                this,
+                result.Errors);
+        }
+
+        return NoContent();
+    }
+
+    [HttpPut("{bookingId:int}")]
+    [Authorize(Policy = BookingPermissions.Update)]
+    public async Task<IActionResult> Update(
+    int bookingId,
+    UpdateBookingRequest request,
+    CancellationToken cancellationToken)
+    {
+        var command =
+            new UpdateBookingCommand(
+                bookingId,
+                request.GuestFullName,
+                request.GuestEmail,
+                request.GuestPhoneNumber,
+                request.SpecialRequests);
+
+        var result =
+            await _updateHandler.HandleAsync(
+                command,
+                cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return ErrorResponseFactory.Create(
+                this,
+                result.Errors);
+        }
+
+        return NoContent();
     }
 
 }

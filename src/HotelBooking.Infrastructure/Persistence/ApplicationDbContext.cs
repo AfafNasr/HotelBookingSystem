@@ -1,14 +1,16 @@
 ﻿using HotelBooking.Domain.Amenities;
 using HotelBooking.Domain.Bookings;
+using HotelBooking.Domain.Carts;
 using HotelBooking.Domain.Cities;
 using HotelBooking.Domain.Deals;
 using HotelBooking.Domain.Hotels;
 using HotelBooking.Domain.Payments;
+using HotelBooking.Domain.Reviews;
 using HotelBooking.Domain.Rooms;
+using HotelBooking.Infrastructure.Persistence.Outbox;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using HotelBooking.Domain.Reviews;
 
 namespace HotelBooking.Infrastructure.Persistence;
 
@@ -35,6 +37,15 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<RecentlyVisitedHotel> RecentlyVisitedHotels
     => Set<RecentlyVisitedHotel>();
 
+    public DbSet<Cart> Carts =>
+    Set<Cart>();
+
+    public DbSet<CartItem> CartItems =>
+        Set<CartItem>();
+
+    public DbSet<OutboxMessage> OutboxMessages =>
+    Set<OutboxMessage>();
+
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -47,9 +58,21 @@ public class ApplicationDbContext : IdentityDbContext
 
         builder.ApplyConfigurationsFromAssembly(
     typeof(ApplicationDbContext).Assembly);
+        var userBuilder =
+            builder.Entity<IdentityUser>();
 
-        builder.Entity<IdentityUser>()
+        userBuilder
             .HasIndex(user => user.NormalizedEmail)
             .IsUnique();
+
+        userBuilder
+            .Property<DateTime?>("DeactivatedAt");
+
+        userBuilder
+            .HasQueryFilter(
+                user =>
+                    EF.Property<DateTime?>(
+                        user,
+                        "DeactivatedAt") == null);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using HotelBooking.Api.Common;
 using HotelBooking.Application.Cities.CreateCity;
+using HotelBooking.Application.Cities.DeleteCity;
 using HotelBooking.Application.Cities.GetAdminCities;
 using HotelBooking.Application.Cities.UpdateCity;
 using HotelBooking.Application.Common.Security.Authorization.Permissions;
@@ -15,15 +16,18 @@ public sealed class AdminCitiesController : ControllerBase
     private readonly CreateCityCommandHandler _createHandler;
     private readonly GetAdminCitiesQueryHandler _getHandler;
     private readonly UpdateCityCommandHandler _updateHandler;
+    private readonly DeleteCityCommandHandler _deleteCityCommandHandler;
 
     public AdminCitiesController(
         CreateCityCommandHandler createHandler,
         GetAdminCitiesQueryHandler getHandler,
-        UpdateCityCommandHandler updateHandler)
+        UpdateCityCommandHandler updateHandler,
+        DeleteCityCommandHandler deleteCityCommandHandler)
     {
         _createHandler = createHandler;
         _getHandler = getHandler;
         _updateHandler = updateHandler;
+        _deleteCityCommandHandler = deleteCityCommandHandler;
     }
 
     [HttpGet]
@@ -92,6 +96,25 @@ public sealed class AdminCitiesController : ControllerBase
             command,
             cancellationToken);
 
+        if (!result.Succeeded)
+        {
+            return ErrorResponseFactory.Create(
+                this,
+                result.Errors);
+        }
+
+        return NoContent();
+    }
+
+    [HttpDelete("{cityId:int}")]
+    [Authorize(Policy = CityPermissions.Delete)]
+    public async Task<IActionResult> Delete(
+ int cityId,
+ CancellationToken cancellationToken)
+    {
+        var result = await _deleteCityCommandHandler.HandleAsync(
+            new DeleteCityCommand(cityId),
+            cancellationToken);
         if (!result.Succeeded)
         {
             return ErrorResponseFactory.Create(

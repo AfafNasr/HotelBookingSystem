@@ -163,3 +163,8 @@ public sealed class UploadHotelImageCommandHandler
         };
     }
 }
+
+public sealed record UploadHotelImageResult(
+    bool Succeeded,
+    int? ImageId,
+    IReadOnlyCollection<ApplicationError> Errors);

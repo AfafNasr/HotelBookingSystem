@@ -100,6 +100,11 @@ public sealed class Hotel
 
     public void Delete(DateTime deletedAt)
     {
+        if (IsDeleted)
+        {
+            return;
+        }
+
         IsDeleted = true;
         DeletedAt = deletedAt;
         UpdatedAt = deletedAt;

@@ -183,3 +183,8 @@ public sealed class UploadRoomImageCommandHandler
         };
     }
 }
+
+public sealed record UploadRoomImageResult(
+    bool Succeeded,
+    int? ImageId,
+    IReadOnlyCollection<ApplicationError> Errors);

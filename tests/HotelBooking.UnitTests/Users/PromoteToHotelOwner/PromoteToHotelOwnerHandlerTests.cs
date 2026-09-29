@@ -1,6 +1,7 @@
 ﻿using HotelBooking.Application.Authentication;
 using HotelBooking.Application.Common.Errors;
 using HotelBooking.Application.Users.PromoteToHotelOwner;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace HotelBooking.UnitTests.Users.PromoteToHotelOwner;
@@ -15,7 +16,8 @@ public sealed class PromoteToHotelOwnerHandlerTests
         _identityServiceMock = new Mock<IIdentityService>();
 
         _handler = new PromoteToHotelOwnerCommandHandler(
-            _identityServiceMock.Object);
+            _identityServiceMock.Object,
+            NullLogger<PromoteToHotelOwnerCommandHandler>.Instance);
     }
 
     [Fact]

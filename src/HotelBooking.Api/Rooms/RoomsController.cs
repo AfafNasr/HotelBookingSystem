@@ -1,5 +1,6 @@
 ﻿using HotelBooking.Api.Common;
 using HotelBooking.Application.Common.Security.Authorization.Permissions;
+using HotelBooking.Application.Common.Storage;
 using HotelBooking.Application.Rooms.CreateRoom;
 using HotelBooking.Application.Rooms.DeleteRoom;
 using HotelBooking.Application.Rooms.GetAvailableRooms;
@@ -20,14 +21,15 @@ public sealed class RoomsController : ControllerBase
     private readonly GetHotelRoomsQueryHandler _getHotelRoomsHandler;
     private readonly GetRoomByIdQueryHandler _getRoomByIdHandler;
     private readonly GetAvailableRoomsQueryHandler _getAvailableRoomsHandler;
-
+    private readonly IImageUrlProvider _imageUrlProvider;
     public RoomsController(
-        CreateRoomCommandHandler createHandler,
-        UpdateRoomCommandHandler updateHandler,
-        DeleteRoomCommandHandler deleteHandler,
-        GetHotelRoomsQueryHandler getHotelRoomsHandler,
-        GetRoomByIdQueryHandler getRoomByIdHandler,
-        GetAvailableRoomsQueryHandler getAvailableRoomsHandler)
+     CreateRoomCommandHandler createHandler,
+     UpdateRoomCommandHandler updateHandler,
+     DeleteRoomCommandHandler deleteHandler,
+     GetHotelRoomsQueryHandler getHotelRoomsHandler,
+     GetRoomByIdQueryHandler getRoomByIdHandler,
+     GetAvailableRoomsQueryHandler getAvailableRoomsHandler,
+     IImageUrlProvider imageUrlProvider)
     {
         _createHandler = createHandler;
         _updateHandler = updateHandler;
@@ -35,6 +37,7 @@ public sealed class RoomsController : ControllerBase
         _getHotelRoomsHandler = getHotelRoomsHandler;
         _getRoomByIdHandler = getRoomByIdHandler;
         _getAvailableRoomsHandler = getAvailableRoomsHandler;
+        _imageUrlProvider = imageUrlProvider;
     }
 
     [HttpPost("api/hotels/{hotelId:int}/rooms")]
@@ -168,10 +171,13 @@ public sealed class RoomsController : ControllerBase
                 room.ChildrenCapacity,
                 room.PricePerNight,
                 room.Images
-                    .Select(image => new AvailableRoomImageResponse(
-                        image.StorageKey,
-                        image.DisplayOrder,
-                        image.IsPrimary))
+    .Select(image =>
+        new AvailableRoomImageResponse(
+            _imageUrlProvider.GetUrl(
+                ImageContainer.RoomImages,
+                image.StorageKey),
+            image.DisplayOrder,
+            image.IsPrimary))
                     .ToArray()))
             .ToArray();
 

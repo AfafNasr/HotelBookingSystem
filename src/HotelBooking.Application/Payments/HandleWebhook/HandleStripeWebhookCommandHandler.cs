@@ -1,11 +1,8 @@
 ﻿using HotelBooking.Application.Bookings;
 using HotelBooking.Application.Common.Errors;
-using HotelBooking.Application.Payments.Gateway;
+using HotelBooking.Application.Common.Outbox;
 using HotelBooking.Domain.Bookings;
-using HotelBooking.Domain.Payments;
 using Microsoft.Extensions.Logging;
-using HotelBooking.Application.Bookings.GetBookingConfirmation;
-using HotelBooking.Application.Emails;
 
 namespace HotelBooking.Application.Payments.HandleStripeWebhook;
 
@@ -16,32 +13,26 @@ public sealed class HandleStripeWebhookCommandHandler
 
     private readonly IPaymentRepository _paymentRepository;
     private readonly IBookingRepository _bookingRepository;
-    private readonly IRefundRepository _refundRepository;
-    private readonly IPaymentGateway _paymentGateway;
     private readonly IBookingConcurrencyManager _bookingConcurrencyManager;
+    private readonly LatePaymentRefundService _latePaymentRefundService;
+    private readonly IOutboxWriter _outboxWriter;
     private readonly ILogger<HandleStripeWebhookCommandHandler> _logger;
-    private readonly IBookingConfirmationQuery _bookingConfirmationQuery;
-    private readonly IEmailSender _emailSender;
     private readonly TimeProvider _timeProvider;
 
     public HandleStripeWebhookCommandHandler(
-     IPaymentRepository paymentRepository,
-     IBookingRepository bookingRepository,
-     IRefundRepository refundRepository,
-     IPaymentGateway paymentGateway,
-     IBookingConcurrencyManager bookingConcurrencyManager,
-     IBookingConfirmationQuery bookingConfirmationQuery,
-     IEmailSender emailSender,
-     ILogger<HandleStripeWebhookCommandHandler> logger,
-     TimeProvider timeProvider)
+    IPaymentRepository paymentRepository,
+    IBookingRepository bookingRepository,
+    IBookingConcurrencyManager bookingConcurrencyManager,
+    LatePaymentRefundService latePaymentRefundService,
+    IOutboxWriter outboxWriter,
+    ILogger<HandleStripeWebhookCommandHandler> logger,
+    TimeProvider timeProvider)
     {
         _paymentRepository = paymentRepository;
         _bookingRepository = bookingRepository;
-        _refundRepository = refundRepository;
-        _paymentGateway = paymentGateway;
         _bookingConcurrencyManager = bookingConcurrencyManager;
-        _bookingConfirmationQuery = bookingConfirmationQuery;
-        _emailSender = emailSender;
+        _latePaymentRefundService = latePaymentRefundService;
+        _outboxWriter = outboxWriter;
         _logger = logger;
         _timeProvider = timeProvider;
     }
@@ -50,93 +41,97 @@ public sealed class HandleStripeWebhookCommandHandler
         HandleStripeWebhookCommand command,
         CancellationToken cancellationToken)
     {
+        /*
+         * Stripe can send many event types to the same webhook.
+         *
+         * This handler currently owns only the successful
+         * PaymentIntent event. Other events are intentionally ignored.
+         */
         if (command.EventType != PaymentIntentSucceeded)
         {
-            return new HandleStripeWebhookResult(
-                true,
-                Array.Empty<ApplicationError>());
+            return Success();
         }
 
         if (string.IsNullOrWhiteSpace(
-        command.ProviderPaymentIntentId))
+                command.ProviderPaymentIntentId))
         {
             return new HandleStripeWebhookResult(
                 false,
-                new[]
-                {
-            new ApplicationError(
-                "Payment.ProviderPaymentIntentMissing",
-                "The Stripe event does not contain a payment intent ID.",
-                ErrorType.Validation)
-                });
+                [
+                    new ApplicationError(
+                        "Payment.ProviderPaymentIntentMissing",
+                        "The Stripe event does not contain a payment intent ID.",
+                        ErrorType.Validation)
+                ]);
         }
 
         PaymentLog.StripePaymentSucceededEventReceived(
-    _logger,
-    command.EventId,
-    command.ProviderPaymentIntentId);
+            _logger,
+            command.EventId,
+            command.ProviderPaymentIntentId);
 
-
+        /*
+         * Find the booking before acquiring the booking-level lock.
+         *
+         * This lookup does not make any state-changing decision.
+         * All important state transitions are performed again while
+         * holding the booking lock below.
+         */
         var bookingId =
-    await _paymentRepository
-        .GetBookingIdByProviderPaymentIntentIdAsync(
-            command.ProviderPaymentIntentId,
-            cancellationToken);
+            await _paymentRepository
+                .GetBookingIdByProviderPaymentIntentIdAsync(
+                    command.ProviderPaymentIntentId,
+                    cancellationToken);
 
         if (bookingId is null)
         {
             return new HandleStripeWebhookResult(
                 false,
-           [PaymentErrors.NotFound]);
+                [PaymentErrors.NotFound]);
         }
 
+        /*
+         * Serialize payment/booking state transitions for this booking.
+         *
+         * No Stripe network call and no email network call happens while
+         * this database transaction / booking lock is held.
+         */
         var outcome =
             await _bookingConcurrencyManager
                 .ExecuteWithBookingLockAsync(
                     bookingId.Value,
-                    async ct =>
-                        await ProcessSucceededPaymentAsync(
-                            command.ProviderPaymentIntentId,
-                            bookingId.Value,
-                            ct),
+                    ct => ProcessSucceededPaymentAsync(
+                        command.ProviderPaymentIntentId,
+                        bookingId.Value,
+                        ct),
                     cancellationToken);
 
-        if (outcome == PaymentProcessingOutcome.Confirmed)
+        /*
+         * A successful provider payment arrived after the booking
+         * could no longer be confirmed.
+         *
+         * The refund service owns the compensating transaction.
+         * It persists a durable Refund Id first, calls Stripe outside
+         * the database lock, and then finalizes the local refund state.
+         */
+        if (outcome ==
+            PaymentProcessingOutcome.RefundRequired)
         {
-            try
-            {
-                await SendBookingConfirmationEmailAsync(
+            return await _latePaymentRefundService
+                .RefundLatePaymentAsync(
                     bookingId.Value,
+                    command.ProviderPaymentIntentId,
                     cancellationToken);
-            }
-            catch (OperationCanceledException)
-                when (cancellationToken.IsCancellationRequested)
-            {
-                throw;
-            }
-            catch (Exception exception)
-            {
-                PaymentLog.BookingConfirmationEmailFailed(
-                    _logger,
-                    bookingId.Value,
-                    exception);
-            }
-
-            return new HandleStripeWebhookResult(
-                true,
-                Array.Empty<ApplicationError>());
         }
+        return Success();
+        /*
+         * Only the transition from PendingPayment -> Confirmed sends
+         * the confirmation email.
+         *
+         * A duplicate Stripe webhook for an already-confirmed booking
+         * must not send another confirmation email.
+         */
 
-        if (outcome == PaymentProcessingOutcome.AlreadyConfirmed)
-        {
-            return new HandleStripeWebhookResult(
-                true,
-                Array.Empty<ApplicationError>());
-        }
-
-        return await RefundLatePaymentAsync(
-            command.ProviderPaymentIntentId,
-            cancellationToken);
     }
 
     private async Task<PaymentProcessingOutcome>
@@ -145,6 +140,10 @@ public sealed class HandleStripeWebhookCommandHandler
             int bookingId,
             CancellationToken cancellationToken)
     {
+        /*
+         * This method is always executed while holding the
+         * booking-level database lock.
+         */
         var payment =
             await _paymentRepository
                 .GetByProviderPaymentIntentIdAsync(
@@ -168,25 +167,30 @@ public sealed class HandleStripeWebhookCommandHandler
                 "The booking disappeared while processing the Stripe webhook.");
         }
 
-        var now = _timeProvider.GetUtcNow().UtcDateTime;
+        var now =
+    _timeProvider
+        .GetUtcNow()
+        .UtcDateTime;
 
         payment.MarkSucceeded(now);
 
-        if (booking.Status == BookingStatus.Confirmed)
+        if (booking.Status ==
+            BookingStatus.Confirmed)
         {
             await _paymentRepository.SaveChangesAsync(
                 cancellationToken);
-            PaymentLog.PaymentSucceeded(
-               _logger,
-               payment.Id,
-               booking.Id);
 
+            PaymentLog.PaymentSucceeded(
+                _logger,
+                payment.Id,
+                booking.Id);
 
             return PaymentProcessingOutcome.AlreadyConfirmed;
         }
 
         var holdIsActive =
-            booking.Status == BookingStatus.PendingPayment &&
+            booking.Status ==
+                BookingStatus.PendingPayment &&
             booking.ExpiresAt is not null &&
             booking.ExpiresAt > now;
 
@@ -199,12 +203,17 @@ public sealed class HandleStripeWebhookCommandHandler
                 confirmationNumber,
                 now);
 
+            _outboxWriter.EnqueueBookingConfirmation(
+                booking.Id,
+                now);
+
             await _paymentRepository.SaveChangesAsync(
                 cancellationToken);
+
             PaymentLog.PaymentSucceeded(
-             _logger,
-              payment.Id,
-              booking.Id);
+                _logger,
+                payment.Id,
+                booking.Id);
 
             PaymentLog.BookingConfirmed(
                 _logger,
@@ -214,13 +223,20 @@ public sealed class HandleStripeWebhookCommandHandler
             return PaymentProcessingOutcome.Confirmed;
         }
 
+        /*
+         * Stripe successfully captured the payment, but the reservation
+         * hold has expired or the booking is no longer confirmable.
+         *
+         * Persist the successful payment locally first.
+         * The caller will then start the compensating refund workflow.
+         */
         await _paymentRepository.SaveChangesAsync(
             cancellationToken);
 
         PaymentLog.PaymentSucceeded(
-           _logger,
-           payment.Id,
-           booking.Id);
+            _logger,
+            payment.Id,
+            booking.Id);
 
         PaymentLog.LatePaymentDetected(
             _logger,
@@ -230,106 +246,8 @@ public sealed class HandleStripeWebhookCommandHandler
         return PaymentProcessingOutcome.RefundRequired;
     }
 
-    private async Task<HandleStripeWebhookResult>
-        RefundLatePaymentAsync(
-            string providerPaymentIntentId,
-            CancellationToken cancellationToken)
+    private static HandleStripeWebhookResult Success()
     {
-        var payment =
-            await _paymentRepository
-                .GetByProviderPaymentIntentIdAsync(
-                    providerPaymentIntentId,
-                    cancellationToken);
-
-        if (payment is null)
-        {
-            return new HandleStripeWebhookResult(
-                false,
-             [PaymentErrors.NotFound]);
-        }
-
-        var refund =
-            await _refundRepository.GetByPaymentIdAsync(
-                payment.Id,
-                cancellationToken);
-
-        if (refund is null)
-        {
-            refund = new Refund(
-                payment.Id,
-                payment.Amount,
-                payment.Currency,
-                 _timeProvider.GetUtcNow().UtcDateTime);
-
-            _refundRepository.Add(refund);
-
-            await _refundRepository.SaveChangesAsync(
-                cancellationToken);
-
-            PaymentLog.RefundInitiated(
-            _logger,
-             refund.Id,
-             payment.Id);
-        }
-
-        if (refund.Status == RefundStatus.Succeeded)
-        {
-            return new HandleStripeWebhookResult(
-                true,
-                Array.Empty<ApplicationError>());
-        }
-
-        if (refund.Status == RefundStatus.Failed)
-        {
-            PaymentLog.TerminalRefundFailure(
-                 _logger,
-                 refund.Id,
-                 payment.Id);
-
-            return new HandleStripeWebhookResult(
-                false,
-                new[]
-                {
-                    new ApplicationError(
-                        "Refund.Failed",
-                        "The refund is in a terminal failed state.",
-                        ErrorType.Conflict)
-                });
-        }
-
-        if (payment.ProviderPaymentIntentId is null)
-        {
-            return new HandleStripeWebhookResult(
-                false,
-                new[]
-                {
-                    new ApplicationError(
-                        "Payment.ProviderPaymentIntentMissing",
-                        "The payment does not have a provider payment intent ID.",
-                        ErrorType.Conflict)
-                });
-        }
-
-        var refundResult =
-            await _paymentGateway.CreateRefundAsync(
-                new CreateRefundRequest(
-                    refund.Id,
-                    payment.ProviderPaymentIntentId,
-                    refund.Amount),
-                cancellationToken);
-
-        refund.MarkSucceeded(
-            refundResult.ProviderRefundId,
-            _timeProvider.GetUtcNow().UtcDateTime);
-
-        await _refundRepository.SaveChangesAsync(
-            cancellationToken);
-
-        PaymentLog.RefundSucceeded(
-          _logger,
-          refund.Id,
-          payment.Id);
-
         return new HandleStripeWebhookResult(
             true,
             Array.Empty<ApplicationError>());
@@ -337,31 +255,10 @@ public sealed class HandleStripeWebhookCommandHandler
 
     private static string GenerateConfirmationNumber()
     {
-        return $"HB-{Guid.NewGuid():N}".ToUpperInvariant();
+        return $"HB-{Guid.NewGuid():N}"
+            .ToUpperInvariant();
     }
 
-    private async Task SendBookingConfirmationEmailAsync(
-    int bookingId,
-    CancellationToken cancellationToken)
-    {
-        var confirmation =
-            await _bookingConfirmationQuery.GetAsync(
-                bookingId,
-                cancellationToken);
-
-        if (confirmation is null)
-        {
-            throw new InvalidOperationException(
-                $"Booking confirmation could not be loaded for booking {bookingId}.");
-        }
-
-        var email =
-            BookingConfirmationEmailBuilder.Build(confirmation);
-
-        await _emailSender.SendAsync(
-            email,
-            cancellationToken);
-    }
     private enum PaymentProcessingOutcome
     {
         AlreadyConfirmed,
@@ -369,3 +266,7 @@ public sealed class HandleStripeWebhookCommandHandler
         RefundRequired
     }
 }
+
+public sealed record HandleStripeWebhookResult(
+    bool Succeeded,
+    IReadOnlyCollection<ApplicationError> Errors);

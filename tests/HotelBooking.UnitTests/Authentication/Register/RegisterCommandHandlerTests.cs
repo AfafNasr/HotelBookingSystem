@@ -1,6 +1,7 @@
 ﻿using HotelBooking.Application.Authentication;
 using HotelBooking.Application.Authentication.Register;
 using HotelBooking.Application.Common.Errors;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace HotelBooking.UnitTests.Authentication.Register;
@@ -15,7 +16,8 @@ public sealed class RegisterCommandHandlerTests
     {
         var handler = new RegisterCommandHandler(
             _identityServiceMock.Object,
-            _validator);
+            _validator,
+            NullLogger<RegisterCommandHandler>.Instance);
 
         var command = new RegisterCommand(
             "",
@@ -61,7 +63,8 @@ public sealed class RegisterCommandHandlerTests
 
         var handler = new RegisterCommandHandler(
             _identityServiceMock.Object,
-            _validator);
+            _validator,
+            NullLogger<RegisterCommandHandler>.Instance);
 
         var command = new RegisterCommand(
             "customer1",

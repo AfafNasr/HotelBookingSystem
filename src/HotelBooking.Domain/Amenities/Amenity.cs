@@ -24,4 +24,31 @@ public sealed class Amenity
         CreatedAt = createdAt;
         IsDeleted = false;
     }
+
+    public void Update(
+    string name,
+    DateTime updatedAt)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException(
+                "Amenity name is required.",
+                nameof(name));
+        }
+
+        Name = name.Trim();
+        UpdatedAt = updatedAt;
+    }
+
+    public void Delete(DateTime deletedAt)
+    {
+        if (IsDeleted)
+        {
+            return;
+        }
+
+        IsDeleted = true;
+        DeletedAt = deletedAt;
+        UpdatedAt = deletedAt;
+    }
 }

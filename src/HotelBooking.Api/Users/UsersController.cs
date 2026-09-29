@@ -1,5 +1,6 @@
 ﻿using HotelBooking.Api.Common;
 using HotelBooking.Application.Common.Security.Authorization.Permissions;
+using HotelBooking.Application.Common.Storage;
 using HotelBooking.Application.Hotels.GetRecentlyVisitedHotels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +14,13 @@ public sealed class UsersController : ControllerBase
 
 {
     private readonly GetRecentlyVisitedHotelsQueryHandler _handler;
-
+    private readonly IImageUrlProvider _imageUrlProvider;
     public UsersController(
-        GetRecentlyVisitedHotelsQueryHandler handler)
+     GetRecentlyVisitedHotelsQueryHandler handler,
+     IImageUrlProvider imageUrlProvider)
     {
         _handler = handler;
+        _imageUrlProvider = imageUrlProvider;
     }
 
     [HttpGet("recently-visited-hotels")]
@@ -42,7 +45,11 @@ public sealed class UsersController : ControllerBase
                 hotel.CityName,
                 hotel.StarRating,
                 hotel.StartingPricePerNight,
-                hotel.ThumbnailStorageKey))
+               hotel.ThumbnailStorageKey is null
+    ? null
+    : _imageUrlProvider.GetUrl(
+        ImageContainer.HotelImages,
+        hotel.ThumbnailStorageKey)))
             .ToArray();
 
         return Ok(response);
@@ -55,7 +62,7 @@ public sealed record RecentlyVisitedHotelResponse(
     string CityName,
     int StarRating,
     decimal? StartingPricePerNight,
-    string? ThumbnailStorageKey);
+    string? ThumbnailUrl);
 
 
 

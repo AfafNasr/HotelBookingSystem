@@ -74,13 +74,7 @@ public sealed class AddHotelAmenityCommandHandler
         {
             return new AddHotelAmenityResult(
                 false,
-                new[]
-                {
-                    new ApplicationError(
-                        "AmenityNotFound",
-                        "The specified amenity does not exist.",
-                        ErrorType.NotFound)
-                });
+               [AmenityErrors.NotFound]);
         }
 
         var alreadyAssigned = await _hotelAmenityRepository.ExistsAsync(
@@ -92,13 +86,7 @@ public sealed class AddHotelAmenityCommandHandler
         {
             return new AddHotelAmenityResult(
                 false,
-                new[]
-                {
-                    new ApplicationError(
-                        "HotelAmenityAlreadyExists",
-                        "The amenity is already assigned to this hotel.",
-                        ErrorType.Conflict)
-                });
+               [HotelAmenityErrors.AlreadyExists]);
         }
 
         var hotelAmenity = new HotelAmenity(

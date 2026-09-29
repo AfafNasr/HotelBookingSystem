@@ -2,6 +2,7 @@
 using HotelBooking.Application.Authentication.Login;
 using HotelBooking.Application.Common.Errors;
 using Moq;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace HotelBooking.UnitTests.Authentication.Login;
 
@@ -16,7 +17,8 @@ public sealed class LoginHandlerTests
         return new LoginCommandHandler(
             _validator,
             _identityServiceMock.Object,
-            _tokenServiceMock.Object);
+            _tokenServiceMock.Object,
+            NullLogger<LoginCommandHandler>.Instance);
     }
 
     [Fact]

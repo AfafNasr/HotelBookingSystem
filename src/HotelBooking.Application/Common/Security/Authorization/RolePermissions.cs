@@ -1,4 +1,5 @@
 ﻿using HotelBooking.Application.Common.Security.Authorization.Permissions;
+using System.Threading.Channels;
 
 namespace HotelBooking.Application.Common.Security.Authorization;
 
@@ -19,19 +20,28 @@ public static class RolePermissions
                     CityPermissions.Create,
                     CityPermissions.Update,
                     CityPermissions.Delete,
-                     CityPermissions.View,
+                    CityPermissions.View,
 
                     RoomPermissions.Create,
                     RoomPermissions.Update,
                     RoomPermissions.Delete,
-                     RoomPermissions.View,
-                     RoomPermissions.GetAdminRooms,
+                    RoomPermissions.View,
+                    RoomPermissions.GetAdminRooms,
 
                     UserPermissions.PromoteToHotelOwner ,
 
                     AmenityPermissions.Create,
                     AmenityPermissions.Update,
-                    AmenityPermissions.Delete
+                    AmenityPermissions.Delete,
+
+                    BookingPermissions.ViewHotelBookings,
+
+                    UserPermissions.View,
+                    UserPermissions.Create,
+                    UserPermissions.Update,
+
+                    UserPermissions.Deactivate,
+                    UserPermissions.Activate,
                 },
 
                 [Roles.Customer] = new HashSet<string>()
@@ -40,8 +50,15 @@ public static class RolePermissions
                     BookingPermissions.StartPayment,
                     ReviewPermissions.Create,
                     UserPermissions.ViewRecentlyVisited,
-                    BookingPermissions.ViewConfirmation
-                    
+                    BookingPermissions.ViewConfirmation,
+                    ReviewPermissions.View,
+                    ReviewPermissions.Update,
+                    ReviewPermissions.Delete,
+                    BookingPermissions.ViewBooking,
+                    BookingPermissions.Cancel,
+                    BookingPermissions.Update,
+                    UserPermissions.CartManage
+
                 },
 
                 [Roles.HotelOwner] = new HashSet<string>()
@@ -54,7 +71,16 @@ public static class RolePermissions
                     DealPermissions.Create,
                     RoomPermissions.View,
                     RoomPermissions.Update,
-                    RoomPermissions.Delete
+                    RoomPermissions.Delete,
+                    HotelPermissions.DeleteAmenities,
+                    DealPermissions.Update,
+                    DealPermissions.Delete,
+                    BookingPermissions.ViewHotelBookings,
+                    HotelPermissions.UpdateImage,
+                    HotelPermissions.DeleteImage,
+                    RoomPermissions.UpdateImage,
+                    RoomPermissions.DeleteImage,
+
 
 
                 }

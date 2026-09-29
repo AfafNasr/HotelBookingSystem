@@ -72,7 +72,7 @@ public sealed class CreateAmenityCommandHandlerTests
 
         var error = Assert.Single(result.Errors);
 
-        Assert.Equal("AmenityAlreadyExists", error.Code);
+        Assert.Equal("Amenity.AlreadyExists", error.Code);
         Assert.Equal(ErrorType.Conflict, error.Type);
 
         _amenityRepositoryMock.Verify(
@@ -133,3 +133,4 @@ public sealed class CreateAmenityCommandHandlerTests
             TimeProvider.System);
     }
 }
+

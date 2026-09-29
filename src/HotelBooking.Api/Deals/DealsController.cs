@@ -1,7 +1,10 @@
 ﻿using HotelBooking.Api.Common;
 using HotelBooking.Application.Common.Security.Authorization.Permissions;
+using HotelBooking.Application.Common.Storage;
 using HotelBooking.Application.Deals.CreateDeal;
+using HotelBooking.Application.Deals.DeleteDeal;
 using HotelBooking.Application.Deals.GetFeaturedDeals;
+using HotelBooking.Application.Deals.UpdateDeal;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,13 +15,22 @@ public sealed class DealsController : ControllerBase
 {
     private readonly CreateDealCommandHandler _createHandler;
     private readonly GetFeaturedDealsQueryHandler _featuredHandler;
+    private readonly UpdateDealCommandHandler _updateHandler;
+    private readonly DeleteDealCommandHandler _deleteHandler;
+    private readonly IImageUrlProvider _imageUrlProvider;
 
     public DealsController(
-        CreateDealCommandHandler createHandler,
-        GetFeaturedDealsQueryHandler featuredHandler)
+     CreateDealCommandHandler createHandler,
+     UpdateDealCommandHandler updateHandler,
+     DeleteDealCommandHandler deleteHandler,
+     GetFeaturedDealsQueryHandler featuredHandler,
+     IImageUrlProvider imageUrlProvider)
     {
         _createHandler = createHandler;
+        _updateHandler = updateHandler;
+        _deleteHandler = deleteHandler;
         _featuredHandler = featuredHandler;
+        _imageUrlProvider = imageUrlProvider;
     }
 
     [HttpPost("api/hotels/{hotelId:int}/deals")]
@@ -68,10 +80,63 @@ public sealed class DealsController : ControllerBase
                     deal.DiscountPercentage,
                     deal.OriginalPricePerNight,
                     deal.DiscountedPricePerNight,
-                    deal.ThumbnailStorageKey))
+deal.ThumbnailStorageKey is null
+    ? null
+    : _imageUrlProvider.GetUrl(
+        ImageContainer.HotelImages,
+        deal.ThumbnailStorageKey)))
                 .ToArray());
 
         return Ok(response);
+    }
+
+    [HttpPut("api/deals/{dealId:int}")]
+    [Authorize(Policy = DealPermissions.Update)]
+    public async Task<IActionResult> Update(
+    int dealId,
+    UpdateDealRequest request,
+    CancellationToken cancellationToken)
+    {
+        var command = new UpdateDealCommand(
+            dealId,
+            request.DiscountPercentage,
+            request.StartDate,
+            request.EndDate);
+
+        var result = await _updateHandler.HandleAsync(
+            command,
+            cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return ErrorResponseFactory.Create(
+                this,
+                result.Errors);
+        }
+
+        return NoContent();
+    }
+
+    [HttpDelete("api/deals/{dealId:int}")]
+    [Authorize(Policy = DealPermissions.Delete)]
+    public async Task<IActionResult> Delete(
+    int dealId,
+    CancellationToken cancellationToken)
+    {
+        var command = new DeleteDealCommand(dealId);
+
+        var result = await _deleteHandler.HandleAsync(
+            command,
+            cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return ErrorResponseFactory.Create(
+                this,
+                result.Errors);
+        }
+
+        return NoContent();
     }
 }
 
@@ -95,4 +160,9 @@ public sealed record FeaturedDealResponse(
     decimal DiscountPercentage,
     decimal OriginalPricePerNight,
     decimal DiscountedPricePerNight,
-    string? ThumbnailStorageKey);
+    string? ThumbnailUrl);
+
+public sealed record UpdateDealRequest(
+    decimal DiscountPercentage,
+    DateOnly StartDate,
+    DateOnly EndDate);

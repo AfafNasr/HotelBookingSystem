@@ -80,13 +80,7 @@ public sealed class CreateDealCommandHandler
             return new CreateDealResult(
                 false,
                 null,
-                new[]
-                {
-                    new ApplicationError(
-                        "OverlappingDeal",
-                        "The hotel already has a deal that overlaps with the selected date range.",
-                        ErrorType.Conflict)
-                });
+             [DealErrors.OverlappingDeal]);
         }
 
         var now = _timeProvider.GetUtcNow().UtcDateTime;
@@ -109,3 +103,8 @@ public sealed class CreateDealCommandHandler
             Array.Empty<ApplicationError>());
     }
 }
+
+public sealed record CreateDealResult(
+    bool Succeeded,
+    int? DealId,
+    IReadOnlyCollection<ApplicationError> Errors);

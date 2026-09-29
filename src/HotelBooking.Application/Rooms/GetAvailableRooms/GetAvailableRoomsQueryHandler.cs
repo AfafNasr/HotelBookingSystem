@@ -49,3 +49,8 @@ public sealed class GetAvailableRoomsQueryHandler
             []);
     }
 }
+
+public sealed record GetAvailableRoomsResult(
+    bool Succeeded,
+    IReadOnlyCollection<AvailableRoom> Rooms,
+    IReadOnlyCollection<ApplicationError> Errors);

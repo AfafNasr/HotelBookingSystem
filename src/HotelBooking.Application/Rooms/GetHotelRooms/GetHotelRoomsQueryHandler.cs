@@ -55,4 +55,9 @@ public sealed class GetHotelRoomsQueryHandler
             rooms,
             Array.Empty<ApplicationError>());
     }
-} 
+}
+
+public sealed record GetHotelRoomsResult(
+    bool Succeeded,
+    IReadOnlyCollection<HotelRoom> Rooms,
+    IReadOnlyCollection<ApplicationError> Errors);
