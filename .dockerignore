@@ -1,22 +1,26 @@
-**/bin/
-**/obj/
-
-.git/
+.git
 .gitignore
+.vs
+.vscode
+.idea
 
-.vs/
-.vscode/
-.idea/
+**/bin
+**/obj
 
-TestResults/
-coverage/
+TestResults
+coverage
 coverage.*
 
-performance/
+*.user
+*.suo
+*.cache
+*.log
 
 .env
 .env.*
+!.env.example
 
-!/.env.example
+docker-compose*.yml
 
 README.md
+docs

@@ -34,6 +34,8 @@ public sealed class AzureBlobImageUrlProvider
                 ImageContainer.RoomImages =>
                     _options.RoomImagesContainer,
 
+                ImageContainer.CityImages => _options.CityImagesContainer,
+
                 _ => throw new ArgumentOutOfRangeException(
                     nameof(container),
                     container,

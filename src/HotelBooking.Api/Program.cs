@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using QuestPDF.Infrastructure;
 using Serilog;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -146,7 +147,7 @@ var app = builder.Build();
 
 
 // Initialize the default Identity roles at application startup.
-if (!app.Environment.IsEnvironment("Testing"))
+if (app.Environment.IsDevelopment())
 {
     await using var scope =
         app.Services.CreateAsyncScope();
@@ -170,12 +171,6 @@ if (!app.Environment.IsEnvironment("Testing"))
 
     if (shouldSeedPerformanceData)
     {
-        if (!app.Environment.IsDevelopment())
-        {
-            throw new InvalidOperationException(
-                "Performance data can only be seeded in the Development environment.");
-        }
-
         var performanceDataSeeder =
             scope.ServiceProvider
                 .GetRequiredService<PerformanceDataSeeder>();

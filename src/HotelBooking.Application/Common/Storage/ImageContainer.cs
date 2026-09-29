@@ -3,6 +3,7 @@
 public enum ImageContainer
 {
     HotelImages = 1,
-    RoomImages = 2
+    RoomImages = 2,
+    CityImages = 3
 
 }
