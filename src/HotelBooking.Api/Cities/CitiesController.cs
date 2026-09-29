@@ -1,4 +1,5 @@
 ﻿using HotelBooking.Application.Cities.GetTrendingDestinations;
+using HotelBooking.Application.Common.Storage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 
@@ -9,12 +10,14 @@ namespace HotelBooking.Api.Cities;
 public sealed class CitiesController : ControllerBase
 {
     private readonly GetTrendingDestinationsQueryHandler _trendingHandler;
+    private readonly IImageUrlProvider _imageUrlProvider;
 
     public CitiesController(
-        GetTrendingDestinationsQueryHandler trendingHandler)
+    GetTrendingDestinationsQueryHandler trendingHandler,
+    IImageUrlProvider imageUrlProvider)
     {
         _trendingHandler = trendingHandler;
-
+        _imageUrlProvider = imageUrlProvider;
     }
 
     [HttpGet("trending")]
@@ -28,12 +31,15 @@ public sealed class CitiesController : ControllerBase
 
         var response =
             result.Destinations
-                .Select(destination =>
-                    new TrendingDestinationResponse(
-                        destination.CityId,
-                        destination.CityName,
-                        destination.ThumbnailStorageKey))
-                .ToArray();
+                .Select(destination => new TrendingDestinationResponse(
+        destination.CityId,
+        destination.CityName,
+      destination.ThumbnailStorageKey is null
+    ? null
+    : _imageUrlProvider.GetUrl(
+        ImageContainer.CityImages,
+        destination.ThumbnailStorageKey)))
+    .ToList();
 
         return Ok(response);
     }

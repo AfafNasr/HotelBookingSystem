@@ -67,12 +67,19 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? throw new InvalidOperationException(
-                "Connection string 'DefaultConnection' was not found.");
-
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(connectionString));
+        services.AddDbContext<ApplicationDbContext>(
+    options =>
+        options.UseSqlServer(
+            configuration.GetConnectionString(
+                "DefaultConnection"),
+            sqlOptions =>
+            {
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay:
+                        TimeSpan.FromSeconds(10),
+                    errorNumbersToAdd: null);
+            }));
 
 
         services
@@ -236,7 +243,11 @@ public static class DependencyInjection
              !string.IsNullOrWhiteSpace(
                  options.RoomImagesContainer),
          "AzureStorage:RoomImagesContainer is required.")
-     .ValidateOnStart();
+     .Validate(
+    options => !string.IsNullOrWhiteSpace(options.CityImagesContainer),
+    "AzureStorage:CityImagesContainer is required.")
+            .ValidateOnStart();
+
 
         services.AddSingleton(sp =>
         {

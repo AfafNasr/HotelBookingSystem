@@ -16,4 +16,4 @@ public sealed record UpdateCityRequest(
 public sealed record TrendingDestinationResponse(
     int CityId,
     string CityName,
-    string? ThumbnailStorageKey);
+    string? ThumbnailUrl);

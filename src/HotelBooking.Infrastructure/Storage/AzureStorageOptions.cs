@@ -8,4 +8,6 @@ public sealed class AzureStorageOptions
 
     public string HotelImagesContainer { get; init; } = null!;
     public string RoomImagesContainer { get; init; } = null!;
+
+    public string CityImagesContainer { get; init; } = string.Empty;
 }
