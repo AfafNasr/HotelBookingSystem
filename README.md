@@ -105,7 +105,7 @@ The main goal of this architecture is to keep the core business logic independen
 This dependency direction follows the Dependency Inversion Principle: inner layers do not depend on infrastructure details, while the Infrastructure layer depends on abstractions exposed by the Application layer.
 
 <p align="center">
-  <img src="docs/images/architecture.png" alt="Hotel Booking System Clean Architecture" width="750"/>
+  <img src="docs/images/Architecture.png" alt="Hotel Booking System Clean Architecture" width="750"/>
 </p>
 
 ---
@@ -199,6 +199,8 @@ The schema is designed to maintain clear relationships between entities and supp
   <img src="docs/images/database-design.png" alt="Hotel Booking System Database Design" width="850"/>
 </p>
 ---
+
+
 ## API Overview
 
 The Hotel Booking System exposes RESTful API endpoints that cover the main workflows of the platform, including authentication, hotel discovery, room management, bookings, payments, user operations, and administrative functionality.
