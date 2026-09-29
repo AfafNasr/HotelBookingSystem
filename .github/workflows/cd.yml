@@ -8,6 +8,10 @@ on:
 permissions:
   contents: read
 
+  concurrency:
+  group: hotelbooking-production-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
     name: Build and Deploy
