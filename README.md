@@ -223,7 +223,7 @@ Swagger provides interactive API documentation and allows requests to be tested 
 
 A public Postman collection is available for exploring the API, testing requests, and reviewing request/response examples.
 
-[View Public Postman Collection](https://advancesoft-team.postman.co/documentation/43119323-d950a4d6-3dfa-4f52-a052-aa5849996b0e/publish?workspaceId=054b4372-6b5a-49d5-98c9-b4a1118fcf94&authFlowId=d6ff2767-43a9-4f15-86c4-477f62fd99da&_pmt=pmtMTc4NjQ3MDM0ODkyNg%253D%253D%257CPM.MjAyNi0wOC0xMVQxNzo0NTowNy4xMTha)
+[View Public Postman Collection](https://documenter.getpostman.com/view/43119323/2sBYB4L7Ao)
 
 ---
 
