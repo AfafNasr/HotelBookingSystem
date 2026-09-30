@@ -105,11 +105,55 @@ The main goal of this architecture is to keep the core business logic independen
 - **Infrastructure Layer**  
   Contains implementations for persistence, authentication, external services, file storage, and other technical concerns. It implements abstractions defined by the inner layers.
 
-This dependency direction follows the Dependency Inversion Principle: inner layers do not depend on infrastructure details, while the Infrastructure layer depends on abstractions exposed by the Application layer.
+```text
+                         ┌──────────────────────────────┐
+                         │           CLIENTS            │
+                         └──────────────┬───────────────┘
+                                        │
+                                        ▼
+              ┌──────────────────────────────────────────────┐
+              │          API / PRESENTATION LAYER            │
+              │                                              │
+              │  • ASP.NET Core Web API                      │
+              │  • Controllers                               │
+              │  • Middleware                                │
+              │  • HTTP Request / Response                   │
+              └───────────────┬────────────────┬─────────────┘
+                              │                │
+                         Reference         Reference
+                              │                │
+                              ▼                ▼
+        ┌────────────────────────────┐   ┌────────────────────────────┐
+        │     APPLICATION LAYER      │   │    INFRASTRUCTURE LAYER    │
+        │                            │   │                            │
+        │  • Feature-Based           │◄──│  • EF Core / Persistence   │
+        │  • Commands / Queries      │   │  • Database                │
+        │  • Handlers                │   │  • Identity & JWT          │
+        │  • Interfaces              │   │  • External Services       │
+        │  • Use Cases               │   │                            │
+        └─────────────┬──────────────┘   └─────────────┬──────────────┘
+                      │                                │
+                  Reference                        Reference
+                      │                                │
+                      └───────────────┬────────────────┘
+                                      │
+                                      ▼
+                         ┌────────────────────────────┐
+                         │        DOMAIN LAYER        │
+                         │                            │
+                         │  • Entities                │
+                         │  • Business Rules          │
+                         │  • Domain Models           │
+                         │  • Enums                   │
+                         └────────────────────────────┘
+```
 
-<p align="center">
-  <img src="docs/images/Architecture.png" alt="Hotel Booking System Clean Architecture" width="750"/>
-</p>
+### Dependency Direction
+
+- **Domain** contains the core domain model and business rules and does not depend on the other application projects.
+- **Application** contains the application's use cases and is organized by feature. It depends on the Domain layer.
+- **Infrastructure** contains technical implementations such as persistence, authentication, and external services. It implements abstractions required by the inner layers.
+- **API / Presentation** handles HTTP concerns and acts as the application's composition root, wiring Application and Infrastructure dependencies together.
 
 ---
 ### Project Structure
@@ -152,6 +196,7 @@ HotelBookingSystem/
 The **Application layer follows a feature-based organization**, where commands, queries, handlers, validators, and related models for the same business capability are kept together rather than being separated by technical type.
 
 This makes individual use cases easier to locate, understand, test, and maintain as the system grows.
+
 ---- 
 ### Request Flow
 
